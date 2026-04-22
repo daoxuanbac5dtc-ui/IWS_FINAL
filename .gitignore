@@ -1,0 +1,19 @@
+# === IWS_FINAL Root .gitignore ===
+# Ignore IDE / OS files at the root level
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment secrets (root level)
+.env
+*.local
