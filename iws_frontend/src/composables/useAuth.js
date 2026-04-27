@@ -3,6 +3,8 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 export const useAuth = () => {
     const router = useRouter();
     const user = ref(null);
@@ -72,7 +74,7 @@ export const useAuth = () => {
         if (!token.value) return false;
 
         try {
-            const response = await fetch('/api/auth/verify', {
+            const response = await fetch(`${API_BASE_URL}/auth/verify`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token.value}`,
@@ -101,7 +103,7 @@ export const useAuth = () => {
         isLoading.value = true;
 
         try {
-            const response = await fetch('/api/auth/login', {
+            const response = await fetch(`${API_BASE_URL}/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -137,7 +139,7 @@ export const useAuth = () => {
     const logout = async () => {
         try {
             if (token.value) {
-                await fetch('/api/auth/logout', {
+                await fetch(`${API_BASE_URL}/auth/logout`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token.value}`,
@@ -247,4 +249,3 @@ export const hasPermission = (userRole, permission) => {
     const rolePermissions = ROLE_PERMISSIONS[userRole] || [];
     return rolePermissions.includes(permission);
 };
-

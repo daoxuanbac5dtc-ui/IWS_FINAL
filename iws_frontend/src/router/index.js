@@ -1,6 +1,9 @@
 import AppLayout from '@/layout/AppLayout.vue';
 
 import { createRouter, createWebHistory } from 'vue-router';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 const router = createRouter({
     history: createWebHistory(),
     routes: [
@@ -501,16 +504,18 @@ export const useAuthUtils = () => {
     };
 
     const logout = () => {
+        const currentToken = getToken();
+
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user_info');
         localStorage.removeItem('rememberMe');
         localStorage.removeItem('savedEmail');
 
         // Gọi API logout
-        fetch('/api/auth/logout', {
+        fetch(`${API_BASE_URL}/auth/logout`, {
             method: 'POST',
             headers: {
-                Authorization: `Bearer ${getToken()}`,
+                Authorization: currentToken ? `Bearer ${currentToken}` : '',
                 'Content-Type': 'application/json'
             }
         }).catch((e) => console.warn('Logout API call failed:', e));

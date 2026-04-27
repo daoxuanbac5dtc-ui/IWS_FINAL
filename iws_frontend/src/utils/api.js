@@ -10,11 +10,11 @@ const API_CONFIG = {
     ENDPOINTS: {
         // Authentication
         AUTH: {
-            LOGIN: '/api/auth/login',
-            LOGOUT: '/api/auth/logout',
-            VERIFY: '/api/auth/verify',
-            REFRESH: '/api/auth/refresh',
-            ME: '/api/auth/me'
+            LOGIN: '/auth/login',
+            LOGOUT: '/auth/logout',
+            VERIFY: '/auth/verify',
+            REFRESH: '/auth/refresh',
+            ME: '/auth/verify'
         },
         
         // Account management

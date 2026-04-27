@@ -2,6 +2,8 @@
 import { computed, reactive, watch } from 'vue'
 
 // ===== CONSTANTS =====
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+
 const AUTH_STORAGE_KEYS = {
     TOKEN: 'auth_token',
     USER: 'user_info',
@@ -235,7 +237,7 @@ export const useAuthStore = () => {
             // Optional: Call logout API
             if (state.token) {
                 try {
-                    await fetch('/api/auth/logout', {
+                    await fetch(`${API_BASE_URL}/auth/logout`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${state.token}`,
@@ -268,7 +270,8 @@ export const useAuthStore = () => {
         state.loading = true
         try {
             // Call API to refresh user data
-            const response = await fetch('/api/auth/me', {
+            const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+                method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${state.token}`,
                     'Content-Type': 'application/json'
@@ -279,9 +282,10 @@ export const useAuthStore = () => {
                 throw new Error('Failed to refresh user data')
             }
 
-            const userData = await response.json()
+            const payload = await response.json()
+            const userData = payload?.data
             
-            if (setUser(userData)) {
+            if (payload?.success && setUser(userData)) {
                 console.log('✅ User data refreshed successfully')
                 return true
             } else {
@@ -391,4 +395,3 @@ initializeAuth()
 
 // Export for direct access if needed
 export { clearAuthData, DEFAULT_USER_ROLES, initializeAuth }
-

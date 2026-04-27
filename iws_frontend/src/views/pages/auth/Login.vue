@@ -205,6 +205,7 @@ const checked = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
 const isLoading = ref(false);
+const AUTH_API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const router = useRouter();
 
@@ -213,7 +214,7 @@ onMounted(() => {
     const token = localStorage.getItem('auth_token');
     if (token) {
         // User đã đăng nhập, chuyển hướng
-        router.push('/san-pham');
+        router.push('/dashboard');
     }
 });
 
@@ -260,7 +261,7 @@ const login = async () => {
         console.log('🔄 Attempting login...');
 
         // Gọi API backend để đăng nhập
-        const response = await fetch('http://localhost:8080/auth/login', {
+        const response = await fetch(`${AUTH_API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -338,7 +339,10 @@ const login = async () => {
         }
     } catch (error) {
         console.error('❌ Login error:', error);
-        errorMessage.value = 'An error occurred. Please try again.';
+        const rawMessage = error instanceof Error ? error.message : String(error);
+        errorMessage.value = rawMessage.includes('Failed to fetch')
+            ? 'Khong the ket noi backend. Hay mo frontend bang http://localhost:5173 va kiem tra backend dang chay.'
+            : 'An error occurred. Please try again.';
         setTimeout(() => {
             errorMessage.value = '';
         }, 4000);

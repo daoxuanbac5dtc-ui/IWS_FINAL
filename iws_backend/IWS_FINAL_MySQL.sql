@@ -509,14 +509,14 @@ INSERT INTO khuyen_mai_chi_tiet (trang_thai, ngay_tao, ngay_cap_nhat, id_chi_tie
 ;
 -- 12. Insert dữ liệu bảng tai_khoan
 INSERT INTO tai_khoan (ma_tai_khoan, email, mat_khau, vai_tro, trang_thai, ngay_tao, ngay_cap_nhat) VALUES
-('TK001', 'admin@shoestore.com', 'admin123', 2, 1, NOW(), NOW()),
-('TK002', 'nhanvien1@shoestore.com', 'nv123456', 1, 1, NOW(), NOW()),
-('TK003', 'nhanvien2@shoestore.com', 'nv123456', 1, 1, NOW(), NOW()),
-('TK004', 'khachhang1@gmail.com', 'kh123456', 0, 1, NOW(), NOW()),
-('TK005', 'khachhang2@gmail.com', 'kh123456', 0, 1, NOW(), NOW()),
-('TK006', 'khachhang3@gmail.com', 'kh123456', 0, 1, NOW(), NOW()),
-('TK007', 'khachhang4@gmail.com', 'kh123456', 0, 1, NOW(), NOW()),
-('TK008', 'khachhang5@gmail.com', 'kh123456', 0, 1, NOW(), NOW())
+('TK001', 'admin@shoestore.com', '$2a$10$xXnh/NbED5JLjHJs0CQXietjKJ5B/73T045M6ph3ZzDGKgZBcBqeW', 2, 1, NOW(), NOW()),
+('TK002', 'nhanvien1@shoestore.com', '$2a$10$FTlIlrKAoPdA0lr3y8ZxX.175LZ7DlRjSlBv5bt1dtJEoBetaMHYa', 1, 1, NOW(), NOW()),
+('TK003', 'nhanvien2@shoestore.com', '$2a$10$FTlIlrKAoPdA0lr3y8ZxX.175LZ7DlRjSlBv5bt1dtJEoBetaMHYa', 1, 1, NOW(), NOW()),
+('TK004', 'khachhang1@gmail.com', '$2a$10$vS7uF8ciseto6K/3Ooz0wey/HjPPlyrGUL4eAC6YkZu1Bf2tAjDSi', 0, 1, NOW(), NOW()),
+('TK005', 'khachhang2@gmail.com', '$2a$10$vS7uF8ciseto6K/3Ooz0wey/HjPPlyrGUL4eAC6YkZu1Bf2tAjDSi', 0, 1, NOW(), NOW()),
+('TK006', 'khachhang3@gmail.com', '$2a$10$vS7uF8ciseto6K/3Ooz0wey/HjPPlyrGUL4eAC6YkZu1Bf2tAjDSi', 0, 1, NOW(), NOW()),
+('TK007', 'khachhang4@gmail.com', '$2a$10$vS7uF8ciseto6K/3Ooz0wey/HjPPlyrGUL4eAC6YkZu1Bf2tAjDSi', 0, 1, NOW(), NOW()),
+('TK008', 'khachhang5@gmail.com', '$2a$10$vS7uF8ciseto6K/3Ooz0wey/HjPPlyrGUL4eAC6YkZu1Bf2tAjDSi', 0, 1, NOW(), NOW())
 ;
 -- 13. Insert dữ liệu bảng dia_chi
 INSERT INTO dia_chi (id_tai_khoan,

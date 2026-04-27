@@ -1,16 +1,20 @@
 package org.example.iws_websitesneaker.controller;
 
+import org.example.iws_websitesneaker.Dto.ApiResponse;
 import org.example.iws_websitesneaker.Dto.LoginDTO;
 import org.example.iws_websitesneaker.Dto.LoginResponse;
 import org.example.iws_websitesneaker.Dto.UserDto;
-import org.example.iws_websitesneaker.Dto.ApiResponse;
-import org.example.iws_websitesneaker.entity.TaiKhoan;
 import org.example.iws_websitesneaker.Service.LoginService;
+import org.example.iws_websitesneaker.entity.TaiKhoan;
 import org.example.iws_websitesneaker.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,8 +22,8 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/auth") // Bá» /api
-@CrossOrigin(origins = "http://localhost:5173")
+@RequestMapping("/auth")
+@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173"}, allowCredentials = "true")
 public class LoginController {
 
     @Autowired
@@ -34,64 +38,52 @@ public class LoginController {
             HttpServletRequest request) {
 
         try {
-            System.out.println("=== LOGIN REQUEST ===");
-            System.out.println("Email: " + loginRequest.getEmail());
-            System.out.println("Password: " + loginRequest.getMatKhau());
+            System.out.println("Login request received");
 
-            // Validate input
-            if (loginRequest.getEmail() == null || loginRequest.getEmail().trim().isEmpty() ||
-                    loginRequest.getMatKhau() == null || loginRequest.getMatKhau().trim().isEmpty()) {
+            if (loginRequest.getEmail() == null || loginRequest.getEmail().trim().isEmpty()
+                    || loginRequest.getMatKhau() == null || loginRequest.getMatKhau().trim().isEmpty()) {
 
-                System.out.println("Validation failed: Empty email or password");
+                System.out.println("Login request rejected: empty credentials");
                 return ResponseEntity.badRequest()
-                        .body(new ApiResponse<>(false, "Email vÃ  password khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng", null));
+                        .body(new ApiResponse<>(false, "Email and password are required", null));
             }
 
-            // Authenticate user
             TaiKhoan user = authService.authenticate(loginRequest.getEmail(), loginRequest.getMatKhau());
-            System.out.println("Authentication result: " + (user != null ? "SUCCESS" : "FAILED"));
 
             if (user == null) {
-                System.out.println("User not found or password incorrect");
+                System.out.println("Login failed: invalid credentials");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ApiResponse<>(false, "Email hoáº·c máº­t kháº©u khÃ´ng Ä‘Ãºng", null));
+                        .body(new ApiResponse<>(false, "Invalid email or password", null));
             }
 
-            // Check if account is active
             if (user.getTrangThai() != 1) {
-                System.out.println("Account is inactive. Status: " + user.getTrangThai());
-                System.out.println("Raw database values:");
-                System.out.println("- vai_tro column: " + user.getVaiTro());
-                System.out.println("- trang_thai column: " + user.getTrangThai());
+                System.out.println("Login blocked: inactive account id=" + user.getId());
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(new ApiResponse<>(false, "TÃ i khoáº£n Ä‘Ã£ bá»‹ khÃ³a", null));
+                        .body(new ApiResponse<>(false, "Account is locked", null));
             }
 
-            System.out.println("Login successful for user: " + user.getEmail());
+            System.out.println("Login successful for account id=" + user.getId());
 
-            // Generate JWT token
             String token = jwtUtil.generateToken(user);
 
-            // Create session
             HttpSession session = request.getSession(true);
             session.setAttribute("user", user);
             session.setAttribute("token", token);
-            session.setMaxInactiveInterval(30 * 60); // 30 minutes
+            session.setMaxInactiveInterval(30 * 60);
 
-            // Create response
             LoginResponse loginResponse = new LoginResponse();
             loginResponse.setToken(token);
             loginResponse.setUser(convertToUserDto(user));
             loginResponse.setExpiresIn(jwtUtil.getExpirationTime());
-            System.out.println("Token usetr " + token);
+
             return ResponseEntity.ok(
-                    new ApiResponse<>(true, "ÄÄƒng nháº­p thÃ nh cÃ´ng", loginResponse));
+                    new ApiResponse<>(true, "Login successful", loginResponse));
 
         } catch (Exception e) {
             System.out.println("Login error: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, "CÃ³ lá»—i xáº£y ra trong quÃ¡ trÃ¬nh Ä‘Äƒng nháº­p", null));
+                    .body(new ApiResponse<>(false, "An unexpected error occurred during login", null));
         }
     }
 
@@ -101,13 +93,11 @@ public class LoginController {
             HttpServletResponse response) {
 
         try {
-            // Invalidate session
             HttpSession session = request.getSession(false);
             if (session != null) {
                 session.invalidate();
             }
 
-            // Add token to blacklist if using JWT
             String authHeader = request.getHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7);
@@ -115,12 +105,12 @@ public class LoginController {
             }
 
             return ResponseEntity.ok(
-                    new ApiResponse<>(true, "ÄÄƒng xuáº¥t thÃ nh cÃ´ng", null));
+                    new ApiResponse<>(true, "Logout successful", null));
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, "CÃ³ lá»—i xáº£y ra trong quÃ¡ trÃ¬nh Ä‘Äƒng xuáº¥t", null));
+                    .body(new ApiResponse<>(false, "An unexpected error occurred during logout", null));
         }
     }
 
@@ -133,14 +123,14 @@ public class LoginController {
 
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ApiResponse<>(false, "Token khÃ´ng há»£p lá»‡", null));
+                        .body(new ApiResponse<>(false, "Invalid token", null));
             }
 
             String token = authHeader.substring(7);
 
             if (jwtUtil.isTokenExpired(token) || jwtUtil.isTokenBlacklisted(token)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ApiResponse<>(false, "Token Ä‘Ã£ háº¿t háº¡n", null));
+                        .body(new ApiResponse<>(false, "Token has expired", null));
             }
 
             String email = jwtUtil.extractEmail(token);
@@ -148,16 +138,16 @@ public class LoginController {
 
             if (user == null || user.getTrangThai() != 1) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ApiResponse<>(false, "NgÆ°á»i dÃ¹ng khÃ´ng há»£p lá»‡", null));
+                        .body(new ApiResponse<>(false, "Invalid user", null));
             }
 
             return ResponseEntity.ok(
-                    new ApiResponse<>(true, "Token há»£p lá»‡", convertToUserDto(user)));
+                    new ApiResponse<>(true, "Token is valid", convertToUserDto(user)));
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse<>(false, "Token khÃ´ng há»£p lá»‡", null));
+                    .body(new ApiResponse<>(false, "Invalid token", null));
         }
     }
 
@@ -170,14 +160,14 @@ public class LoginController {
 
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ApiResponse<>(false, "Token khÃ´ng há»£p lá»‡", null));
+                        .body(new ApiResponse<>(false, "Invalid token", null));
             }
 
             String oldToken = authHeader.substring(7);
 
             if (jwtUtil.isTokenBlacklisted(oldToken)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ApiResponse<>(false, "Token Ä‘Ã£ bá»‹ vÃ´ hiá»‡u hÃ³a", null));
+                        .body(new ApiResponse<>(false, "Token has been invalidated", null));
             }
 
             String email = jwtUtil.extractEmail(oldToken);
@@ -185,13 +175,10 @@ public class LoginController {
 
             if (user == null || user.getTrangThai() != 1) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ApiResponse<>(false, "NgÆ°á»i dÃ¹ng khÃ´ng há»£p lá»‡", null));
+                        .body(new ApiResponse<>(false, "Invalid user", null));
             }
 
-            // Generate new token
             String newToken = jwtUtil.generateToken(user);
-
-            // Blacklist old token
             jwtUtil.blacklistToken(oldToken);
 
             LoginResponse loginResponse = new LoginResponse();
@@ -200,12 +187,12 @@ public class LoginController {
             loginResponse.setExpiresIn(jwtUtil.getExpirationTime());
 
             return ResponseEntity.ok(
-                    new ApiResponse<>(true, "Token Ä‘Ã£ Ä‘Æ°á»£c lÃ m má»›i", loginResponse));
+                    new ApiResponse<>(true, "Token refreshed", loginResponse));
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse<>(false, "KhÃ´ng thá»ƒ lÃ m má»›i token", null));
+                    .body(new ApiResponse<>(false, "Could not refresh token", null));
         }
     }
 
@@ -214,7 +201,7 @@ public class LoginController {
         userDto.setId(user.getId().longValue());
         userDto.setEmail(user.getEmail());
         userDto.setVaiTro(user.getVaiTro().name());
-        userDto.setMaTaiKhoan(user.getMaTaiKhoan()); // ThÃªm maTaiKhoan
+        userDto.setMaTaiKhoan(user.getMaTaiKhoan());
         return userDto;
     }
 }

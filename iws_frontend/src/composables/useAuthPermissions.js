@@ -10,9 +10,9 @@ import {
     isCustomer,
     isEmployee
 } from '@/utils/api.js'
-import { useToast } from 'primevue/usetoast'
-import { computed, reactive, watch } from 'vue'
+import { computed, getCurrentInstance, reactive, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useToast } from 'primevue/usetoast'
 
 // ===== REACTIVE AUTH STATE =====
 const authState = reactive({
@@ -26,8 +26,18 @@ const authState = reactive({
 
 // ===== COMPOSABLE =====
 export function useAuthPermissions() {
-    const router = useRouter()
-    const toast = useToast()
+    const instance = getCurrentInstance()
+    const router = instance ? useRouter() : null
+    
+    // Safely get toast service
+    let toast = { add: () => {} }
+    if (instance) {
+        try {
+            toast = useToast()
+        } catch (e) {
+            console.warn('Toast service not found in current instance')
+        }
+    }
 
     // ===== COMPUTED PROPERTIES =====
     const user = computed(() => authState.user || getCurrentUser())
@@ -153,7 +163,7 @@ export function useAuthPermissions() {
      */
     const getDefaultDashboardPath = () => {
         if (isAdminUser.value || isEmployeeUser.value) {
-            return '/admin/dashboard'
+            return '/dashboard'
         }
         return '/'
     }
@@ -165,6 +175,12 @@ export function useAuthPermissions() {
         // Define route permissions
         const routePermissions = {
             '/admin': 'VIEW_DASHBOARD',
+            '/dashboard': 'VIEW_DASHBOARD',
+            '/khach-hang': 'VIEW_CUSTOMERS',
+            '/nhan-vien': 'VIEW_EMPLOYEES',
+            '/tai-khoan': 'MANAGE_ACCOUNTS',
+            '/san-pham': 'MANAGE_PRODUCTS',
+            '/hoa-don': 'VIEW_ORDERS',
             '/admin/dashboard': 'VIEW_DASHBOARD',
             '/admin/khach-hang': 'VIEW_CUSTOMERS',
             '/admin/nhan-vien': 'VIEW_EMPLOYEES',
@@ -290,13 +306,21 @@ export function useAuthPermissions() {
             })
             
             // Redirect to login page
-            router.push('/auth/login')
+            if (router) {
+                router.push('/auth/login')
+            } else {
+                window.location.href = '/auth/login'
+            }
             
         } catch (error) {
             console.error('❌ Logout error:', error)
             // Force clear even if API fails
             clearAuth()
-            router.push('/auth/login')
+            if (router) {
+                router.push('/auth/login')
+            } else {
+                window.location.href = '/auth/login'
+            }
         } finally {
             authState.isLoading = false
         }
@@ -350,10 +374,10 @@ export function useAuthPermissions() {
         
         try {
             const response = await authApi.getProfile()
-            
-            if (response.data) {
-                authState.user = response.data
-                localStorage.setItem('user_info', JSON.stringify(response.data))
+
+            if (response.data?.success && response.data.data) {
+                authState.user = response.data.data
+                localStorage.setItem('user_info', JSON.stringify(response.data.data))
                 authState.lastChecked = new Date()
                 return true
             }
@@ -455,15 +479,19 @@ export function useAuthPermissions() {
     // ===== WATCHERS =====
 
     // Watch for route changes and verify permissions
-    watch(() => router.currentRoute.value.path, (newPath) => {
-        if (isAuthenticated.value && !canAccessRoute(newPath)) {
+    watch(() => router?.currentRoute.value.path, (newPath) => {
+        if (newPath && isAuthenticated.value && !canAccessRoute(newPath)) {
             toast.add({
                 severity: 'warn',
                 summary: 'Truy cập bị từ chối',
                 detail: 'Bạn không có quyền truy cập trang này',
                 life: 4000
             })
-            router.push('/auth/access')
+            if (router) {
+                router.push('/auth/access')
+            } else {
+                window.location.href = '/auth/access'
+            }
         }
     })
 
@@ -475,7 +503,11 @@ export function useAuthPermissions() {
                 const isValid = await verifyToken()
                 if (!isValid) {
                     clearInterval(interval)
-                    router.push('/auth/login')
+                    if (router) {
+                        router.push('/auth/login')
+                    } else {
+                        window.location.href = '/auth/login'
+                    }
                 }
             }, 30 * 60 * 1000)
 

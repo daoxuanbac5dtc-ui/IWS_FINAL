@@ -1,5 +1,5 @@
 param(
-    [string]$BindHost = "127.0.0.1",
+    [string]$BindHost = "localhost",
     [int]$Port = 5173,
     [switch]$SkipInstall
 )

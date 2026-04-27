@@ -264,10 +264,6 @@ export default {
 
 <style scoped>
 
-.avatar {
-  background-image: url('/path-to-your-avatar.png');
-  background-size: cover;
-}
 .chatbot-container {
   position: fixed;
   bottom: 2rem;
