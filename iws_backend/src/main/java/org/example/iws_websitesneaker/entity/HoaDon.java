@@ -28,7 +28,7 @@ public class HoaDon {
     @Column(name = "dia_chi", nullable = false, length = 250)
     private String diaChi;
 
-    @Column(name = "email", nullable = false, length = 25)
+    @Column(name = "email", nullable = false, length = 100)
     private String email;
 
     @Column(name = "ghi_chu", length = 250)

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import emailjs from '@emailjs/browser';
+import { getStoredUserInfo, getUserDisplayName, getUserEmail, getUserPhone, hasBasicCachedUser, mergeUserInfo } from '@/utils/sessionUser';
 
 // Cấu hình EmailJS với keys của bạn
 const EMAILJS_CONFIG = {
@@ -399,13 +400,72 @@ const formatGuestFullAddress = () => {
     ].filter(Boolean).join(', ');
 };
 
+const getStoredUserEmail = () => {
+    return getUserEmail(getStoredUserInfo())?.trim?.() || '';
+};
+
+const getTrackingEmail = (isGuest = isGuestMode.value) => {
+    if (isGuest) {
+        return guestForm.value.email?.trim() || '';
+    }
+
+    return shippingInfo.value.email?.trim() ||
+        userInfo.value?.taiKhoan?.email?.trim?.() ||
+        userInfo.value?.email?.trim?.() ||
+        getStoredUserEmail();
+};
+
+const buildOrderTrackingPath = (email = getTrackingEmail(), code = orderCode.value) => {
+    const normalizedEmail = (email ?? '').trim();
+    const normalizedCode = (code ?? '').toString().trim();
+
+    if (!normalizedEmail || !normalizedCode) {
+        return '/track-order';
+    }
+
+    return `/track-order?email=${encodeURIComponent(normalizedEmail)}&code=${encodeURIComponent(normalizedCode)}`;
+};
+
+const buildOrderTrackingUrl = (email = getTrackingEmail(), code = orderCode.value) =>
+    `${window.location.origin}${buildOrderTrackingPath(email, code)}`;
+
+const applyUserSnapshot = (rawUser) => {
+    if (!rawUser) {
+        return false;
+    }
+
+    const mergedUser = mergeUserInfo(userInfo.value || {}, rawUser);
+    const fullName = getUserDisplayName(mergedUser);
+    const phone = getUserPhone(mergedUser);
+    const email = getUserEmail(mergedUser);
+
+    userInfo.value = mergedUser;
+
+    if (fullName) {
+        shippingInfo.value.fullName = fullName;
+    }
+
+    if (phone) {
+        shippingInfo.value.phone = phone;
+    }
+
+    if (email) {
+        shippingInfo.value.email = email;
+    }
+
+    newAddress.value.tenNguoiNhan = shippingInfo.value.fullName;
+    newAddress.value.sdt = shippingInfo.value.phone;
+
+    return true;
+};
+
 // Navigation after success
 const goToOrderTracking = () => {
     if (isGuestMode.value) {
-        window.location.href = `/track-order?email=${encodeURIComponent(guestForm.value.email)}&code=${orderCode.value}`;
+        window.location.href = buildOrderTrackingPath(guestForm.value.email, orderCode.value);
     } else {
         // Điều hướng user đã đăng nhập tới trang đơn hàng của họ
-        router.push('/returnGoods');
+        window.location.href = buildOrderTrackingPath();
     }
 };
 
@@ -872,6 +932,14 @@ const selectSavedAddress = (address) => {
 
 // Load thông tin khách hàng từ backend
 const loadUserInfo = async () => {
+    const cachedUser = getStoredUserInfo();
+    applyUserSnapshot(cachedUser);
+
+    if (hasBasicCachedUser(cachedUser)) {
+        console.log('Using cached customer info from localStorage.');
+        return;
+    }
+
     try {
         console.log('Loading customer info from backend...');
 
@@ -882,34 +950,20 @@ const loadUserInfo = async () => {
             }
         });
 
-        const customer = response.data.data || response.data;
-        userInfo.value = customer;
+        const customer = mergeUserInfo(response.data.data || response.data);
+        applyUserSnapshot(customer);
 
         console.log('Customer info loaded:', customer);
 
         // Pre-fill form với thông tin khách hàng
-        shippingInfo.value.fullName = customer.hoTen || '';
-        shippingInfo.value.phone = customer.sdt || '';
 
         // Lấy email từ nhiều nguồn
-        if (customer.taiKhoan?.email) {
-            shippingInfo.value.email = customer.taiKhoan.email;
-        } else if (customer.email) {
-            shippingInfo.value.email = customer.email;
-        } else {
-            const savedUser = localStorage.getItem('user_info');
-            if (savedUser) {
-                const localUser = JSON.parse(savedUser);
-                shippingInfo.value.email = localUser.email || '';
-            }
+    } catch (error) {
+        if (cachedUser) {
+            console.warn('Could not refresh customer info from API, using cached user_info.', error);
+            return;
         }
 
-        console.log('Final email:', shippingInfo.value.email);
-
-        // Pre-fill new address form
-        newAddress.value.tenNguoiNhan = shippingInfo.value.fullName;
-        newAddress.value.sdt = shippingInfo.value.phone;
-    } catch (error) {
         console.error('Error loading customer info:', error);
         if (error.response?.status === 401) {
             showNotification('error', 'Phiên đăng nhập hết hạn', 'Vui lòng đăng nhập lại');
@@ -1215,9 +1269,10 @@ const sendOrderConfirmationEmail = async (orderData, isGuest = false) => {
             ).join('\n'),
             
             // Link theo dõi đơn hàng
-            tracking_link: isGuest ? 
-                `${window.location.origin}/track-order?email=${encodeURIComponent(guestForm.value.email)}&code=${orderCode.value}` :
-                `${window.location.origin}/order-tracking/${orderCode.value}`,
+            tracking_link: buildOrderTrackingUrl(
+                isGuest ? guestForm.value.email : getTrackingEmail(false),
+                orderData.maHoaDon || orderCode.value
+            ),
             
             // Thông tin shop
             shop_name: 'SHOP GIÀY THỂ THAO',
@@ -1240,6 +1295,11 @@ const sendOrderConfirmationEmail = async (orderData, isGuest = false) => {
         }
 
         // Gửi email qua EmailJS
+        if (import.meta.env.DEV && navigator.webdriver) {
+            console.warn('Skipping EmailJS confirmation during automated local testing.');
+            return false;
+        }
+
         const response = await emailjs.send(
             EMAILJS_CONFIG.SERVICE_ID,
             EMAILJS_CONFIG.TEMPLATE_ID,
@@ -1259,10 +1319,10 @@ const sendOrderConfirmationEmail = async (orderData, isGuest = false) => {
         
         // Log chi tiết lỗi để debug
         if (error.text) {
-            console.error('EmailJS Error Details:', error.text);
+            console.warn('EmailJS Error Details:', error.text);
         }
         if (error.status) {
-            console.error('EmailJS Status Code:', error.status);
+            console.warn('EmailJS Status Code:', error.status);
         }
         
         return false;
@@ -1395,6 +1455,8 @@ const submitGuestOrderWithEmail = async () => {
         let errorMessage = 'Không thể tạo hóa đơn. Vui lòng thử lại!';
         if (error.response?.data?.message) {
             errorMessage = error.response.data.message;
+        } else if (error.response?.data?.error) {
+            errorMessage = error.response.data.error;
         }
         showNotification('error', 'Lỗi đặt hàng', errorMessage);
     } finally {
@@ -1547,6 +1609,8 @@ const submitUserOrderWithEmail = async () => {
             });
 
             if (response.data) {
+                const createdOrder = response.data?.data ?? response.data;
+                const createdOrderCode = createdOrder?.maHoaDon || maHoaDon;
                 orderSuccess.value = true;
 
                 // GỬI EMAIL XÁC NHẬN
@@ -1564,15 +1628,15 @@ const submitUserOrderWithEmail = async () => {
 
                 if (emailSent) {
                     showNotification('success', 'Đặt hàng thành công!', 
-                        `Mã hóa đơn: ${response.data.maHoaDon || maHoaDon}. Email xác nhận đã được gửi đến ${shippingInfo.value.email}!`);
+                        `Mã hóa đơn: ${createdOrderCode}. Email xác nhận đã được gửi đến ${shippingInfo.value.email}!`);
                 } else {
                     showNotification('success', 'Đặt hàng thành công!', 
-                        `Mã hóa đơn: ${response.data.maHoaDon || maHoaDon}. (Không thể gửi email xác nhận, vui lòng liên hệ shop)`);
+                        `Mã hóa đơn: ${createdOrderCode}. (Không thể gửi email xác nhận, vui lòng liên hệ shop)`);
                 }
 
                 // Không điều hướng nữa, hiển thị modal tại trang
                 orderSuccess.value = true;
-                orderCode.value = response.data.maHoaDon || maHoaDon;
+                orderCode.value = createdOrderCode;
             }
         }
     } catch (error) {
@@ -1926,17 +1990,6 @@ const initializeCheckout = async () => {
 // Initialize
 onMounted(() => {
     window.timer = null;
-    console.log('Checkout component mounted - Testing EmailJS connection...');
-    
-    // Test EmailJS connection
-    testEmailConnection().then(success => {
-        if (success) {
-            console.log('EmailJS ready to send emails');
-        } else {
-            console.warn('EmailJS connection failed - emails may not work');
-        }
-    });
-    
     initializeCheckout();
 });
 </script>

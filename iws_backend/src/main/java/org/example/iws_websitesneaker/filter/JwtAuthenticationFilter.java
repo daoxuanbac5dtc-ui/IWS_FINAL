@@ -52,6 +52,7 @@ public class JwtAuthenticationFilter implements Filter {
     // CÃ¡c endpoint POST cÃ´ng khai (guest cÃ³ thá»ƒ POST)
     private static final List<String> PUBLIC_POST_PATHS = Arrays.asList(
             "/tai-khoan",
+            "/api/tai-khoan",
             "/khach-hang",
             "/api/dia-chi",
             "/auth/forgot-password/send-code",
@@ -81,6 +82,7 @@ public class JwtAuthenticationFilter implements Filter {
             "/mau-sac",
             "/chat-lieu",
             "/khach-hang",
+            "/api/tai-khoan/check-email",
             "/api/dia-chi",
             "/hoa-don",
             "/api/gio-hang/current",

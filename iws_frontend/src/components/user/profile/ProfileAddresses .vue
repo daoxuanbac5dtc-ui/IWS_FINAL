@@ -201,6 +201,7 @@
   import { ref, onMounted } from 'vue';
   import axios from 'axios';
   import { useToast } from 'primevue/usetoast';
+  import { getStoredUserInfo, getUserAccountId, getUserDisplayName, getUserPhone, hasBasicCachedUser, mergeUserInfo } from '@/utils/sessionUser';
 
   const toast = useToast();
 
@@ -237,6 +238,17 @@
 
   // Auth helpers
   const getAuthToken = () => localStorage.getItem('auth_token');
+
+  const applyUserSnapshot = (rawUser) => {
+    if (!rawUser) {
+      return false;
+    }
+
+    userInfo.value = mergeUserInfo(userInfo.value, rawUser);
+    return true;
+  };
+
+  const resolveTaiKhoanId = () => getUserAccountId(userInfo.value);
 
   // Load user info
   const loadUserInfo = async () => {
@@ -407,6 +419,141 @@
     }
   };
 
+  const loadUserInfoSafe = async () => {
+    const cachedUser = getStoredUserInfo();
+    applyUserSnapshot(cachedUser);
+
+    if (hasBasicCachedUser(cachedUser)) {
+      return;
+    }
+
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/khach-hang/current`, {
+        headers: {
+          'Authorization': `Bearer ${getAuthToken()}`
+        }
+      });
+
+      const userData = mergeUserInfo(response.data.data || response.data);
+      applyUserSnapshot(userData);
+    } catch (error) {
+      if (cachedUser) {
+        console.warn('Could not refresh user info from API, using cached user_info.', error);
+        return;
+      }
+
+      console.error('Error loading user info:', error);
+    }
+  };
+
+  const loadAddressDataSafe = async () => {
+    const sources = [
+      '/api/address',
+      'https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json'
+    ];
+    let lastError = null;
+
+    for (const source of sources) {
+      try {
+        const response = await fetch(source);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        addressData.value = data;
+        provinces.value = data.map(p => ({ id: p.Id, name: p.Name }));
+        return;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    addressData.value = [];
+    provinces.value = [];
+    districts.value = [];
+    wards.value = [];
+
+    if (lastError) {
+      console.warn('Address dataset is temporarily unavailable:', lastError);
+    }
+  };
+
+  const loadAddressesSafe = async () => {
+    isLoadingAddresses.value = true;
+    try {
+      let taiKhoanId = resolveTaiKhoanId();
+
+      if (!taiKhoanId) {
+        await loadUserInfoSafe();
+        taiKhoanId = resolveTaiKhoanId();
+      }
+
+      if (!taiKhoanId) {
+        console.warn('No taiKhoanId available for address lookup.');
+        addresses.value = [];
+        return;
+      }
+
+      const response = await axios.get(`${API_BASE_URL}/api/dia-chi/tai-khoan/${taiKhoanId}`, {
+        headers: {
+          'Authorization': `Bearer ${getAuthToken()}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      let rawAddresses = [];
+      if (Array.isArray(response.data)) {
+        rawAddresses = response.data;
+      } else if (response.data?.data && Array.isArray(response.data.data)) {
+        rawAddresses = response.data.data;
+      } else if (response.data?.addresses && Array.isArray(response.data.addresses)) {
+        rawAddresses = response.data.addresses;
+      }
+
+      const currentUser = mergeUserInfo(userInfo.value);
+      const defaultName = getUserDisplayName(currentUser) || 'KhĂ¡ch hĂ ng';
+      const defaultPhone = getUserPhone(currentUser) || '';
+
+      addresses.value = rawAddresses
+        .filter(addr => addr && addr.id)
+        .map(addr => ({
+          id: addr.id,
+          tenNguoiNhan: addr.tenNguoiNhan || addr.hoTen || defaultName,
+          sdt: addr.sdt || defaultPhone,
+          diaChiChiTiet: addr.diaChiChiTiet || '',
+          maTinh: addr.maTinh || '',
+          maHuyen: addr.maHuyen || '',
+          maPhuong: addr.maPhuong || '',
+          tenTinh: addr.tenTinh || '',
+          tenHuyen: addr.tenHuyen || '',
+          tenPhuong: addr.tenPhuong || '',
+          isDefault: Boolean(addr.isDefault || addr.trangThai === 1),
+          trangThai: addr.trangThai || 0
+        }))
+        .sort((a, b) => {
+          if (a.isDefault && !b.isDefault) return -1;
+          if (!a.isDefault && b.isDefault) return 1;
+          return b.id - a.id;
+        });
+    } catch (error) {
+      addresses.value = [];
+
+      if (error.response?.status === 401) {
+        toast.add({
+          severity: 'error',
+          summary: 'PhiĂªn Ä‘Äƒng nháº­p háº¿t háº¡n',
+          detail: 'Vui lĂ²ng Ä‘Äƒng nháº­p láº¡i',
+          life: 3000
+        });
+      } else if (error.response?.status !== 404) {
+        console.error('Error loading addresses:', error);
+      }
+    } finally {
+      isLoadingAddresses.value = false;
+    }
+  };
+
   // Province change handler
   const onProvinceChange = () => {
     addressForm.value.maHuyen = '';
@@ -508,7 +655,7 @@
 
     console.log('✅ Save response:', response.data);
 
-    await loadAddresses();
+    await loadAddressesSafe();
     closeAddressModal();
 
     toast.add({
@@ -580,7 +727,7 @@
         }
       });
 
-      await loadAddresses();
+      await loadAddressesSafe();
       toast.add({
         severity: 'success',
         summary: 'Thành công',
@@ -607,7 +754,7 @@
         }
       });
 
-      await loadAddresses();
+      await loadAddressesSafe();
       toast.add({
         severity: 'success',
         summary: 'Thành công',
@@ -657,9 +804,9 @@
 
   // Lifecycle
   onMounted(async () => {
-    await loadUserInfo();
-    await loadAddressData();
-    await loadAddresses();
+    await loadUserInfoSafe();
+    await loadAddressDataSafe();
+    await loadAddressesSafe();
   });
   </script>
 

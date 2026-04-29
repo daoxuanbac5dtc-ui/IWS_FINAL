@@ -7,6 +7,13 @@ target/
 # Upload Directories
 uploads/
 voucher-images/
+!uploads/
+uploads/*
+!uploads/nike-air-max-270-black.jpg
+!uploads/adidas-ultraboost-22-white.jpg
+!uploads/vans-old-skool-black-white.jpg
+!uploads/converse-chuck-taylor-red.jpg
+!uploads/puma-suede-classic-blue.jpg
 
 ### STS ###
 .apt_generated

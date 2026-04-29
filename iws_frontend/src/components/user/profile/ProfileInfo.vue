@@ -107,6 +107,7 @@
   import { ref, onMounted } from 'vue';
   import axios from 'axios';
   import { useToast } from 'primevue/usetoast';
+  import { getStoredUserInfo, getUserDisplayName, getUserEmail, getUserPhone, hasBasicCachedUser, mergeUserInfo } from '@/utils/sessionUser';
 
   const toast = useToast();
 
@@ -129,6 +130,28 @@
 
   // Auth helpers
   const getAuthToken = () => localStorage.getItem('auth_token');
+
+  const applyUserSnapshot = (rawUser) => {
+    if (!rawUser) {
+      return false;
+    }
+
+    const mergedUser = mergeUserInfo(userInfo.value, rawUser);
+    const fullName = getUserDisplayName(mergedUser);
+    const nameParts = fullName.split(' ').filter(Boolean);
+
+    userInfo.value = mergedUser;
+    profileForm.value = {
+      ho: nameParts.slice(0, -1).join(' '),
+      ten: nameParts[nameParts.length - 1] || '',
+      gioiTinh: mergedUser.gioiTinh || mergedUser.gender || 'Nu',
+      ngaySinh: mergedUser.ngaySinh ? formatDateForInput(mergedUser.ngaySinh) : '',
+      sdt: getUserPhone(mergedUser),
+      email: getUserEmail(mergedUser)
+    };
+
+    return true;
+  };
 
   // Load user info
   const loadUserInfo = async () => {
@@ -184,6 +207,23 @@
     });
   }
 };
+
+  const initializeProfileInfo = async () => {
+    const cachedUser = getStoredUserInfo();
+    applyUserSnapshot(cachedUser);
+
+    if (hasBasicCachedUser(cachedUser)) {
+      return;
+    }
+
+    try {
+      await loadUserInfo();
+    } catch (error) {
+      if (cachedUser) {
+        console.warn('Could not refresh profile info from API, using cached user_info.', error);
+      }
+    }
+  };
 
 
   // Update profile
@@ -255,7 +295,7 @@
 
   // Lifecycle
   onMounted(() => {
-    loadUserInfo();
+    initializeProfileInfo();
   });
   </script>
 

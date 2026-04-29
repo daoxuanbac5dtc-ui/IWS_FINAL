@@ -116,6 +116,7 @@
 
 <script setup>
 import ProductCard from "@/components/user/PopularProductsCard.vue";
+import { createSvgPlaceholder, resolveProductImageUrl } from '@/utils/productMedia';
 import axios from 'axios';
 import "swiper/css";
 import { Keyboard } from "swiper/modules";
@@ -127,6 +128,7 @@ const router = useRouter();
 const slidesPerViewVar = ref(4);
 const products = ref([]);
 const loading = ref(true);
+const productPlaceholderImage = createSvgPlaceholder({ width: 240, height: 160, label: 'Shoe Image' });
 
 // Responsive slides
 const updateSlidesPerView = () => {
@@ -138,17 +140,12 @@ window.addEventListener("resize", updateSlidesPerView);
 
 // Method để lấy URL hình ảnh với fallback
 const getImageUrl = (product) => {
-  // Kiểm tra nếu có imgURL trực tiếp và hợp lệ
-  if (product.imgURL && 
-      product.imgURL.trim() !== '' && 
-      product.imgURL !== 'null' && 
-      product.imgURL !== 'undefined' &&
-      !product.imgURL.includes('null')) {
-    return product.imgURL;
+  const imageUrl = resolveProductImageUrl(product.imgURL);
+  if (imageUrl) {
+    return imageUrl;
   }
-  
-  // Fallback sang SVG placeholder ngay
-  return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjE2MCIgdmlld0Jvg9IjAiMCIyNDAgMTYwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIyNDAiIGhlaWdodD0iMTYwIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iMTIwIiB5PSI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzZiNzI4MCIgZm9udC1zaXplPSIxNCI+U2hvZSBJbWFnZTwvdGV4dD48L3N2Zz4=';
+
+  return productPlaceholderImage;
 };
 
 // FETCH POPULAR PRODUCTS ĐÃ SỬA HOÀN TOÀN
@@ -177,7 +174,10 @@ const fetchPopularProducts = async () => {
     // Tạo map hình ảnh theo ID
     const imageMap = new Map();
     imagesResponse.data.forEach(image => {
-      imageMap.set(image.id, image.fullUrl || `http://localhost:8080${image.duongDan}`);
+      const imageUrl = resolveProductImageUrl(image);
+      if (imageUrl) {
+        imageMap.set(image.id, imageUrl);
+      }
     });
     
     const firstDetailMap = new Map();
@@ -215,19 +215,9 @@ const fetchPopularProducts = async () => {
               console.log(`✅ Found image by ID ${detail.hinhAnh.id}:`, finalImageUrl);
             }
             // Trường hợp API trả về object đầy đủ
-            else if (detail.hinhAnh.fullUrl) {
-              finalImageUrl = detail.hinhAnh.fullUrl;
-              console.log(`✅ Using fullUrl:`, finalImageUrl);
-            } else if (detail.hinhAnh.duongDan) {
-              const duongDan = detail.hinhAnh.duongDan;
-              if (duongDan.startsWith('http')) {
-                finalImageUrl = duongDan;
-              } else if (duongDan.startsWith('/hinh-anh/')) {
-                finalImageUrl = 'http://localhost:8080' + duongDan;
-              } else {
-                finalImageUrl = 'http://localhost:8080/hinh-anh/images/' + duongDan;
-              }
-              console.log(`✅ Built URL from duongDan:`, finalImageUrl);
+            else {
+              finalImageUrl = resolveProductImageUrl(detail.hinhAnh);
+              console.log(`✅ Using resolved image URL:`, finalImageUrl);
             }
           } else if (typeof detail.hinhAnh === 'number') {
             // Trường hợp API trả về ID number trực tiếp
@@ -577,3 +567,5 @@ onMounted(() => {
   }
 }
 </style>
+
+

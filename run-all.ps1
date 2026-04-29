@@ -1,30 +1,40 @@
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"
 
-$repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$repoRoot = $PSScriptRoot
 $backendScript = Join-Path $repoRoot "run-backend.ps1"
 $frontendScript = Join-Path $repoRoot "run-frontend.ps1"
 
+Write-Host "Checking scripts..." -ForegroundColor Cyan
+
 if (-not (Test-Path $backendScript)) {
-    throw "Cannot find $backendScript"
+    Write-Host "Error: Cannot find $backendScript" -ForegroundColor Red
+} else {
+    Write-Host "Found backend script." -ForegroundColor Green
 }
 
 if (-not (Test-Path $frontendScript)) {
-    throw "Cannot find $frontendScript"
+    Write-Host "Error: Cannot find $frontendScript" -ForegroundColor Red
+} else {
+    Write-Host "Found frontend script." -ForegroundColor Green
 }
 
-Start-Process powershell.exe -ArgumentList @(
-    "-NoExit",
-    "-ExecutionPolicy", "Bypass",
-    "-File", $backendScript
-)
-
-Start-Sleep -Seconds 2
+Write-Host "`nLaunching Backend and Frontend in new windows..." -ForegroundColor Cyan
 
 Start-Process powershell.exe -ArgumentList @(
     "-NoExit",
     "-ExecutionPolicy", "Bypass",
-    "-File", $frontendScript
+    "-File", "`"$backendScript`""
 )
 
-Write-Host "Opened backend and frontend in two PowerShell windows."
-Write-Host "Frontend link will appear in the frontend window."
+Start-Sleep -Seconds 1
+
+Start-Process powershell.exe -ArgumentList @(
+    "-NoExit",
+    "-ExecutionPolicy", "Bypass",
+    "-File", "`"$frontendScript`""
+)
+
+Write-Host "`nBackend and Frontend have been launched." -ForegroundColor Green
+Write-Host "Please check the individual windows for status and errors."
+Write-Host "`nPress any key to close this manager window..."
+$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")

@@ -3,8 +3,11 @@ import ChatBot from '@/components/ChatBotAndReview/ChatBot.vue';
 import Nav from '@/components/user/Nav.vue';
 import ScrollToggler from '@/components/user/ScrollToggler.vue';
 import Footer from '@/views/user/Footer.vue';
+import { createSvgPlaceholder, resolveProductImageUrl } from '@/utils/productMedia';
 import axios from 'axios';
 import Hero from '../Hero.vue';
+
+const productPlaceholderImage = createSvgPlaceholder({ width: 240, height: 160, label: 'Shoe Image' });
 
 export default {
     name: 'ProductList',
@@ -84,13 +87,12 @@ export default {
 
         // Method để lấy URL hình ảnh với fallback chain - ĐÃ SỬA
         getImageUrl(product) {
-            // Kiểm tra nếu có imgUrl trực tiếp và hợp lệ
-            if (product.imgUrl && product.imgUrl.trim() !== '' && product.imgUrl !== 'null' && product.imgUrl !== 'undefined' && !product.imgUrl.includes('null')) {
-                return product.imgUrl;
+            const imageUrl = resolveProductImageUrl(product.imgUrl);
+            if (imageUrl) {
+                return imageUrl;
             }
 
-            // Fallback sang SVG placeholder ngay
-            return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjE2MCIgdmlld0Jvg9IjAiMCIyNDAgMTYwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIyNDAiIGhlaWdodD0iMTYwIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iMTIwIiB5PSI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzZiNzI4MCIgZm9udC1zaXplPSIxNCI+U2hvZSBJbWFnZTwvdGV4dD48L3N2Zz4=';
+            return productPlaceholderImage;
         },
 
         // Xử lý khi load hình ảnh thành công - SIMPLIFIED
@@ -102,11 +104,9 @@ export default {
         handleImageError(event) {
             console.log('Image load failed for:', event.target.src);
 
-            // Chỉ set placeholder SVG nếu chưa phải SVG
             if (!event.target.src.startsWith('data:image/svg+xml')) {
                 console.log('Setting SVG placeholder');
-                event.target.src =
-                    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjE2MCIgdmlld0Jvg9IjAiMCIyNDAgMTYwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIyNDAiIGhlaWdodD0iMTYwIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iMTIwIiB5PSI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzZiNzI4MCIgZm9udC1zaXplPSIxNCI+U2hvZSBJbWFnZTwvdGV4dD48L3N2Zz4=';
+                event.target.src = productPlaceholderImage;
             }
         },
 
@@ -182,7 +182,10 @@ export default {
                 // Tạo map hình ảnh theo ID - THÊM MỚI
                 const imageMap = new Map();
                 imagesResponse.data.forEach((image) => {
-                    imageMap.set(image.id, image.fullUrl || `http://localhost:8080${image.duongDan}`);
+                    const imageUrl = resolveProductImageUrl(image);
+                    if (imageUrl) {
+                        imageMap.set(image.id, imageUrl);
+                    }
                 });
 
                 const firstDetailMap = new Map();
@@ -220,19 +223,9 @@ export default {
                                     console.log(`Found image by ID ${detail.hinhAnh.id}:`, finalImageUrl);
                                 }
                                 // Trường hợp API trả về object đầy đủ
-                                else if (detail.hinhAnh.fullUrl) {
-                                    finalImageUrl = detail.hinhAnh.fullUrl;
-                                    console.log(`Using fullUrl:`, finalImageUrl);
-                                } else if (detail.hinhAnh.duongDan) {
-                                    const duongDan = detail.hinhAnh.duongDan;
-                                    if (duongDan.startsWith('http')) {
-                                        finalImageUrl = duongDan;
-                                    } else if (duongDan.startsWith('/hinh-anh/')) {
-                                        finalImageUrl = 'http://localhost:8080' + duongDan;
-                                    } else {
-                                        finalImageUrl = 'http://localhost:8080/hinh-anh/images/' + duongDan;
-                                    }
-                                    console.log(`Built URL from duongDan:`, finalImageUrl);
+                                else {
+                                    finalImageUrl = resolveProductImageUrl(detail.hinhAnh);
+                                    console.log(`Using resolved image URL:`, finalImageUrl);
                                 }
                             } else if (typeof detail.hinhAnh === 'number') {
                                 // Trường hợp API trả về ID number trực tiếp

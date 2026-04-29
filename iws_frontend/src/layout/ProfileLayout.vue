@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { getStoredUserInfo, hasBasicCachedUser, mergeUserInfo } from '@/utils/sessionUser';
 
 import Nav from '@/components/user/Nav.vue';
 import ScrollToggler from '@/components/user/ScrollToggler.vue';
@@ -20,8 +21,24 @@ const API_BASE_URL = 'http://localhost:8080';
 // Auth helpers
 const getAuthToken = () => localStorage.getItem('auth_token');
 
+const applyUserSnapshot = (rawUser) => {
+    if (!rawUser) {
+        return false;
+    }
+
+    userInfo.value = mergeUserInfo(userInfo.value, rawUser);
+    return true;
+};
+
 // Load user info
 const loadUserInfo = async () => {
+    const cachedUser = getStoredUserInfo();
+    applyUserSnapshot(cachedUser);
+
+    if (hasBasicCachedUser(cachedUser)) {
+        return;
+    }
+
     try {
         const response = await axios.get(`${API_BASE_URL}/api/khach-hang/current`, {
             headers: {
@@ -29,9 +46,14 @@ const loadUserInfo = async () => {
             }
         });
 
-        userInfo.value = response.data;
+        applyUserSnapshot(response.data.data || response.data);
         console.log('User info loaded:', userInfo.value);
     } catch (error) {
+        if (cachedUser) {
+            console.warn('Could not refresh user info from API, using cached user_info.', error);
+            return;
+        }
+
         console.error('Error loading user info:', error);
         toast.add({
             severity: 'error',

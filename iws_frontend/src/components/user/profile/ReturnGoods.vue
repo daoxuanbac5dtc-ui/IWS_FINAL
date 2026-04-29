@@ -359,6 +359,39 @@ const loadOrders = async () => {
     }
 };
 
+const loadOrdersSafe = async () => {
+    isLoading.value = true;
+    try {
+        const token = getAuthToken();
+        const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+
+        console.log('đŸ”‘ Auth token:', token ? 'Present' : 'Missing');
+        console.log('đŸ‘¤ User info:', userInfo);
+        console.log('đŸŒ API URL:', `${API_BASE_URL}/hoa-don/my-orders`);
+
+        const response = await fetchWithErrorHandling(`${API_BASE_URL}/hoa-don/my-orders`);
+        console.log('đŸ“¦ API Response:', response);
+
+        if (Array.isArray(response)) {
+            orders.value = response;
+            console.log('âœ… Orders loaded (array):', response.length);
+        } else if (response.data && Array.isArray(response.data)) {
+            orders.value = response.data;
+            console.log('âœ… Orders loaded (data):', response.data.length);
+        } else {
+            orders.value = [];
+            console.log('â ï¸ No orders found');
+        }
+
+        console.log('đŸ“‹ Final orders:', orders.value);
+    } catch (error) {
+        console.error('âŒ Error loading orders:', error);
+        handleApiError(error);
+    } finally {
+        isLoading.value = false;
+    }
+};
+
 const loadOrderData = async (orderId, isDetailModal = false) => {
     const loadingState = isDetailModal ? isLoadingOrderDetail : isLoadingProducts;
     loadingState.value = true;
@@ -599,7 +632,7 @@ const submitReturnRequest = async () => {
                 closeProductModal();
             }
 
-            await loadOrders();
+            await loadOrdersSafe();
         } else {
             throw new Error('Không thể tạo yêu cầu trả hàng: ' + errors.join(', '));
         }
@@ -1681,7 +1714,7 @@ const returnReasons = [
 
 // ===== LIFECYCLE =====
 onMounted(() => {
-    loadOrders();
+    loadOrdersSafe();
 });
 </script>
 <template>
