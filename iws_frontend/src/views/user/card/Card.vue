@@ -141,25 +141,25 @@
             id: 1,
             name: 'Nike Air Force 1',
             price: 2590000,
-            image: '/api/placeholder/300/300'
+            image: '/placeholder-shoe.png'
           },
           {
             id: 2,
             name: 'Adidas Ultraboost',
             price: 3200000,
-            image: '/api/placeholder/300/300'
+            image: '/placeholder-shoe.png'
           },
           {
             id: 3,
             name: 'Converse Chuck Taylor',
             price: 1800000,
-            image: '/api/placeholder/300/300'
+            image: '/placeholder-shoe.png'
           },
           {
             id: 4,
             name: 'Vans Old Skool',
             price: 2100000,
-            image: '/api/placeholder/300/300'
+            image: '/placeholder-shoe.png'
           }
         ]
       }

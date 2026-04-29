@@ -401,7 +401,7 @@
             <div v-if="activeTab === 'reviews'" class="tab-panel">
               <ReviewProducts
                 :product-id="currentProduct?.id || productId"
-                @review-submitted="handleReviewSubmitted"
+                @review-submitted="handleReviewSubmittedSafe"
               />
             </div>
           </div>
@@ -498,11 +498,13 @@ import ChatBot from '@/components/ChatBotAndReview/ChatBot.vue';
 import ReviewProducts from '@/components/ChatBotAndReview/ReviewProducts.vue';
 import Nav from '@/components/user/Nav.vue';
 import Footer from '@/views/user/Footer.vue';
+import { createSvgPlaceholder, resolveProductImageUrl } from '@/utils/productMedia';
 import axios from 'axios';
 import Hero from '../Hero.vue';
 
 // Helper functions - đặt ngoài export default
 const API_BASE_URL = 'http://localhost:8080';
+const productPlaceholderImage = createSvgPlaceholder({ width: 240, height: 160, label: 'Shoe Image' });
 
 const getAuthToken = () => {
   return localStorage.getItem('auth_token');
@@ -586,6 +588,10 @@ export default {
     }
   },
   methods: {
+    handleReviewSubmittedSafe(review) {
+      console.log('New review submitted:', review);
+    },
+
     handleReviewSubmitted(review) {
       console.log('New review submitted:', review);
       this.$toast?.success('Cảm ơn bạn đã đánh giá sản phẩm!') ||
@@ -755,7 +761,10 @@ export default {
         const imagesResponse = await axios.get('http://localhost:8080/hinh-anh');
         const imageMap = new Map();
         imagesResponse.data.forEach(image => {
-          imageMap.set(image.id, image.fullUrl || `http://localhost:8080${image.duongDan}`);
+          const imageUrl = resolveProductImageUrl(image);
+          if (imageUrl) {
+            imageMap.set(image.id, imageUrl);
+          }
         });
 
         const colorVariants = this.allProductDetails.filter(detail =>
@@ -773,17 +782,8 @@ export default {
                 imageUrl = imageMap.get(detail.hinhAnh.id);
                 console.log(`Found image by ID ${detail.hinhAnh.id}:`, imageUrl);
               }
-              else if (detail.hinhAnh.fullUrl) {
-                imageUrl = detail.hinhAnh.fullUrl;
-              } else if (detail.hinhAnh.duongDan) {
-                const duongDan = detail.hinhAnh.duongDan;
-                if (duongDan.startsWith('http')) {
-                  imageUrl = duongDan;
-                } else if (duongDan.startsWith('/hinh-anh/')) {
-                  imageUrl = 'http://localhost:8080' + duongDan;
-                } else {
-                  imageUrl = 'http://localhost:8080/hinh-anh/images/' + duongDan;
-                }
+              else {
+                imageUrl = resolveProductImageUrl(detail.hinhAnh);
               }
             } else if (typeof detail.hinhAnh === 'number') {
               imageUrl = imageMap.get(detail.hinhAnh);
@@ -835,7 +835,10 @@ export default {
         const imagesResponse = await axios.get('http://localhost:8080/hinh-anh');
         const imageMap = new Map();
         imagesResponse.data.forEach(image => {
-          imageMap.set(image.id, image.fullUrl || `http://localhost:8080${image.duongDan}`);
+          const imageUrl = resolveProductImageUrl(image);
+          if (imageUrl) {
+            imageMap.set(image.id, imageUrl);
+          }
         });
 
         // THÊM: Lấy dữ liệu màu sắc và kích cỡ
@@ -919,17 +922,8 @@ export default {
                 imageUrl = imageMap.get(detail.hinhAnh.id);
                 console.log(`Found image by ID ${detail.hinhAnh.id}:`, imageUrl);
               }
-              else if (detail.hinhAnh.fullUrl) {
-                imageUrl = detail.hinhAnh.fullUrl;
-              } else if (detail.hinhAnh.duongDan) {
-                const duongDan = detail.hinhAnh.duongDan;
-                if (duongDan.startsWith('http')) {
-                  imageUrl = duongDan;
-                } else if (duongDan.startsWith('/hinh-anh/')) {
-                  imageUrl = 'http://localhost:8080' + duongDan;
-                } else {
-                  imageUrl = 'http://localhost:8080/hinh-anh/images/' + duongDan;
-                }
+              else {
+                imageUrl = resolveProductImageUrl(detail.hinhAnh);
               }
             } else if (typeof detail.hinhAnh === 'number') {
               imageUrl = imageMap.get(detail.hinhAnh);
@@ -981,7 +975,10 @@ export default {
         // Tạo map hình ảnh theo ID
         const imageMap = new Map();
         imagesResponse.data.forEach(image => {
-          imageMap.set(image.id, image.fullUrl || `http://localhost:8080${image.duongDan}`);
+          const imageUrl = resolveProductImageUrl(image);
+          if (imageUrl) {
+            imageMap.set(image.id, imageUrl);
+          }
         });
 
         const firstDetailMap = new Map();
@@ -1009,17 +1006,8 @@ export default {
                   imageUrl = imageMap.get(detail.hinhAnh.id);
                 }
                 // Trường hợp API trả về object đầy đủ
-                else if (detail.hinhAnh.fullUrl) {
-                  imageUrl = detail.hinhAnh.fullUrl;
-                } else if (detail.hinhAnh.duongDan) {
-                  const duongDan = detail.hinhAnh.duongDan;
-                  if (duongDan.startsWith('http')) {
-                    imageUrl = duongDan;
-                  } else if (duongDan.startsWith('/hinh-anh/')) {
-                    imageUrl = 'http://localhost:8080' + duongDan;
-                  } else {
-                    imageUrl = 'http://localhost:8080/hinh-anh/images/' + duongDan;
-                  }
+                else {
+                  imageUrl = resolveProductImageUrl(detail.hinhAnh);
                 }
               } else if (typeof detail.hinhAnh === 'number') {
                 imageUrl = imageMap.get(detail.hinhAnh);
@@ -1447,7 +1435,7 @@ export default {
 
       // Chỉ set SVG placeholder nếu chưa phải SVG
       if (!event.target.src.startsWith('data:image/svg+xml')) {
-        event.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjE2MCIgdmlld0Jvg9IjAiMCIyNDAgMTYwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIyNDAiIGhlaWdodD0iMTYwIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iMTIwIiB5PSI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzZiNzI4MCIgZm9udC1zaXplPSIxNCI+U2hvZSBJbWFnZTwvdGV4dD48L3N2Zz4=';
+        event.target.src = productPlaceholderImage;
       }
     }
   },
@@ -3602,3 +3590,6 @@ min-height: 400px;
 }
 
 </style>
+
+
+

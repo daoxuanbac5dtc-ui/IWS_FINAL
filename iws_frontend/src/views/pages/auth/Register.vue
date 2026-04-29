@@ -1,6 +1,7 @@
 <script setup>
 import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
-import { ref, onMounted } from 'vue';
+import { API_CONFIG } from '@/utils/api';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const email = ref('');
@@ -23,8 +24,8 @@ const successMessage = ref('');
 const isLoading = ref(false);
 
 const router = useRouter();
+const registerEndpoint = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ACCOUNTS}`;
 
-// Kiểm tra nếu user đã đăng nhập
 onMounted(() => {
     const token = localStorage.getItem('auth_token');
     if (token) {
@@ -33,7 +34,6 @@ onMounted(() => {
 });
 
 const validateForm = () => {
-    // Validate email
     if (!email.value || !email.value.trim()) {
         errorMessage.value = 'Vui lòng nhập email';
         return false;
@@ -44,18 +44,16 @@ const validateForm = () => {
         return false;
     }
 
-    // Validate họ tên
     if (!hoTen.value || !hoTen.value.trim()) {
         errorMessage.value = 'Vui lòng nhập họ tên';
         return false;
     }
 
-    if (hoTen.value.length < 2) {
+    if (hoTen.value.trim().length < 2) {
         errorMessage.value = 'Họ tên phải có ít nhất 2 ký tự';
         return false;
     }
 
-    // Validate số điện thoại
     if (!sdt.value || !sdt.value.trim()) {
         errorMessage.value = 'Vui lòng nhập số điện thoại';
         return false;
@@ -66,13 +64,11 @@ const validateForm = () => {
         return false;
     }
 
-    // Validate mật khẩu
     if (!password.value || password.value.length < 6) {
         errorMessage.value = 'Mật khẩu phải có ít nhất 6 ký tự';
         return false;
     }
 
-    // Validate xác nhận mật khẩu
     if (!confirmPassword.value) {
         errorMessage.value = 'Vui lòng nhập xác nhận mật khẩu';
         return false;
@@ -83,7 +79,6 @@ const validateForm = () => {
         return false;
     }
 
-    // Validate địa chỉ
     if (!diaChi.value.tenTinh || !diaChi.value.tenTinh.trim()) {
         errorMessage.value = 'Vui lòng nhập tên tỉnh/thành phố';
         return false;
@@ -102,14 +97,51 @@ const validateForm = () => {
     return true;
 };
 
-const isValidEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.(com|net|org|edu|gov|mil|example)$/i;
-    return emailRegex.test(email);
+const isValidEmail = (value) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(value);
 };
 
-const isValidPhoneNumber = (phone) => {
+const isValidPhoneNumber = (value) => {
     const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
-    return phoneRegex.test(phone);
+    return phoneRegex.test(value);
+};
+
+const normalizeValue = (value) => (value ?? '').trim();
+
+const buildRegisterData = () => {
+    const detailParts = [
+        normalizeValue(diaChi.value.diaChiChiTiet),
+        normalizeValue(diaChi.value.tenHuyen)
+    ].filter(Boolean);
+
+    const addressPayload = {
+        maTinh: normalizeValue(diaChi.value.maTinh) || '01',
+        maPhuong: normalizeValue(diaChi.value.maPhuong) || '0001',
+        tenTinh: normalizeValue(diaChi.value.tenTinh),
+        tenPhuong: normalizeValue(diaChi.value.tenPhuong),
+        diaChiChiTiet: detailParts.join(', ')
+    };
+
+    return {
+        email: normalizeValue(email.value).toLowerCase(),
+        matKhau: password.value,
+        vaiTro: 'USER',
+        trangThai: 1,
+        hoTen: normalizeValue(hoTen.value),
+        sdt: normalizeValue(sdt.value).replace(/\s+/g, ''),
+        maTinh: addressPayload.maTinh,
+        maPhuong: addressPayload.maPhuong,
+        tenTinh: addressPayload.tenTinh,
+        tenPhuong: addressPayload.tenPhuong,
+        diaChiChiTiet: addressPayload.diaChiChiTiet,
+        diaChi: {
+            ...addressPayload,
+            maHuyen: normalizeValue(diaChi.value.maHuyen),
+            tenHuyen: normalizeValue(diaChi.value.tenHuyen),
+            tenKhachHang: normalizeValue(diaChi.value.tenKhachHang) || normalizeValue(hoTen.value)
+        }
+    };
 };
 
 const register = async () => {
@@ -118,60 +150,49 @@ const register = async () => {
         errorMessage.value = '';
         successMessage.value = '';
 
-        // Validate form
         if (!validateForm()) {
             return;
         }
 
-        // Chuẩn bị dữ liệu để gửi
-        const registerData = {
-            email: email.value,
-            matKhau: password.value,
-            vaiTro: 'USER', // Mặc định là USER (0)
-            trangThai: 1,
-            hoTen: hoTen.value,
-            sdt: sdt.value,
-            diaChi: {
-                maTinh: diaChi.value.maTinh,
-                maHuyen: diaChi.value.maHuyen,
-                maPhuong: diaChi.value.maPhuong,
-                tenTinh: diaChi.value.tenTinh,
-                tenHuyen: diaChi.value.tenHuyen,
-                tenPhuong: diaChi.value.tenPhuong,
-                tenKhachHang: diaChi.value.tenKhachHang || hoTen.value,
-                diaChiChiTiet: diaChi.value.diaChiChiTiet || ''
-            }
-        };
-
-        // Gọi API đăng ký
-        const response = await fetch('http://localhost:8080/tai-khoan', {
+        const response = await fetch(registerEndpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
+                Accept: 'application/json'
             },
-            body: JSON.stringify(registerData),
+            body: JSON.stringify(buildRegisterData()),
             credentials: 'include'
         });
+
+        const contentType = response.headers.get('content-type') || '';
+        const responseData = contentType.includes('application/json')
+            ? await response.json().catch(() => null)
+            : await response.text().catch(() => '');
 
         if (response.ok) {
             successMessage.value = 'Đăng ký thành công! Đang chuyển hướng đến trang đăng nhập...';
 
-            // Chuyển hướng đến trang đăng nhập sau 2 giây
             setTimeout(() => {
                 router.push('/auth/login');
             }, 2000);
-        } else {
-            const errorData = await response.json().catch(() => ({}));
+            return;
+        }
 
-            if (response.status === 409) {
-                errorMessage.value = 'Email đã tồn tại trong hệ thống';
-            } else if (response.status === 400) {
-                errorMessage.value = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin';
-            } else {
-                errorMessage.value = errorData.message || 'Đăng ký thất bại. Vui lòng thử lại';
-            }
+        const validationMessage = responseData?.errors
+            ? Object.values(responseData.errors).find(Boolean)
+            : null;
+
+        if (response.status === 409) {
+            errorMessage.value = responseData?.message || 'Email đã tồn tại trong hệ thống';
+        } else if (response.status === 400) {
+            errorMessage.value = validationMessage || responseData?.message || 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin';
+        } else if (response.status === 401 || response.status === 403) {
+            errorMessage.value = responseData?.message || 'Backend đang chặn yêu cầu đăng ký.';
+        } else {
+            errorMessage.value =
+                responseData?.message ||
+                (typeof responseData === 'string' && responseData.trim()) ||
+                'Đăng ký thất bại. Vui lòng thử lại';
         }
     } catch (error) {
         console.error('Register error:', error);
@@ -194,77 +215,69 @@ const goToLogin = () => {
                 <div class="w-full bg-surface-0 dark:bg-surface-900 py-20 px-8 sm:px-20" style="border-radius: 53px">
                     <div class="text-center mb-8">
                         <svg viewBox="0 0 54 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-8 w-16 shrink-0 mx-auto">
-                            <path d="M4 20C4 11.1634 11.1634 4 20 4H34C42.8366 4 50 11.1634 50 20V20C50 28.8366 42.8366 36 34 36H20C11.1634 36 4 28.8366 4 20V20Z" fill="var(--primary-color)"/>
-                            <path d="M20 12H34V28H20V12Z" fill="white"/>
+                            <path d="M4 20C4 11.1634 11.1634 4 20 4H34C42.8366 4 50 11.1634 50 20V20C50 28.8366 42.8366 36 34 36H20C11.1634 36 4 28.8366 4 20V20Z" fill="var(--primary-color)" />
+                            <path d="M20 12H34V28H20V12Z" fill="white" />
                         </svg>
-                        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">
-                            Đăng ký tài khoản
-                        </div>
+                        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Đăng ký tài khoản</div>
                         <span class="text-muted-color font-medium">Tạo tài khoản mới để bắt đầu mua sắm</span>
                     </div>
 
-                    <!-- Thông báo thành công -->
                     <div v-if="successMessage" class="mb-4 p-3 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-md border border-green-200 dark:border-green-800">
                         <i class="pi pi-check-circle mr-2"></i>
                         {{ successMessage }}
                     </div>
 
-                    <!-- Thông báo lỗi -->
                     <div v-if="errorMessage" class="mb-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-md border border-red-200 dark:border-red-800">
                         <i class="pi pi-exclamation-triangle mr-2"></i>
                         {{ errorMessage }}
                     </div>
 
                     <form @submit.prevent="register">
-                        <!-- Email -->
                         <div class="mb-4">
                             <label for="email" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">
                                 Email <span class="text-red-500">*</span>
                             </label>
                             <InputText
                                 id="email"
+                                v-model="email"
                                 type="email"
                                 placeholder="Nhập địa chỉ email"
                                 class="w-full"
-                                v-model="email"
                                 :class="{ 'p-invalid': errorMessage && !email }"
                                 autocomplete="email"
                             />
                         </div>
 
-                        <!-- Họ tên -->
                         <div class="mb-4">
                             <label for="hoTen" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">
                                 Họ và tên <span class="text-red-500">*</span>
                             </label>
                             <InputText
                                 id="hoTen"
+                                v-model="hoTen"
                                 type="text"
                                 placeholder="Nhập họ và tên"
                                 class="w-full"
-                                v-model="hoTen"
                                 :class="{ 'p-invalid': errorMessage && !hoTen }"
                                 autocomplete="name"
                             />
                         </div>
 
-                        <!-- Số điện thoại -->
                         <div class="mb-4">
                             <label for="sdt" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">
                                 Số điện thoại <span class="text-red-500">*</span>
                             </label>
                             <InputText
                                 id="sdt"
+                                v-model="sdt"
                                 type="tel"
                                 placeholder="Nhập số điện thoại"
                                 class="w-full"
-                                v-model="sdt"
                                 :class="{ 'p-invalid': errorMessage && !sdt }"
                                 autocomplete="tel"
                             />
                         </div>
 
-                        <!-- Địa chỉ -->
                         <div class="mb-4">
                             <label class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">
                                 Địa chỉ <span class="text-red-500">*</span>
@@ -272,39 +285,38 @@ const goToLogin = () => {
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                     <InputText
+                                        v-model="diaChi.tenTinh"
                                         placeholder="Tỉnh/Thành phố"
                                         class="w-full"
-                                        v-model="diaChi.tenTinh"
                                         :class="{ 'p-invalid': errorMessage && !diaChi.tenTinh }"
                                     />
                                 </div>
                                 <div>
                                     <InputText
+                                        v-model="diaChi.tenHuyen"
                                         placeholder="Quận/Huyện"
                                         class="w-full"
-                                        v-model="diaChi.tenHuyen"
                                         :class="{ 'p-invalid': errorMessage && !diaChi.tenHuyen }"
                                     />
                                 </div>
                                 <div>
                                     <InputText
+                                        v-model="diaChi.tenPhuong"
                                         placeholder="Phường/Xã"
                                         class="w-full"
-                                        v-model="diaChi.tenPhuong"
                                         :class="{ 'p-invalid': errorMessage && !diaChi.tenPhuong }"
                                     />
                                 </div>
                             </div>
                             <div class="mt-3">
                                 <InputText
+                                    v-model="diaChi.diaChiChiTiet"
                                     placeholder="Địa chỉ chi tiết (số nhà, tên đường...)"
                                     class="w-full"
-                                    v-model="diaChi.diaChiChiTiet"
                                 />
                             </div>
                         </div>
 
-                        <!-- Mật khẩu -->
                         <div class="mb-4">
                             <label for="password" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">
                                 Mật khẩu <span class="text-red-500">*</span>
@@ -322,7 +334,6 @@ const goToLogin = () => {
                             />
                         </div>
 
-                        <!-- Xác nhận mật khẩu -->
                         <div class="mb-6">
                             <label for="confirmPassword" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">
                                 Xác nhận mật khẩu <span class="text-red-500">*</span>
@@ -335,7 +346,7 @@ const goToLogin = () => {
                                 class="w-full"
                                 fluid
                                 :feedback="false"
-                                :class="{ 'p-invalid': errorMessage && (password !== confirmPassword) }"
+                                :class="{ 'p-invalid': errorMessage && password !== confirmPassword }"
                                 autocomplete="new-password"
                             />
                         </div>
@@ -349,15 +360,9 @@ const goToLogin = () => {
                         />
                     </form>
 
-                    <!-- Login link -->
                     <div class="text-center mt-8">
                         <span class="text-muted-color">Đã có tài khoản? </span>
-                        <span
-                            class="font-medium cursor-pointer text-primary hover:underline"
-                            @click="goToLogin"
-                        >
-                            Đăng nhập ngay
-                        </span>
+                        <span class="font-medium cursor-pointer text-primary hover:underline" @click="goToLogin">Đăng nhập ngay</span>
                     </div>
                 </div>
             </div>

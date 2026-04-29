@@ -185,7 +185,7 @@
           <!-- Action Buttons -->
           <div class="actions-section text-center mb-8">
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <router-link to="/orders"
+              <router-link :to="trackingRoute"
                           class="btn btn-primary bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center gap-3 min-w-48">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
@@ -257,6 +257,17 @@
     });
   });
 
+  const trackingRoute = computed(() => {
+    const email = customerEmail.value?.trim();
+    const code = orderId.value?.toString().trim();
+
+    if (!email || !code) {
+      return '/track-order';
+    }
+
+    return `/track-order?email=${encodeURIComponent(email)}&code=${encodeURIComponent(code)}`;
+  });
+
   const paymentMethodText = computed(() => {
     return paymentMethod.value === 'cod' ? 'COD - Thanh toán khi nhận hàng' : 'Chuyển khoản ngân hàng';
   });
@@ -287,6 +298,7 @@
         // Thông tin khách hàng
         customerName.value = data.customerName || data.shippingInfo?.fullName || '';
         customerEmail.value = data.customerEmail || data.shippingInfo?.email || '';
+        orderId.value = data.orderCode || data.order_code || data.orderId || orderId.value;
         customerPhone.value = data.customerPhone || data.shippingInfo?.phone || '';
         shippingAddress.value = data.shippingAddress || data.addressText || '';
         paymentMethod.value = data.paymentMethod || 'cod';

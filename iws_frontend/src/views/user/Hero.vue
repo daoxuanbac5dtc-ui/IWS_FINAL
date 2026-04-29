@@ -3,6 +3,7 @@ import arrowRight from '@/assets/icons/arrow-right.svg';
 import Card from '@/components/user/Card.vue';
 import UserButton from '@/components/user/UserButton.vue';
 import { statistics } from '@/constants/index';
+import { createSvgPlaceholder, resolveProductImageUrl } from '@/utils/productMedia';
 import axios from 'axios';
 import 'swiper/css';
 import { Keyboard } from 'swiper/modules';
@@ -14,6 +15,7 @@ const shoesCards = ref([]);
 const bigImageUrl = ref('');
 const currentProduct = ref(null);
 const loading = ref(true);
+const heroPlaceholderImage = createSvgPlaceholder({ width: 400, height: 300, label: 'Nike Shoe' });
 
 // Change main hero image
 const changeHeroImg = (imgUrl) => {
@@ -30,8 +32,7 @@ const changeHeroImg = (imgUrl) => {
 // Handle main image errors
 const handleMainImageError = (event) => {
     console.log('🦸 Main hero image failed:', event.target.src);
-    event.target.src =
-        'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0Jvg9IjAiMCA0MDAgMzAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZjNmNGY2Ii8+PGVsbGlwc2UgY3g9IjIwMCIgY3k9IjIwMCIgcng9IjEyMCIgcnk9IjQwIiBmaWxsPSIjZTVlN2ViIi8+PHBhdGggZD0iTTEwMCAxODAgUTEyMCAxNjAgMTUwIDE2MCBRIDE4MCAx NjAgMjAwIDE2MCBRIDI2MCAx NjAgMjgwIDE2MCBRIDI5MCAx NzAgMzAwIDE4MCBMIDI5MCAy MDAGUTE4MCAyMjAgMTUwIDIyMCBRIDEyMCAyMjAgMTAwIDIyMCBMIDEwMCAx ODAiIGZpbGw9IiNGRjY0NTIiLz48cGF0aCBkPSJNMTEwIDIyMCBRIDEzMCAyMzAgMTUwIDIzMCBRIDE4MCAyMzAgMjAwIDIzMCBRIDI2MCAyMzAgMjkwIDIzMCBMIDI4MCAyNDAgUSAyNjAgMjQ1IDE1MCAyNDUgUSAxMzAgMjQ1IDExMCAyNDAgTCAxMTAgMjIwIiBmaWxsPSIjZGQzZGQ1Ii8+PHRleHQgeD0iMjAwIiB5PSIxMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM2YjcyODAiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtZmFtaWx5PSJBcmlhbCI+Tml rZSBTaG9lPC90ZXh0Pjwvc3ZnPg==';
+    event.target.src = heroPlaceholderImage;
 };
 
 // Handle main image load success
@@ -55,7 +56,10 @@ onMounted(async () => {
         // Create image map by ID
         const imageMap = new Map();
         imagesResponse.data.forEach((image) => {
-            imageMap.set(image.id, image.fullUrl || `http://localhost:8080${image.duongDan}`);
+            const imageUrl = resolveProductImageUrl(image);
+            if (imageUrl) {
+                imageMap.set(image.id, imageUrl);
+            }
         });
 
         // Process products to create hero cards
@@ -88,17 +92,8 @@ onMounted(async () => {
                             console.log(`✅ Found image by ID ${detail.hinhAnh.id}:`, finalImageUrl);
                         }
                         // Trường hợp API trả về object đầy đủ
-                        else if (detail.hinhAnh.fullUrl) {
-                            finalImageUrl = detail.hinhAnh.fullUrl;
-                        } else if (detail.hinhAnh.duongDan) {
-                            const duongDan = detail.hinhAnh.duongDan;
-                            if (duongDan.startsWith('http')) {
-                                finalImageUrl = duongDan;
-                            } else if (duongDan.startsWith('/hinh-anh/')) {
-                                finalImageUrl = 'http://localhost:8080' + duongDan;
-                            } else {
-                                finalImageUrl = 'http://localhost:8080/hinh-anh/images/' + duongDan;
-                            }
+                        else {
+                            finalImageUrl = resolveProductImageUrl(detail.hinhAnh);
                         }
                     } else if (typeof detail.hinhAnh === 'number') {
                         // Trường hợp API trả về ID number trực tiếp
@@ -132,15 +127,13 @@ onMounted(async () => {
             console.log('🦸 Set initial hero image:', processedCards[0].imgUrl);
         } else {
             // Fallback
-            bigImageUrl.value =
-                'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0Jvg9IjAiMCA0MDAgMzAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZjNmNGY2Ii8+PGVsbGlwc2UgY3g9IjIwMCIgY3k9IjIwMCIgcng9IjEyMCIgcnk9IjQwIiBmaWxsPSIjZTVlN2ViIi8+PHBhdGggZD0iTTEwMCAxODAgUTEyMCAxNjAgMTUwIDE2MCBRIDE4MCAx NjAgMjAwIDE2MCBRIDI2MCAx NjAgMjgwIDE2MCBRIDI5MCAx NzAgMzAwIDE4MCBMIDI5MCAy MDAGUTE4MCAyMjAgMTUwIDIyMCBRIDEyMCAyMjAgMTAwIDIyMCBMIDEwMCAx ODAiIGZpbGw9IiNGRjY0NTIiLz48cGF0aCBkPSJNMTEwIDIyMCBRIDEzMCAyMzAgMTUwIDIzMCBRIDE4MCAyMzAgMjAwIDIzMCBRIDI2MCAyMzAgMjkwIDIzMCBMIDI4MCAyNDAgUSAyNjAgMjQ1IDE1MCAyNDUgUSAxMzAgMjQ1IDExMCAyNDAgTCAxMTAgMjIwIiBmaWxsPSIjZGQzZGQ1Ci8+PHRleHQgeD0iMjAwIiB5PSIxMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM2YjcyODAiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtZmFtaWx5PSJBcmlhbCI+Tml rZSBTaG9lPC90ZXh0Pjwvc3ZnPg==';
+            bigImageUrl.value = heroPlaceholderImage;
             console.log('🦸 No products found, using fallback');
         }
     } catch (err) {
         console.error('🦸 Error loading hero products:', err);
         // Set fallback
-        bigImageUrl.value =
-            'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0Jvg9IjAiMCA0MDAgMzAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZjNmNGY2Ii8+PGVsbGlwc2UgY3g9IjIwMCIgY3k9IjIwMCIgcng9IjEyMCIgcnk9IjQwIiBmaWxsPSIjZTVlN2ViIi8+PHBhdGggZD0iTTEwMCAxODAgUTEyMCAxNjAgMTUwIDE2MCBRIDE4MCAx NjAgMjAwIDE2MCBRIDI2MCAx NjAgMjgwIDE2MCBRIDI5MCAx NzAgMzAwIDE4MCBMIDI5MCAy MDAGUTE4MCAyMjAgMTUwIDIyMCBRIDEyMCAyMjAgMTAwIDIyMCBMIDEwMCAx ODAiIGZpbGw9IiNGRjY0NTIiLz48cGF0aCBkPSJNMTEwIDIyMCBRIDEzMCAyMzAgMTUwIDIzMCBRIDE4MCAyMzAgMjAwIDIzMCBRIDI2MCAyMzAgMjkwIDIzMCBMIDI4MCAyNDAgUSAyNjAgMjQ1IDE1MCAyNDUgUSAxMzAgMjQ1IDExMCAyNDAgTCAxMTAgMjIwIiBmaWxsPSIjZGQzZGQ1Ci8+PHRleHQgeD0iMjAwIiB5PSIxMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM2YjcyODAiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtZmFtaWx5PSJBcmlhbCI+Tml rZSBTaG9lPC90ZXh0Pjwvc3ZnPg==';
+        bigImageUrl.value = heroPlaceholderImage;
     } finally {
         loading.value = false;
     }
@@ -225,7 +218,7 @@ onMounted(async () => {
             <div v-else-if="!loading" class="z-40 flex items-center justify-center">
                 <div class="fallback-hero">
                     <img
-                        src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0Jvg9IjAiMCA0MDAgMzAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjZjNmNGY2Ii8+PGVsbGlwc2UgY3g9IjIwMCIgY3k9IjIwMCIgcng9IjEyMCIgcnk9IjQwIiBmaWxsPSIjZTVlN2ViIi8+PHBhdGggZD0iTTEwMCAxODAgUTEyMCAxNjAgMTUwIDE2MCBRIDE4MCAx NjAgMjAwIDE2MCBRIDI2MCAx NjAgMjgwIDE2MCBRIDI5MCAx NzAgMzAwIDE4MCBMIDI5MCAy MDAGUTE4MCAyMjAgMTUwIDIyMCBRIDEyMCAyMjAgMTAwIDIyMCBMIDEwMCAx ODAiIGZpbGw9IiNGRjY0NTIiLz48cGF0aCBkPSJNMTEwIDIyMCBRIDEzMCAyMzAgMTUwIDIzMCBRIDE4MCAyMzAgMjAwIDIzMCBRIDI2MCAyMzAgMjkwIDIzMCBMIDI4MCAyNDAgUSAyNjAgMjQ1IDE1MCAyNDUgUSAxMzAgMjQ1IDExMCAyNDAgTCAxMTAgMjIwIiBmaWxsPSIjZGQzZGQ1Ii8+PHRleHQgeD0iMjAwIiB5PSIxMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM2YjcyODAiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtZmFtaWx5PSJBcmlhbCI+Tml rZSBTaG9lPC90ZXh0Pjwvc3ZnPg=="
+                        :src="heroPlaceholderImage"
                         alt="Nike Shoe Placeholder"
                         class="rotate-12 object-contain"
                         width="600"
@@ -319,3 +312,4 @@ onMounted(async () => {
     }
 }
 </style>
+

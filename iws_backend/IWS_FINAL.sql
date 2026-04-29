@@ -245,7 +245,7 @@ CREATE TABLE hoa_don (
     id_nhan_vien INT,
     ma_hoa_don VARCHAR(25) NOT NULL,
     dia_chi NVARCHAR(250),
-    email VARCHAR(25),
+    email VARCHAR(100),
     ghi_chu NVARCHAR(250),
     sdt VARCHAR(10),
     trang_thai_hoa_don NVARCHAR(250),
@@ -660,10 +660,10 @@ GO
 
 -- 19. Insert dữ liệu bảng voucher
 INSERT INTO voucher (ma_voucher, ten_voucher, loai_giam_gia, trang_thai, duong_dan_hinh_anh, gia_tri_giam_toi_da, gia_tri_giam, gia_tri_giam_toi_thieu, so_luong, ngay_bat_dau, ngay_ket_thuc, ngay_tao, ngay_cap_nhat) VALUES
-('VC001', N'Giảm 10% cho đơn hàng đầu tiên', 'PERCENT', 1, '/voucher/vc001.jpg', 500000, 0.10, 1000000, 100, '2024-01-01', '2024-12-31', GETDATE(), GETDATE()),
-('VC002', N'Giảm 200K cho đơn từ 2tr', 'FIXED', 1, '/voucher/vc002.jpg', 200000, 200000, 2000000, 50, '2024-01-01', '2024-12-31', GETDATE(), GETDATE()),
-('VC003', N'Freeship cho đơn từ 1tr5', 'SHIPPING', 1, '/voucher/vc003.jpg', 50000, 50000, 1500000, 200, '2024-01-01', '2024-12-31', GETDATE(), GETDATE()),
-('VC004', N'Giảm 15% cho thành viên VIP', 'PERCENT', 1, '/voucher/vc004.jpg', 1000000, 0.15, 3000000, 30, '2024-06-01', '2024-12-31', GETDATE(), GETDATE())
+('VC001', N'Giảm 10% cho đơn hàng đầu tiên', 'PERCENT', 1, '/voucher/vc001.jpg', 500000, 0.10, 1000000, 100, '2024-01-01', '2030-12-31', GETDATE(), GETDATE()),
+('VC002', N'Giảm 200K cho đơn từ 2tr', 'FIXED', 1, '/voucher/vc002.jpg', 200000, 200000, 2000000, 50, '2024-01-01', '2030-12-31', GETDATE(), GETDATE()),
+('VC003', N'Freeship cho đơn từ 1tr5', 'SHIPPING', 1, '/voucher/vc003.jpg', 50000, 50000, 1500000, 200, '2024-01-01', '2030-12-31', GETDATE(), GETDATE()),
+('VC004', N'Giảm 15% cho thành viên VIP', 'PERCENT', 1, '/voucher/vc004.jpg', 1000000, 0.15, 3000000, 30, '2024-06-01', '2030-12-31', GETDATE(), GETDATE())
 GO
 
 -- 20. Insert dữ liệu bảng tai_khoan_voucher
@@ -767,8 +767,8 @@ GO
 
 -- Thêm voucher mới
 INSERT INTO voucher (ma_voucher, ten_voucher, loai_giam_gia, trang_thai, duong_dan_hinh_anh, gia_tri_giam_toi_da, gia_tri_giam, gia_tri_giam_toi_thieu, so_luong, ngay_bat_dau, ngay_ket_thuc, ngay_tao, ngay_cap_nhat) VALUES
-('VC005', N'Giảm 5% cho tất cả sản phẩm', 'PERCENT', 1, '/voucher/vc005.jpg', 300000, 0.05, 500000, 500, '2024-01-01', '2024-12-31', GETDATE(), GETDATE()),
-('VC006', N'Voucher sinh nhật - Giảm 25%', 'PERCENT', 1, '/voucher/vc006.jpg', 1500000, 0.25, 2000000, 20, '2024-01-01', '2024-12-31', GETDATE(), GETDATE())
+('VC005', N'Giảm 5% cho tất cả sản phẩm', 'PERCENT', 1, '/voucher/vc005.jpg', 300000, 0.05, 500000, 500, '2024-01-01', '2030-12-31', GETDATE(), GETDATE()),
+('VC006', N'Voucher sinh nhật - Giảm 25%', 'PERCENT', 1, '/voucher/vc006.jpg', 1500000, 0.25, 2000000, 20, '2024-01-01', '2030-12-31', GETDATE(), GETDATE())
 GO
 
 -- Phân phối voucher cho khách hàng

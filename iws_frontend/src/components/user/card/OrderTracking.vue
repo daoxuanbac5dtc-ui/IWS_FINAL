@@ -66,7 +66,7 @@
             </div>
 
             <!-- Cancel Note Display (if order was cancelled) -->
-            <div v-if="orderInfo.status === 'DA_HUY' && orderInfo.notes" class="bg-red-50 border-l-4 border-red-400 p-4">
+            <div v-if="['DA_HUY', 'CANCELLED'].includes(orderInfo.status) && orderInfo.notes" class="bg-red-50 border-l-4 border-red-400 p-4">
               <div class="flex">
                 <div class="flex-shrink-0">
                   <i class="pi pi-times-circle text-red-400 text-xl"></i>
@@ -389,7 +389,7 @@ const getStatusClass = (status) => {
     'HOAN_THANH': 'bg-green-100 text-green-800',
     'DA_HUY': 'bg-red-100 text-red-800'
   };
-  return statusColors[status] || 'bg-gray-100 text-gray-800';
+  return statusColors[status] || (status === 'CANCELLED' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800');
 };
 
 const getStatusText = (status) => {
@@ -402,7 +402,7 @@ const getStatusText = (status) => {
     'HOAN_THANH': 'Hoàn thành',
     'DA_HUY': 'Đã hủy'
   };
-  return statusTexts[status] || status;
+  return statusTexts[status] || (status === 'CANCELLED' ? '\u0110\u00e3 h\u1ee7y' : status);
 };
 
 const getPaymentMethodText = (method) => {
@@ -525,7 +525,7 @@ const confirmCancelOrder = async () => {
     
     if (response.data.success) {
       // Update order info
-      orderInfo.value.status = 'DA_HUY';
+      orderInfo.value.status = response.data?.data?.trangThaiHoaDon || 'CANCELLED';
       orderInfo.value.notes = finalReason;
       
       closeCancelModal();
