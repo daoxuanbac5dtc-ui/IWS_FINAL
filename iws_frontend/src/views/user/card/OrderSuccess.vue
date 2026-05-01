@@ -360,10 +360,10 @@
       // Fallback dữ liệu mẫu nếu không có gì
       if (!customerName.value) {
         console.log('🔄 Using fallback data...');
-        customerName.value = 'Phạm Thị Khách Hàng';
-        customerEmail.value = 'khachhang1@gmail.com';
+        customerName.value = 'Nguyễn Văn An';
+        customerEmail.value = 'nguyenvanan@gmail.com';
         customerPhone.value = '0901234567';
-        shippingAddress.value = '321 Hàng, Phường Phan Chu Trinh, Hoàn Kiếm, Hà Nội';
+        shippingAddress.value = '321 Hàng Bạc, Phường Phan Chu Trinh, Hoàn Kiếm, Hà Nội';
 
         // Dữ liệu mẫu nếu không có sản phẩm
         if (cartItems.value.length === 0) {
@@ -389,8 +389,8 @@
       console.error('❌ Error loading order data:', error);
 
       // Dữ liệu khẩn cấp
-      customerName.value = 'Khách hàng';
-      customerEmail.value = 'customer@example.com';
+      customerName.value = 'Nguyễn Văn An';
+      customerEmail.value = 'nguyenvanan@gmail.com';
       customerPhone.value = '0123456789';
       shippingAddress.value = 'Địa chỉ giao hàng';
       totalItems.value = 1;

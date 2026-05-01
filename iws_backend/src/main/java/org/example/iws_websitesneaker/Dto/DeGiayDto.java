@@ -14,11 +14,11 @@ import lombok.Setter;
 public class DeGiayDto {
 
     private Integer id;;
-    @NotBlank(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng mÃ£ Ä‘áº¿ giÃ y! ")
+    @NotBlank(message = "Không được để trống mã đế giày! ")
     private String maDeGiay;
-    @NotBlank(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng tÃªn Ä‘áº¿ giÃ y! ")
+    @NotBlank(message = "Không được để trống tên đế giày! ")
     private String tenDeGiay;
-    @NotNull(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng tráº¡ng thÃ¡i Ä‘áº¿ giÃ y! ")
+    @NotNull(message = "Không được để trống trạng thái đế giày! ")
     private Integer trangThai;
 }
 

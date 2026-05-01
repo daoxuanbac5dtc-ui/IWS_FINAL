@@ -17,22 +17,22 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class GiaoHangRequest {
 
-    @NotBlank(message = "TÃªn ngÆ°á»i nháº­n khÃ´ng Ä‘Æ°á»£c trá»‘ng")
+    @NotBlank(message = "Tên người nhận không được trống")
     private String tenNguoiNhan;
 
-    @NotBlank(message = "Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng Ä‘Æ°á»£c trá»‘ng")
-    @Pattern(regexp = "^[0-9]{10}$", message = "Sá»‘ Ä‘iá»‡n thoáº¡i pháº£i cÃ³ 10 chá»¯ sá»‘")
+    @NotBlank(message = "Số điện thoại không được trống")
+    @Pattern(regexp = "^[0-9]{10}$", message = "Số điện thoại phải có 10 chữ số")
     private String sdt;
 
     private String email;
 
-    @NotBlank(message = "Äá»‹a chá»‰ giao hÃ ng khÃ´ng Ä‘Æ°á»£c trá»‘ng")
+    @NotBlank(message = "Địa chỉ giao hàng không được trống")
     private String diaChi;
 
     private BigDecimal phiVanChuyen;
 
     private String ghiChu;
 
-    // PhÆ°Æ¡ng thá»©c thanh toÃ¡n: COD, CHUYEN_KHOAN
+    // Phương thức thanh toán: COD, CHUYEN_KHOAN
     private String phuongThucThanhToan;
 }

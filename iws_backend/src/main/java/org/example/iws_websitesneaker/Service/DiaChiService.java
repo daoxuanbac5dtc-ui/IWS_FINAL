@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DiaChiService {
-    // CÃ¡c method hiá»‡n táº¡i (DTO-based) - GIá»® NGUYÃŠN
+    // Các method hiện tại (DTO-based) - GIỮ NGUYÊN
     List<DiaChiDto> getAll();
     DiaChiDto getById(Integer id);
     DiaChiDto add(DiaChiDto diachiDto);
@@ -17,7 +17,7 @@ public interface DiaChiService {
     List<DiaChiDto> findByTenKhachHang(String tenKhachHang);
     List<DiaChiDto> findByTenTinh(String tenTinh);
     Optional<DiaChi> findDefaultByTaiKhoanId(Integer taiKhoanId);
-    // CÃ¡c method cáº§n thiáº¿t cho controller (Entity-based)
+    // Các method cần thiết cho controller (Entity-based)
     Optional<DiaChi> findById(Integer id);
     List<DiaChi> findAll();
     DiaChi save(DiaChi diaChi);

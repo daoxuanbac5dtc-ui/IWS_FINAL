@@ -1,9 +1,13 @@
 package org.example.iws_websitesneaker.controller;
 
 import jakarta.validation.Valid;
+import org.example.iws_websitesneaker.Service.KhachHangService;
+import org.example.iws_websitesneaker.Service.NhanVienService;
 import org.example.iws_websitesneaker.Dto.TaiKhoanDTO;
 import org.example.iws_websitesneaker.Service.TaiKhoanService;
 import org.example.iws_websitesneaker.Service.impl.TaiKhoanServiceImpl;
+import org.example.iws_websitesneaker.entity.KhachHang;
+import org.example.iws_websitesneaker.entity.NhanVien;
 import org.example.iws_websitesneaker.entity.TaiKhoan;
 import org.example.iws_websitesneaker.repository.RepoTaiKhoan;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,11 +32,15 @@ public class TaiKhoanRestController {
     @Autowired
     private TaiKhoanService taiKhoanService;
     @Autowired
+    private KhachHangService khachHangService;
+    @Autowired
+    private NhanVienService nhanVienService;
+    @Autowired
     private RepoTaiKhoan repoTaiKhoan;
     // ===== BASIC QUERIES =====
 
     /**
-     * Láº¥y danh sÃ¡ch tÃ i khoáº£n vá»›i filter vÃ  search
+     * Lấy danh sách tài khoản với filter và search
      */
     @GetMapping
     public ResponseEntity<?> getAllAccounts(
@@ -76,18 +84,18 @@ public class TaiKhoanRestController {
             }
 
             sortAccountList(allAccounts, sortBy, sortDir);
-            return ResponseEntity.ok(createSuccessResponse("Láº¥y danh sÃ¡ch tÃ i khoáº£n thÃ nh cÃ´ng", allAccounts));
+            return ResponseEntity.ok(createSuccessResponse("Lấy danh sách tài khoản thành công", allAccounts));
 
         } catch (Exception e) {
-            System.err.println("âŒ Error getting all accounts: " + e.getMessage());
+            System.err.println("❌ Error getting all accounts: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi táº£i danh sÃ¡ch tÃ i khoáº£n", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi tải danh sách tài khoản", "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * Láº¥y tÃ i khoáº£n theo ID
+     * Lấy tài khoản theo ID
      */
     @GetMapping("/{id}")
     public ResponseEntity<Map<String, Object>> getTaiKhoanById(@PathVariable Integer id) {
@@ -97,19 +105,19 @@ public class TaiKhoanRestController {
             Optional<TaiKhoan> taiKhoanOpt = repoTaiKhoan.findById(id);
             if (taiKhoanOpt.isEmpty()) {
                 response.put("success", false);
-                response.put("message", "KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n vá»›i ID: " + id);
+                response.put("message", "Không tìm thấy tài khoản với ID: " + id);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
 
             response.put("success", true);
             response.put("data", taiKhoanOpt.get());
-            response.put("message", "Láº¥y thÃ´ng tin tÃ i khoáº£n thÃ nh cÃ´ng");
+            response.put("message", "Lấy thông tin tài khoản thành công");
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Lá»—i khi láº¥y thÃ´ng tin tÃ i khoáº£n: " + e.getMessage());
+            response.put("message", "Lỗi khi lấy thông tin tài khoản: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -117,49 +125,49 @@ public class TaiKhoanRestController {
     // ===== ACCOUNT CREATION =====
 
     /**
-     * Táº¡o tÃ i khoáº£n hoÃ n chá»‰nh vá»›i thÃ´ng tin liÃªn quan
+     * Tạo tài khoản hoàn chỉnh với thông tin liên quan
      */
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createCompleteAccount(@RequestBody @Valid TaiKhoanDTO dto) {
         try {
-            System.out.println("=== Táº¡o tÃ i khoáº£n má»›i ===");
-            System.out.println("Dá»¯ liá»‡u nháº­n Ä‘Æ°á»£c: " + dto);
+            System.out.println("=== Tạo tài khoản mới ===");
+            System.out.println("Dữ liệu nhận được: " + dto);
 
-            // Validation Ä‘áº§y Ä‘á»§
+            // Validation đầy đủ
             Map<String, String> validationErrors = validateCreateAccount(dto);
             if (!validationErrors.isEmpty()) {
                 return ResponseEntity.badRequest()
-                        .body(createValidationErrorResponse("Dá»¯ liá»‡u khÃ´ng há»£p lá»‡", validationErrors));
+                        .body(createValidationErrorResponse("Dữ liệu không hợp lệ", validationErrors));
             }
 
-            // Kiá»ƒm tra email Ä‘Ã£ tá»“n táº¡i
+            // Kiểm tra email đã tồn tại
             if (taiKhoanService.existsByEmail(dto.getEmail())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body(createErrorResponse("Email Ä‘Ã£ tá»“n táº¡i trong há»‡ thá»‘ng", "EMAIL_EXISTS"));
+                        .body(createErrorResponse("Email đã tồn tại trong hệ thống", "EMAIL_EXISTS"));
             }
 
-            // Táº¡o tÃ i khoáº£n hoÃ n chá»‰nh thÃ´ng qua service
+            // Tạo tài khoản hoàn chỉnh thông qua service
             Map<String, Object> result = taiKhoanService.createCompleteAccount(dto);
 
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(createSuccessResponse("TÃ i khoáº£n Ä‘Æ°á»£c táº¡o thÃ nh cÃ´ng", result));
+                    .body(createSuccessResponse("Tài khoản được tạo thành công", result));
 
         } catch (IllegalArgumentException e) {
-            System.err.println("Lá»—i validation: " + e.getMessage());
+            System.err.println("Lỗi validation: " + e.getMessage());
             return ResponseEntity.badRequest()
                     .body(createErrorResponse(e.getMessage(), "VALIDATION_ERROR"));
         } catch (Exception e) {
-            System.err.println("Lá»—i táº¡o tÃ i khoáº£n: " + e.getMessage());
+            System.err.println("Lỗi tạo tài khoản: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i há»‡ thá»‘ng khi táº¡o tÃ i khoáº£n: " + e.getMessage(), "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi hệ thống khi tạo tài khoản: " + e.getMessage(), "INTERNAL_ERROR"));
         }
     }
 
     // ===== ACCOUNT UPDATE =====
 
     /**
-     * Cáº­p nháº­t thÃ´ng tin tÃ i khoáº£n
+     * Cập nhật thông tin tài khoản
      */
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, Object>> updateTaiKhoan(
@@ -172,19 +180,18 @@ public class TaiKhoanRestController {
             Optional<TaiKhoan> taiKhoanOpt = repoTaiKhoan.findById(id);
             if (taiKhoanOpt.isEmpty()) {
                 response.put("success", false);
-                response.put("message", "KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n vá»›i ID: " + id);
+                response.put("message", "Không tìm thấy tài khoản với ID: " + id);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
 
             TaiKhoan taiKhoan = taiKhoanOpt.get();
+            Integer oldTrangThai = taiKhoan.getTrangThai();
 
-            // Cáº­p nháº­t cÃ¡c trÆ°á»ng cÃ³ thá»ƒ thay Ä‘á»•i
             if (taiKhoanUpdate.getEmail() != null) {
-                // Kiá»ƒm tra email Ä‘Ã£ tá»“n táº¡i chÆ°a
                 Optional<TaiKhoan> existingEmail = repoTaiKhoan.findByEmail(taiKhoanUpdate.getEmail());
                 if (existingEmail.isPresent() && !existingEmail.get().getId().equals(id)) {
                     response.put("success", false);
-                    response.put("message", "Email Ä‘Ã£ tá»“n táº¡i trong há»‡ thá»‘ng");
+                    response.put("message", "Email đã tồn tại trong hệ thống");
                     return ResponseEntity.badRequest().body(response);
                 }
                 taiKhoan.setEmail(taiKhoanUpdate.getEmail());
@@ -198,20 +205,21 @@ public class TaiKhoanRestController {
                 taiKhoan.setVaiTro(taiKhoanUpdate.getVaiTro());
             }
 
-            // KhÃ´ng cho phÃ©p cáº­p nháº­t máº­t kháº©u qua API nÃ y
-            taiKhoan.setNgayCapNhat(new java.util.Date());
-
+            taiKhoan.setNgayCapNhat(new Date());
             TaiKhoan updatedTaiKhoan = repoTaiKhoan.save(taiKhoan);
+
+            if (taiKhoanUpdate.getTrangThai() != null && !Objects.equals(oldTrangThai, updatedTaiKhoan.getTrangThai())) {
+                syncLinkedEntityStatus(updatedTaiKhoan, updatedTaiKhoan.getTrangThai());
+            }
 
             response.put("success", true);
             response.put("data", updatedTaiKhoan);
-            response.put("message", "Cáº­p nháº­t tÃ i khoáº£n thÃ nh cÃ´ng");
-
+            response.put("message", "Cập nhật tài khoản thành công");
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Lá»—i khi cáº­p nháº­t tÃ i khoáº£n: " + e.getMessage());
+            response.put("message", "Lỗi khi cập nhật tài khoản: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -219,134 +227,175 @@ public class TaiKhoanRestController {
     // ===== STATUS CHANGE =====
 
     /**
-     * Thay Ä‘á»•i tráº¡ng thÃ¡i tÃ i khoáº£n
+     * Thay đổi trạng thái tài khoản
      */
     @PatchMapping("/{id}/trang-thai")
     public ResponseEntity<Map<String, Object>> updateTrangThai(
             @PathVariable Integer id,
-            @RequestParam Integer trangThai) {
+            @RequestParam(required = false) Integer trangThai,
+            @RequestBody(required = false) Map<String, Object> request) {
 
         Map<String, Object> response = new HashMap<>();
 
         try {
-            // Validate tráº¡ng thÃ¡i
-            if (trangThai == null || (trangThai != 0 && trangThai != 1)) {
+            Integer resolvedTrangThai = resolveTrangThaiValue(trangThai, request);
+            if (resolvedTrangThai == null || (resolvedTrangThai != 0 && resolvedTrangThai != 1)) {
                 response.put("success", false);
-                response.put("message", "Tráº¡ng thÃ¡i khÃ´ng há»£p lá»‡. Chá»‰ cháº¥p nháº­n 0 (vÃ´ hiá»‡u hÃ³a) hoáº·c 1 (kÃ­ch hoáº¡t)");
+                response.put("message", "Trạng thái không hợp lệ. Chỉ chấp nhận 0 hoặc 1");
                 return ResponseEntity.badRequest().body(response);
             }
 
-            // TÃ¬m tÃ i khoáº£n
             Optional<TaiKhoan> taiKhoanOpt = repoTaiKhoan.findById(id);
             if (taiKhoanOpt.isEmpty()) {
                 response.put("success", false);
-                response.put("message", "KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n vá»›i ID: " + id);
+                response.put("message", "Không tìm thấy tài khoản với ID: " + id);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
 
             TaiKhoan taiKhoan = taiKhoanOpt.get();
-
-            // Kiá»ƒm tra tráº¡ng thÃ¡i hiá»‡n táº¡i
-            if (taiKhoan.getTrangThai().equals(trangThai)) {
-                String statusText = trangThai == 1 ? "Ä‘Ã£ Ä‘Æ°á»£c kÃ­ch hoáº¡t" : "Ä‘Ã£ bá»‹ vÃ´ hiá»‡u hÃ³a";
-                response.put("success", false);
-                response.put("message", "TÃ i khoáº£n " + statusText + " rá»“i");
-                return ResponseEntity.badRequest().body(response);
+            if (Objects.equals(taiKhoan.getTrangThai(), resolvedTrangThai)) {
+                syncLinkedEntityStatus(taiKhoan, resolvedTrangThai);
+                response.put("success", true);
+                response.put("data", taiKhoan);
+                response.put("message", "Trạng thái tài khoản đã ở giá trị yêu cầu và dữ liệu liên kết đã được đồng bộ");
+                return ResponseEntity.ok(response);
             }
 
-            // Cáº­p nháº­t tráº¡ng thÃ¡i
-            taiKhoan.setTrangThai(trangThai);
-            taiKhoan.setNgayCapNhat(new java.util.Date());
+            taiKhoan.setTrangThai(resolvedTrangThai);
+            taiKhoan.setNgayCapNhat(new Date());
             TaiKhoan updatedTaiKhoan = repoTaiKhoan.save(taiKhoan);
+            syncLinkedEntityStatus(updatedTaiKhoan, resolvedTrangThai);
 
-            // Tráº£ vá» káº¿t quáº£
-            String statusText = trangThai == 1 ? "kÃ­ch hoáº¡t" : "vÃ´ hiá»‡u hÃ³a";
             response.put("success", true);
             response.put("data", updatedTaiKhoan);
-            response.put("message", "Cáº­p nháº­t tráº¡ng thÃ¡i tÃ i khoáº£n thÃ nh cÃ´ng (" + statusText + ")");
-
+            response.put("message", "Cập nhật trạng thái tài khoản thành công");
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Lá»—i khi cáº­p nháº­t tráº¡ng thÃ¡i: " + e.getMessage());
+            response.put("message", "Lỗi khi cập nhật trạng thái: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
+    private Integer resolveTrangThaiValue(Integer requestParamStatus, Map<String, Object> requestBody) {
+        if (requestParamStatus != null) {
+            return requestParamStatus;
+        }
 
-    // ===== DELETE ACCOUNT =====
+        if (requestBody == null) {
+            return null;
+        }
+
+        Object rawValue = requestBody.get("trangThai");
+        if (rawValue instanceof Number numberValue) {
+            return numberValue.intValue();
+        }
+
+        if (rawValue instanceof String stringValue && !stringValue.trim().isEmpty()) {
+            try {
+                return Integer.parseInt(stringValue.trim());
+            } catch (NumberFormatException ignored) {
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    private void syncLinkedEntityStatus(TaiKhoan taiKhoan, Integer targetStatus) {
+        if (taiKhoan == null || taiKhoan.getId() == null || targetStatus == null || taiKhoan.getVaiTro() == null) {
+            return;
+        }
+
+        switch (taiKhoan.getVaiTro()) {
+            case USER:
+                Optional<KhachHang> customerOpt = khachHangService.findByTaiKhoanIdOptional(taiKhoan.getId());
+                if (customerOpt.isPresent() && !Objects.equals(customerOpt.get().getTrangThai(), targetStatus)) {
+                    khachHangService.toggleTrangThai(customerOpt.get().getId());
+                }
+                break;
+            case NHANVIEN:
+                Optional<NhanVien> employeeOpt = nhanVienService.findByTaiKhoanId(taiKhoan.getId());
+                if (employeeOpt.isPresent() && !Objects.equals(employeeOpt.get().getTrangThai(), targetStatus)) {
+                    nhanVienService.toggleTrangThai(employeeOpt.get().getId());
+                }
+                break;
+            default:
+                break;
+        }
+    }    // ===== DELETE ACCOUNT =====
 
     /**
-     * XÃ³a tÃ i khoáº£n
+     * Xóa tài khoản
      */
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<?> deleteAccount(@PathVariable Integer id) {
         try {
-            System.out.println("=== XÃ³a tÃ i khoáº£n ===");
-            System.out.println("ID tÃ i khoáº£n: " + id);
+            System.out.println("=== Xóa tài khoản ===");
+            System.out.println("ID tài khoản: " + id);
 
             if (id == null || id <= 0) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("ID khÃ´ng há»£p lá»‡", "INVALID_ID"));
+                        .body(createErrorResponse("ID không hợp lệ", "INVALID_ID"));
             }
 
             Optional<TaiKhoan> accountOpt = taiKhoanService.findById(id);
             if (accountOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(createErrorResponse("KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n", "NOT_FOUND"));
+                        .body(createErrorResponse("Không tìm thấy tài khoản", "NOT_FOUND"));
             }
 
             TaiKhoan account = accountOpt.get();
 
-            // Kiá»ƒm tra quy táº¯c nghiá»‡p vá»¥ trÆ°á»›c
+            // Kiểm tra quy tắc nghiệp vụ trước
             if (!taiKhoanService.canDeleteAccount(id)) {
                 String reason = "";
                 if (account.getVaiTro() == TaiKhoan.VaiTro.ADMIN && taiKhoanService.isLastActiveAdmin(id)) {
-                    reason = "KhÃ´ng thá»ƒ xÃ³a admin cuá»‘i cÃ¹ng";
+                    reason = "Không thể xóa admin cuối cùng";
                 } else {
-                    reason = "TÃ i khoáº£n cÃ³ dá»¯ liá»‡u quan trá»ng khÃ´ng thá»ƒ xÃ³a";
+                    reason = "Tài khoản có dữ liệu quan trọng không thể xóa";
                 }
                 return ResponseEntity.badRequest()
                         .body(createErrorResponse(reason, "DELETE_FORBIDDEN"));
             }
 
-            // Thá»±c hiá»‡n xÃ³a vá»›i try-catch chi tiáº¿t
+            // Thực hiện xóa với try-catch chi tiết
             try {
-                // Sá»­ dá»¥ng phÆ°Æ¡ng thá»©c xÃ³a an toÃ n má»›i
+                // Sử dụng phương thức xóa an toàn mới
                 if (taiKhoanService instanceof TaiKhoanServiceImpl) {
                     ((TaiKhoanServiceImpl) taiKhoanService).safeDeleteById(id);
                 } else {
                     taiKhoanService.deleteById(id);
                 }
 
-                System.out.println("âœ… XÃ³a tÃ i khoáº£n thÃ nh cÃ´ng: " + id);
+                System.out.println("✅ Xóa tài khoản thành công: " + id);
 
-                return ResponseEntity.ok(createSuccessResponse("XÃ³a tÃ i khoáº£n thÃ nh cÃ´ng",
+                return ResponseEntity.ok(createSuccessResponse("Xóa tài khoản thành công",
                         Map.of("deletedAccountId", id, "deletedAt", new Date())));
 
             } catch (Exception deleteError) {
-                System.err.println("âŒ Lá»—i khi xÃ³a: " + deleteError.getMessage());
+                System.err.println("❌ Lỗi khi xóa: " + deleteError.getMessage());
                 deleteError.printStackTrace();
 
-                // PhÃ¢n loáº¡i lá»—i cá»¥ thá»ƒ
+                // Phân loại lỗi cụ thể
                 String errorMessage;
                 String errorCode;
 
                 if (deleteError.getMessage().contains("constraint") ||
                         deleteError.getMessage().contains("foreign key") ||
                         deleteError.getMessage().contains("REFERENCE")) {
-                    errorMessage = "KhÃ´ng thá»ƒ xÃ³a tÃ i khoáº£n do cÃ²n dá»¯ liá»‡u liÃªn quan. Vui lÃ²ng kiá»ƒm tra voucher, Ä‘Æ¡n hÃ ng, v.v.";
+                    errorMessage = "Không thể xóa tài khoản do còn dữ liệu liên quan. Vui lòng kiểm tra voucher, đơn hàng, v.v.";
                     errorCode = "CONSTRAINT_VIOLATION";
-                } else if (deleteError.getMessage().contains("admin cuá»‘i cÃ¹ng")) {
-                    errorMessage = "KhÃ´ng thá»ƒ xÃ³a admin cuá»‘i cÃ¹ng trong há»‡ thá»‘ng";
+                } else if (deleteError.getMessage().contains("admin cuối cùng")) {
+                    errorMessage = "Không thể xóa admin cuối cùng trong hệ thống";
                     errorCode = "LAST_ADMIN_ERROR";
-                } else if (deleteError.getMessage().contains("khÃ´ng Ä‘Æ°á»£c phÃ©p")) {
-                    errorMessage = "KhÃ´ng cÃ³ quyá»n xÃ³a tÃ i khoáº£n nÃ y";
+                } else if (deleteError.getMessage().contains("không được phép")) {
+                    errorMessage = "Không có quyền xóa tài khoản này";
                     errorCode = "PERMISSION_DENIED";
                 } else {
-                    errorMessage = "Lá»—i há»‡ thá»‘ng khi xÃ³a tÃ i khoáº£n: " + deleteError.getMessage();
+                    errorMessage = "Lỗi hệ thống khi xóa tài khoản: " + deleteError.getMessage();
                     errorCode = "DELETE_ERROR";
                 }
 
@@ -355,23 +404,23 @@ public class TaiKhoanRestController {
             }
 
         } catch (Exception e) {
-            System.err.println("âŒ Lá»—i tá»•ng quÃ¡t khi xÃ³a tÃ i khoáº£n: " + e.getMessage());
+            System.err.println("❌ Lỗi tổng quát khi xóa tài khoản: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i há»‡ thá»‘ng: " + e.getMessage(), "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi hệ thống: " + e.getMessage(), "INTERNAL_ERROR"));
         }
     }
 
 
     /**
-     * Kiá»ƒm tra email cÃ³ tá»“n táº¡i khÃ´ng
+     * Kiểm tra email có tồn tại không
      */
     @GetMapping("/check-email")
     public ResponseEntity<?> checkEmailExists(@RequestParam String email) {
         try {
             if (!taiKhoanService.isValidEmail(email)) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Email khÃ´ng há»£p lá»‡", "INVALID_EMAIL"));
+                        .body(createErrorResponse("Email không hợp lệ", "INVALID_EMAIL"));
             }
 
             boolean exists = taiKhoanService.existsByEmail(email);
@@ -381,12 +430,12 @@ public class TaiKhoanRestController {
                     "available", !exists
             );
 
-            return ResponseEntity.ok(createSuccessResponse("Kiá»ƒm tra email thÃ nh cÃ´ng", data));
+            return ResponseEntity.ok(createSuccessResponse("Kiểm tra email thành công", data));
 
         } catch (Exception e) {
             System.err.println("Error checking email: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi kiá»ƒm tra email", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi kiểm tra email", "INTERNAL_ERROR"));
         }
     }
     @GetMapping("/{id}/can-delete")
@@ -394,13 +443,13 @@ public class TaiKhoanRestController {
         try {
             if (id == null || id <= 0) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("ID khÃ´ng há»£p lá»‡", "INVALID_ID"));
+                        .body(createErrorResponse("ID không hợp lệ", "INVALID_ID"));
             }
 
             Optional<TaiKhoan> accountOpt = taiKhoanService.findById(id);
             if (accountOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(createErrorResponse("KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n", "NOT_FOUND"));
+                        .body(createErrorResponse("Không tìm thấy tài khoản", "NOT_FOUND"));
             }
 
             boolean canDelete = taiKhoanService.canDeleteAccount(id);
@@ -415,38 +464,38 @@ public class TaiKhoanRestController {
             if (!canDelete) {
                 String reason = "";
                 if (account.getVaiTro() == TaiKhoan.VaiTro.ADMIN && taiKhoanService.isLastActiveAdmin(id)) {
-                    reason = "Admin cuá»‘i cÃ¹ng trong há»‡ thá»‘ng";
+                    reason = "Admin cuối cùng trong hệ thống";
                 } else {
-                    reason = "CÃ³ dá»¯ liá»‡u liÃªn quan quan trá»ng";
+                    reason = "Có dữ liệu liên quan quan trọng";
                 }
                 checkResult.put("reason", reason);
             }
 
-            return ResponseEntity.ok(createSuccessResponse("Kiá»ƒm tra thÃ nh cÃ´ng", checkResult));
+            return ResponseEntity.ok(createSuccessResponse("Kiểm tra thành công", checkResult));
 
         } catch (Exception e) {
             System.err.println("Error checking delete permission: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi kiá»ƒm tra", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi kiểm tra", "INTERNAL_ERROR"));
         }
     }
     /**
-     * Láº¥y thá»‘ng kÃª dashboard
+     * Lấy thống kê dashboard
      */
     @GetMapping("/statistics")
     public ResponseEntity<?> getDashboardStatistics() {
         try {
             Map<String, Object> stats = taiKhoanService.getDashboardStats();
-            return ResponseEntity.ok(createSuccessResponse("Láº¥y thá»‘ng kÃª thÃ nh cÃ´ng", stats));
+            return ResponseEntity.ok(createSuccessResponse("Lấy thống kê thành công", stats));
         } catch (Exception e) {
             System.err.println("Error getting statistics: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi láº¥y thá»‘ng kÃª", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi lấy thống kê", "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * XÃ¡c thá»±c tÃ i khoáº£n (Ä‘Äƒng nháº­p)
+     * Xác thực tài khoản (đăng nhập)
      */
     @PostMapping("/authenticate")
     public ResponseEntity<?> authenticate(@RequestBody Map<String, String> credentials) {
@@ -456,12 +505,12 @@ public class TaiKhoanRestController {
 
             if (email == null || password == null) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Thiáº¿u email hoáº·c máº­t kháº©u", "MISSING_CREDENTIALS"));
+                        .body(createErrorResponse("Thiếu email hoặc mật khẩu", "MISSING_CREDENTIALS"));
             }
 
             if (!taiKhoanService.isValidEmail(email)) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Email khÃ´ng há»£p lá»‡", "INVALID_EMAIL"));
+                        .body(createErrorResponse("Email không hợp lệ", "INVALID_EMAIL"));
             }
 
             Optional<TaiKhoan> account = taiKhoanService.authenticate(email, password);
@@ -470,10 +519,10 @@ public class TaiKhoanRestController {
                 TaiKhoan taiKhoan = account.get();
                 if (taiKhoan.getTrangThai() == 0) {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                            .body(createErrorResponse("TÃ i khoáº£n Ä‘Ã£ bá»‹ vÃ´ hiá»‡u hÃ³a", "ACCOUNT_DISABLED"));
+                            .body(createErrorResponse("Tài khoản đã bị vô hiệu hóa", "ACCOUNT_DISABLED"));
                 }
 
-                taiKhoanService.logAccountActivity(taiKhoan.getId(), "LOGIN", "ÄÄƒng nháº­p thÃ nh cÃ´ng");
+                taiKhoanService.logAccountActivity(taiKhoan.getId(), "LOGIN", "Đăng nhập thành công");
 
                 Map<String, Object> loginData = Map.of(
                         "account", taiKhoan,
@@ -481,16 +530,16 @@ public class TaiKhoanRestController {
                         "role", taiKhoan.getVaiTro().getDisplayName()
                 );
 
-                return ResponseEntity.ok(createSuccessResponse("ÄÄƒng nháº­p thÃ nh cÃ´ng", loginData));
+                return ResponseEntity.ok(createSuccessResponse("Đăng nhập thành công", loginData));
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(createErrorResponse("Email hoáº·c máº­t kháº©u khÃ´ng Ä‘Ãºng", "INVALID_CREDENTIALS"));
+                        .body(createErrorResponse("Email hoặc mật khẩu không đúng", "INVALID_CREDENTIALS"));
             }
 
         } catch (Exception e) {
             System.err.println("Error authenticating: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi Ä‘Äƒng nháº­p", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi đăng nhập", "INTERNAL_ERROR"));
         }
     }
 
@@ -499,41 +548,41 @@ public class TaiKhoanRestController {
     private Map<String, String> validateCreateAccount(TaiKhoanDTO dto) {
         Map<String, String> errors = new HashMap<>();
 
-        // Validate vai trÃ²
+        // Validate vai trò
         if (dto.getVaiTro() == null && (dto.getVaiTroString() == null || dto.getVaiTroString().trim().isEmpty())) {
-            errors.put("vaiTro", "Vai trÃ² lÃ  báº¯t buá»™c");
+            errors.put("vaiTro", "Vai trò là bắt buộc");
         }
 
         // Validate email
         if (dto.getEmail() == null || dto.getEmail().trim().isEmpty()) {
-            errors.put("email", "Email lÃ  báº¯t buá»™c");
+            errors.put("email", "Email là bắt buộc");
         } else if (!taiKhoanService.isValidEmail(dto.getEmail())) {
-            errors.put("email", "Email khÃ´ng há»£p lá»‡");
+            errors.put("email", "Email không hợp lệ");
         }
 
-        // Validate máº­t kháº©u
+        // Validate mật khẩu
         if (dto.getMatKhau() == null || dto.getMatKhau().trim().isEmpty()) {
-            errors.put("matKhau", "Máº­t kháº©u lÃ  báº¯t buá»™c");
+            errors.put("matKhau", "Mật khẩu là bắt buộc");
         } else if (dto.getMatKhau().length() < 6) {
-            errors.put("matKhau", "Máº­t kháº©u pháº£i cÃ³ Ã­t nháº¥t 6 kÃ½ tá»±");
+            errors.put("matKhau", "Mật khẩu phải có ít nhất 6 ký tự");
         } else if (dto.getMatKhau().length() > 50) {
-            errors.put("matKhau", "Máº­t kháº©u khÃ´ng Ä‘Æ°á»£c quÃ¡ 50 kÃ½ tá»±");
+            errors.put("matKhau", "Mật khẩu không được quá 50 ký tự");
         }
 
-        // Validate thÃ´ng tin cÃ¡ nhÃ¢n cho non-admin
+        // Validate thông tin cá nhân cho non-admin
         if (dto.getVaiTro() != null && dto.getVaiTro() != TaiKhoan.VaiTro.ADMIN) {
             if (dto.getHoTen() == null || dto.getHoTen().trim().isEmpty()) {
-                errors.put("hoTen", "Há» tÃªn lÃ  báº¯t buá»™c");
+                errors.put("hoTen", "Họ tên là bắt buộc");
             } else if (dto.getHoTen().trim().length() < 2) {
-                errors.put("hoTen", "Há» tÃªn pháº£i cÃ³ Ã­t nháº¥t 2 kÃ½ tá»±");
+                errors.put("hoTen", "Họ tên phải có ít nhất 2 ký tự");
             } else if (dto.getHoTen().trim().length() > 100) {
-                errors.put("hoTen", "Há» tÃªn khÃ´ng Ä‘Æ°á»£c quÃ¡ 100 kÃ½ tá»±");
+                errors.put("hoTen", "Họ tên không được quá 100 ký tự");
             }
 
             if (dto.getSdt() == null || dto.getSdt().trim().isEmpty()) {
-                errors.put("sdt", "Sá»‘ Ä‘iá»‡n thoáº¡i lÃ  báº¯t buá»™c");
+                errors.put("sdt", "Số điện thoại là bắt buộc");
             } else if (!taiKhoanService.isValidPhoneNumber(dto.getSdt())) {
-                errors.put("sdt", "Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng há»£p lá»‡ (10-11 sá»‘, báº¯t Ä‘áº§u báº±ng 0)");
+                errors.put("sdt", "Số điện thoại không hợp lệ (10-11 số, bắt đầu bằng 0)");
             }
         }
 
@@ -543,40 +592,40 @@ public class TaiKhoanRestController {
     private Map<String, String> validateUpdateAccount(Map<String, Object> updateData, TaiKhoan existing) {
         Map<String, String> errors = new HashMap<>();
 
-        // Validate email náº¿u cÃ³
+        // Validate email nếu có
         if (updateData.containsKey("email")) {
             String email = (String) updateData.get("email");
             if (email != null && !email.trim().isEmpty()) {
                 if (!taiKhoanService.isValidEmail(email)) {
-                    errors.put("email", "Email khÃ´ng há»£p lá»‡");
+                    errors.put("email", "Email không hợp lệ");
                 }
             }
         }
 
-        // Validate máº­t kháº©u náº¿u cÃ³
+        // Validate mật khẩu nếu có
         if (updateData.containsKey("matKhau")) {
             String password = (String) updateData.get("matKhau");
             if (password != null && !password.trim().isEmpty()) {
                 if (password.length() < 6) {
-                    errors.put("matKhau", "Máº­t kháº©u pháº£i cÃ³ Ã­t nháº¥t 6 kÃ½ tá»±");
+                    errors.put("matKhau", "Mật khẩu phải có ít nhất 6 ký tự");
                 } else if (password.length() > 50) {
-                    errors.put("matKhau", "Máº­t kháº©u khÃ´ng Ä‘Æ°á»£c quÃ¡ 50 kÃ½ tá»±");
+                    errors.put("matKhau", "Mật khẩu không được quá 50 ký tự");
                 }
             }
         }
 
-        // Validate vai trÃ² náº¿u cÃ³
+        // Validate vai trò nếu có
         if (updateData.containsKey("vaiTro") || updateData.containsKey("vaiTroString")) {
             String roleStr = (String) updateData.getOrDefault("vaiTroString", updateData.get("vaiTro"));
             if (roleStr != null && !roleStr.trim().isEmpty()) {
                 TaiKhoan.VaiTro role = parseVaiTro(roleStr);
                 if (role == null) {
-                    errors.put("vaiTro", "Vai trÃ² khÃ´ng há»£p lá»‡");
+                    errors.put("vaiTro", "Vai trò không hợp lệ");
                 }
             }
         }
 
-        // Validate tráº¡ng thÃ¡i náº¿u cÃ³
+        // Validate trạng thái nếu có
         if (updateData.containsKey("trangThai")) {
             Object statusObj = updateData.get("trangThai");
             if (statusObj != null) {
@@ -589,10 +638,10 @@ public class TaiKhoanRestController {
                     }
 
                     if (status == null || (status != 0 && status != 1)) {
-                        errors.put("trangThai", "Tráº¡ng thÃ¡i pháº£i lÃ  0 hoáº·c 1");
+                        errors.put("trangThai", "Trạng thái phải là 0 hoặc 1");
                     }
                 } catch (NumberFormatException e) {
-                    errors.put("trangThai", "Tráº¡ng thÃ¡i khÃ´ng há»£p lá»‡");
+                    errors.put("trangThai", "Trạng thái không hợp lệ");
                 }
             }
         }

@@ -36,10 +36,10 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Integer> {
 
     Long countByNgayTaoBetween(Date startDate, Date endDate);
 
-    @Query("SELECT SUM(h.tongThanhToan) FROM HoaDon h WHERE h.ngayTao BETWEEN :startDate AND :endDate AND h.trangThaiHoaDon = 'DA_THANH_TOAN'")
+    @Query("SELECT COALESCE(SUM(h.tongThanhToan), 0) FROM HoaDon h WHERE h.ngayTao BETWEEN :startDate AND :endDate AND h.trangThaiHoaDon IN ('COMPLETED', 'DA_THANH_TOAN', 'HOAN_THANH')")
     Double getTongDoanhThuByNgayTao(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
-    @Query("SELECT SUM(h.tongThanhToan) FROM HoaDon h WHERE h.khachHang.id = :khachHangId AND h.trangThaiHoaDon = 'DA_THANH_TOAN'")
+    @Query("SELECT COALESCE(SUM(h.tongThanhToan), 0) FROM HoaDon h WHERE h.khachHang.id = :khachHangId AND h.trangThaiHoaDon IN ('COMPLETED', 'DA_THANH_TOAN', 'HOAN_THANH')")
     Double getTongChiTieuByKhachHangId(@Param("khachHangId") Integer khachHangId);
 
     Long countByKhachHangId(Integer khachHangId);

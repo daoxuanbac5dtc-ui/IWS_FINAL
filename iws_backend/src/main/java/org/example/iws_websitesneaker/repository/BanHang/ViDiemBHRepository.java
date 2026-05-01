@@ -11,15 +11,15 @@ import java.util.Optional;
 @Repository
 public interface ViDiemBHRepository extends JpaRepository<ViDiem, Integer> {
 
-    // Query thÃ´ng qua báº£ng khach_hang
+    // Query thông qua bảng khach_hang
     @Query("SELECT kh.viDiem FROM KhachHang kh WHERE kh.id = :khachHangId")
     Optional<ViDiem> findByKhachHangId(@Param("khachHangId") Integer khachHangId);
 
-    // Láº¥y Ä‘iá»ƒm hiá»‡n táº¡i cá»§a khÃ¡ch hÃ ng
+    // Lấy điểm hiện tại của khách hàng
     @Query("SELECT (vd.tongDiem - vd.soDiemDaDung) FROM KhachHang kh JOIN kh.viDiem vd WHERE kh.id = :khachHangId")
     Optional<Double> getDiemHienTaiByKhachHangId(@Param("khachHangId") Integer khachHangId);
 
-    // Cáº­p nháº­t Ä‘iá»ƒm cho khÃ¡ch hÃ ng
+    // Cập nhật điểm cho khách hàng
     @Query("UPDATE ViDiem vd SET vd.tongDiem = :tongDiem, vd.soDiemDaCong = :soDiemDaCong WHERE vd.id = (SELECT kh.viDiem.id FROM KhachHang kh WHERE kh.id = :khachHangId)")
     void updateDiemByKhachHangId(@Param("khachHangId") Integer khachHangId,
                                  @Param("tongDiem") Double tongDiem,

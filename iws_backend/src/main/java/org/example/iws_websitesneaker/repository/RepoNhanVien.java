@@ -18,20 +18,20 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
     // ===== MAIN QUERIES WITH EAGER LOADING & PAGINATION =====
 
     /**
-     * TÃ¬m táº¥t cáº£ nhÃ¢n viÃªn vá»›i EAGER loading TaiKhoan vÃ  pagination
+     * Tìm tất cả nhân viên với EAGER loading TaiKhoan và pagination
      */
     @Query(value = "SELECT DISTINCT n FROM NhanVien n LEFT JOIN FETCH n.taiKhoan ORDER BY n.id DESC",
             countQuery = "SELECT COUNT(DISTINCT n) FROM NhanVien n")
     Page<NhanVien> findAllWithTaiKhoan(Pageable pageable);
 
     /**
-     * TÃ¬m táº¥t cáº£ nhÃ¢n viÃªn vá»›i EAGER loading TaiKhoan (khÃ´ng pagination)
+     * Tìm tất cả nhân viên với EAGER loading TaiKhoan (không pagination)
      */
     @Query("SELECT DISTINCT n FROM NhanVien n LEFT JOIN FETCH n.taiKhoan ORDER BY n.id DESC")
     List<NhanVien> findAllWithTaiKhoan();
 
     /**
-     * MAIN SEARCH METHOD - TÃ¬m kiáº¿m vá»›i nhiá»u tiÃªu chÃ­ vÃ  pagination
+     * MAIN SEARCH METHOD - Tìm kiếm với nhiều tiêu chí và pagination
      */
     @Query(value = "SELECT DISTINCT n FROM NhanVien n LEFT JOIN FETCH n.taiKhoan tk WHERE " +
             "(:globalSearch IS NULL OR :globalSearch = '' OR " +
@@ -62,13 +62,13 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
             Pageable pageable);
 
     /**
-     * TÃ¬m nhÃ¢n viÃªn theo ID vá»›i EAGER loading TaiKhoan
+     * Tìm nhân viên theo ID với EAGER loading TaiKhoan
      */
     @Query("SELECT n FROM NhanVien n LEFT JOIN FETCH n.taiKhoan WHERE n.id = :id")
     Optional<NhanVien> findByIdWithTaiKhoan(@Param("id") Integer id);
 
     /**
-     * TÃ¬m nhÃ¢n viÃªn theo tráº¡ng thÃ¡i vá»›i EAGER loading TaiKhoan vÃ  pagination
+     * Tìm nhân viên theo trạng thái với EAGER loading TaiKhoan và pagination
      */
     @Query(value = "SELECT DISTINCT n FROM NhanVien n LEFT JOIN FETCH n.taiKhoan WHERE " +
             "(:trangThai IS NULL OR n.trangThai = :trangThai) ORDER BY n.id DESC",
@@ -77,25 +77,25 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
     Page<NhanVien> findByTrangThaiWithTaiKhoan(@Param("trangThai") Integer trangThai, Pageable pageable);
 
     /**
-     * TÃ¬m nhÃ¢n viÃªn theo tráº¡ng thÃ¡i vá»›i EAGER loading TaiKhoan (khÃ´ng pagination)
+     * Tìm nhân viên theo trạng thái với EAGER loading TaiKhoan (không pagination)
      */
     @Query("SELECT DISTINCT n FROM NhanVien n LEFT JOIN FETCH n.taiKhoan WHERE n.trangThai = :trangThai ORDER BY n.id DESC")
     List<NhanVien> findByTrangThaiWithTaiKhoan(@Param("trangThai") Integer trangThai);
 
     /**
-     * TÃ¬m nhÃ¢n viÃªn theo ID tÃ i khoáº£n vá»›i EAGER loading
+     * Tìm nhân viên theo ID tài khoản với EAGER loading
      */
     @Query("SELECT n FROM NhanVien n LEFT JOIN FETCH n.taiKhoan WHERE n.taiKhoan.id = :taiKhoanId")
     Optional<NhanVien> findByTaiKhoanIdWithTaiKhoan(@Param("taiKhoanId") Integer taiKhoanId);
 
     /**
-     * TÃ¬m nhÃ¢n viÃªn theo email vá»›i EAGER loading
+     * Tìm nhân viên theo email với EAGER loading
      */
     @Query("SELECT n FROM NhanVien n LEFT JOIN FETCH n.taiKhoan tk WHERE tk.email = :email")
     Optional<NhanVien> findByTaiKhoanEmailWithTaiKhoan(@Param("email") String email);
 
     /**
-     * TÃ¬m nhÃ¢n viÃªn theo mÃ£ nhÃ¢n viÃªn vá»›i EAGER loading
+     * Tìm nhân viên theo mã nhân viên với EAGER loading
      */
     @Query("SELECT n FROM NhanVien n LEFT JOIN FETCH n.taiKhoan WHERE n.maNhanVien = :maNhanVien")
     Optional<NhanVien> findByMaNhanVienWithTaiKhoan(@Param("maNhanVien") String maNhanVien);
@@ -103,20 +103,20 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
     // ===== DASHBOARD METHODS WITH EAGER LOADING =====
 
     /**
-     * Láº¥y nhÃ¢n viÃªn má»›i trong khoáº£ng thá»i gian vá»›i EAGER loading
+     * Lấy nhân viên mới trong khoảng thời gian với EAGER loading
      */
     @Query("SELECT DISTINCT n FROM NhanVien n LEFT JOIN FETCH n.taiKhoan WHERE " +
             "n.ngayTao >= :fromDate ORDER BY n.ngayTao DESC")
     List<NhanVien> findNewEmployeesWithTaiKhoan(@Param("fromDate") Date fromDate);
 
     /**
-     * Láº¥y nhÃ¢n viÃªn má»›i nháº¥t vá»›i EAGER loading
+     * Lấy nhân viên mới nhất với EAGER loading
      */
     @Query("SELECT DISTINCT n FROM NhanVien n LEFT JOIN FETCH n.taiKhoan ORDER BY n.ngayTao DESC")
     List<NhanVien> findAllOrderByNgayTaoDescWithTaiKhoan();
 
     /**
-     * TÃ¬m nhÃ¢n viÃªn cáº§n review vá»›i EAGER loading
+     * Tìm nhân viên cần review với EAGER loading
      */
     @Query("SELECT DISTINCT n FROM NhanVien n LEFT JOIN FETCH n.taiKhoan WHERE " +
             "(n.hoTen IS NULL OR n.hoTen = '' OR " +
@@ -125,7 +125,7 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
     List<NhanVien> findEmployeesNeedingReviewWithTaiKhoan();
 
     /**
-     * TÃ¬m nhÃ¢n viÃªn cÃ³ hoáº¡t Ä‘á»™ng gáº§n Ä‘Ã¢y vá»›i EAGER loading
+     * Tìm nhân viên có hoạt động gần đây với EAGER loading
      */
     @Query("SELECT DISTINCT n FROM NhanVien n LEFT JOIN FETCH n.taiKhoan WHERE " +
             "n.ngayCapNhat >= :fromDate ORDER BY n.ngayCapNhat DESC")
@@ -134,26 +134,26 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
     // ===== VALIDATION & CHECKING METHODS =====
 
     /**
-     * Kiá»ƒm tra mÃ£ nhÃ¢n viÃªn Ä‘Ã£ tá»“n táº¡i
+     * Kiểm tra mã nhân viên đã tồn tại
      */
     boolean existsByMaNhanVien(String maNhanVien);
 
     /**
-     * Kiá»ƒm tra mÃ£ nhÃ¢n viÃªn Ä‘Ã£ tá»“n táº¡i (loáº¡i trá»« ID hiá»‡n táº¡i)
+     * Kiểm tra mã nhân viên đã tồn tại (loại trừ ID hiện tại)
      */
     @Query("SELECT CASE WHEN COUNT(n) > 0 THEN true ELSE false END FROM NhanVien n WHERE " +
             "n.maNhanVien = :maNhanVien AND (:excludeId IS NULL OR n.id != :excludeId)")
     boolean existsByMaNhanVienExcludingId(@Param("maNhanVien") String maNhanVien, @Param("excludeId") Integer excludeId);
 
     /**
-     * Kiá»ƒm tra sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng
+     * Kiểm tra số điện thoại đã được sử dụng
      */
     @Query("SELECT CASE WHEN COUNT(n) > 0 THEN true ELSE false END FROM NhanVien n WHERE " +
             "n.sdt = :sdt AND (:excludeId IS NULL OR n.id != :excludeId)")
     boolean existsBySdtExcludingId(@Param("sdt") String sdt, @Param("excludeId") Integer excludeId);
 
     /**
-     * Kiá»ƒm tra cÃ³ thá»ƒ xÃ³a nhÃ¢n viÃªn khÃ´ng
+     * Kiểm tra có thể xóa nhân viên không
      */
     @Query("SELECT CASE WHEN COUNT(n) > 0 THEN false ELSE true END FROM NhanVien n WHERE " +
             "n.id = :id AND n.trangThai = 1")
@@ -162,56 +162,56 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
     // ===== COUNT & STATISTICS METHODS =====
 
     /**
-     * Äáº¿m tá»•ng sá»‘ nhÃ¢n viÃªn
+     * Đếm tổng số nhân viên
      */
     @Query("SELECT COUNT(n) FROM NhanVien n")
     long countAllEmployees();
 
     /**
-     * Äáº¿m nhÃ¢n viÃªn theo tráº¡ng thÃ¡i
+     * Đếm nhân viên theo trạng thái
      */
     @Query("SELECT COUNT(n) FROM NhanVien n WHERE n.trangThai = :trangThai")
     long countByTrangThai(@Param("trangThai") Integer trangThai);
 
     /**
-     * Äáº¿m nhÃ¢n viÃªn Ä‘ang hoáº¡t Ä‘á»™ng
+     * Đếm nhân viên đang hoạt động
      */
     @Query("SELECT COUNT(n) FROM NhanVien n WHERE n.trangThai = 1")
     long countActiveEmployees();
 
     /**
-     * Äáº¿m nhÃ¢n viÃªn nghá»‰ viá»‡c
+     * Đếm nhân viên nghỉ việc
      */
     @Query("SELECT COUNT(n) FROM NhanVien n WHERE n.trangThai = 0")
     long countInactiveEmployees();
 
     /**
-     * Äáº¿m nhÃ¢n viÃªn má»›i trong khoáº£ng thá»i gian
+     * Đếm nhân viên mới trong khoảng thời gian
      */
     @Query("SELECT COUNT(n) FROM NhanVien n WHERE n.ngayTao BETWEEN :startDate AND :endDate")
     long countByDateRange(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
     /**
-     * Äáº¿m nhÃ¢n viÃªn má»›i hÃ´m nay (Fixed version)
+     * Đếm nhân viên mới hôm nay (Fixed version)
      */
     @Query("SELECT COUNT(n) FROM NhanVien n WHERE " +
             "n.ngayTao >= :startOfDay AND n.ngayTao < :endOfDay")
     long countNewToday(@Param("startOfDay") Date startOfDay, @Param("endOfDay") Date endOfDay);
 
     /**
-     * Äáº¿m nhÃ¢n viÃªn má»›i tuáº§n nÃ y
+     * Đếm nhân viên mới tuần này
      */
     @Query("SELECT COUNT(n) FROM NhanVien n WHERE n.ngayTao >= :startOfWeek")
     long countNewThisWeek(@Param("startOfWeek") Date startOfWeek);
 
     /**
-     * Äáº¿m nhÃ¢n viÃªn má»›i thÃ¡ng nÃ y
+     * Đếm nhân viên mới tháng này
      */
     @Query("SELECT COUNT(n) FROM NhanVien n WHERE n.ngayTao >= :startOfMonth")
     long countNewThisMonth(@Param("startOfMonth") Date startOfMonth);
 
     /**
-     * ALTERNATIVE: Äáº¿m nhÃ¢n viÃªn má»›i hÃ´m nay báº±ng cÃ¡ch khÃ¡c (Deprecated - use countNewToday instead)
+     * ALTERNATIVE: Đếm nhân viên mới hôm nay bằng cách khác (Deprecated - use countNewToday instead)
      */
     @Deprecated
     @Query("SELECT COUNT(n) FROM NhanVien n WHERE " +
@@ -221,7 +221,7 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
     // ===== OPTIMIZED SEARCH METHODS FOR CONTROLLER =====
 
     /**
-     * TÃ¬m kiáº¿m vá»›i tá»« khÃ³a (cho controller search)
+     * Tìm kiếm với từ khóa (cho controller search)
      */
     @Query("SELECT DISTINCT n FROM NhanVien n LEFT JOIN FETCH n.taiKhoan tk WHERE " +
             "(:keyword IS NULL OR :keyword = '' OR " +
@@ -233,7 +233,7 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
     List<NhanVien> searchByKeywordWithTaiKhoan(@Param("keyword") String keyword);
 
     /**
-     * TÃ¬m kiáº¿m nÃ¢ng cao (cho controller advanced search)
+     * Tìm kiếm nâng cao (cho controller advanced search)
      */
     @Query("SELECT DISTINCT n FROM NhanVien n LEFT JOIN FETCH n.taiKhoan tk WHERE " +
             "(:hoTen IS NULL OR :hoTen = '' OR LOWER(COALESCE(n.hoTen, '')) LIKE LOWER(CONCAT('%', :hoTen, '%'))) AND " +
@@ -255,39 +255,39 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
     // ===== BACKWARD COMPATIBILITY METHODS =====
 
     /**
-     * TÃ¬m theo ID tÃ i khoáº£n (compatibility)
+     * Tìm theo ID tài khoản (compatibility)
      */
     Optional<NhanVien> findByTaiKhoan_Id(Integer taiKhoanId);
 
     /**
-     * TÃ¬m theo mÃ£ nhÃ¢n viÃªn (compatibility)
+     * Tìm theo mã nhân viên (compatibility)
      */
     Optional<NhanVien> findByMaNhanVien(String maNhanVien);
 
     /**
-     * TÃ¬m theo mÃ£ nhÃ¢n viÃªn vÃ  tráº¡ng thÃ¡i (compatibility)
+     * Tìm theo mã nhân viên và trạng thái (compatibility)
      */
     Optional<NhanVien> findByMaNhanVienAndTrangThai(String maNhanVien, Integer trangThai);
 
     /**
-     * TÃ¬m theo tráº¡ng thÃ¡i (compatibility)
+     * Tìm theo trạng thái (compatibility)
      */
     List<NhanVien> findByTrangThai(Integer trangThai);
 
     /**
-     * TÃ¬m theo email tÃ i khoáº£n (compatibility)
+     * Tìm theo email tài khoản (compatibility)
      */
     @Query("SELECT n FROM NhanVien n WHERE n.taiKhoan.email = :email")
     Optional<NhanVien> findByTaiKhoanEmail(@Param("email") String email);
 
     /**
-     * TÃ¬m theo mÃ£ tÃ i khoáº£n vÃ  tráº¡ng thÃ¡i (compatibility)
+     * Tìm theo mã tài khoản và trạng thái (compatibility)
      */
     @Query("SELECT n FROM NhanVien n WHERE n.taiKhoan.maTaiKhoan = :maTaiKhoan AND n.trangThai = :trangThai")
     Optional<NhanVien> findByTaiKhoan_MaTaiKhoanAndTrangThai(@Param("maTaiKhoan") String maTaiKhoan, @Param("trangThai") Integer trangThai);
 
     /**
-     * Láº¥y mÃ£ nhÃ¢n viÃªn theo mÃ£ tÃ i khoáº£n (compatibility)
+     * Lấy mã nhân viên theo mã tài khoản (compatibility)
      */
     @Query("SELECT n.maNhanVien FROM NhanVien n WHERE n.taiKhoan.maTaiKhoan = :maTaiKhoan")
     Optional<String> findMaNhanVienByMaTaiKhoan(@Param("maTaiKhoan") String maTaiKhoan);
@@ -295,7 +295,7 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
     // ===== PERFORMANCE OPTIMIZATION QUERIES =====
 
     /**
-     * Äáº¿m nhÃ¢n viÃªn vá»›i search criteria - cho pagination
+     * Đếm nhân viên với search criteria - cho pagination
      */
     @Query("SELECT COUNT(DISTINCT n) FROM NhanVien n LEFT JOIN n.taiKhoan tk WHERE " +
             "(:globalSearch IS NULL OR :globalSearch = '' OR " +
@@ -306,13 +306,13 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
     long countBySearchCriteria(@Param("globalSearch") String globalSearch, @Param("trangThai") Integer trangThai);
 
     /**
-     * Láº¥y IDs cá»§a nhÃ¢n viÃªn active cho batch operations
+     * Lấy IDs của nhân viên active cho batch operations
      */
     @Query("SELECT n.id FROM NhanVien n WHERE n.trangThai = 1")
     List<Integer> findAllActiveEmployeeIds();
 
     /**
-     * Láº¥y IDs cá»§a nhÃ¢n viÃªn theo tráº¡ng thÃ¡i
+     * Lấy IDs của nhân viên theo trạng thái
      */
     @Query("SELECT n.id FROM NhanVien n WHERE n.trangThai = :trangThai")
     List<Integer> findEmployeeIdsByStatus(@Param("trangThai") Integer trangThai);
@@ -320,7 +320,7 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
     // ===== SPECIALIZED DASHBOARD QUERIES =====
 
     /**
-     * Láº¥y thá»‘ng kÃª theo thÃ¡ng
+     * Lấy thống kê theo tháng
      */
     @Query("SELECT EXTRACT(MONTH FROM n.ngayTao) as month, COUNT(n) " +
             "FROM NhanVien n " +
@@ -330,18 +330,18 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
     List<Object[]> getMonthlyStatistics(@Param("year") Integer year);
 
     /**
-     * Láº¥y thá»‘ng kÃª theo tráº¡ng thÃ¡i
+     * Lấy thống kê theo trạng thái
      */
     @Query("SELECT n.trangThai, COUNT(n) FROM NhanVien n GROUP BY n.trangThai")
     List<Object[]> getStatusStatistics();
 
     /**
-     * Láº¥y top 10 nhÃ¢n viÃªn má»›i nháº¥t
+     * Lấy top 10 nhân viên mới nhất
      */
     List<NhanVien> findTop10ByOrderByIdDesc();
 
     /**
-     * Láº¥y nhÃ¢n viÃªn cÃ³ cáº­p nháº­t gáº§n Ä‘Ã¢y
+     * Lấy nhân viên có cập nhật gần đây
      */
     @Query("SELECT DISTINCT n FROM NhanVien n LEFT JOIN FETCH n.taiKhoan " +
             "WHERE n.ngayCapNhat >= :fromDate " +
@@ -351,14 +351,14 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
     // ===== BULK OPERATIONS =====
 
     /**
-     * Cáº­p nháº­t tráº¡ng thÃ¡i hÃ ng loáº¡t
+     * Cập nhật trạng thái hàng loạt
      */
     @Query("UPDATE NhanVien n SET n.trangThai = :newStatus, n.ngayCapNhat = CURRENT_TIMESTAMP " +
             "WHERE n.id IN :ids")
     int bulkUpdateStatus(@Param("ids") List<Integer> ids, @Param("newStatus") Integer newStatus);
 
     /**
-     * XÃ³a má»m hÃ ng loáº¡t
+     * Xóa mềm hàng loạt
      */
     @Query("UPDATE NhanVien n SET n.trangThai = 0, n.ngayCapNhat = CURRENT_TIMESTAMP " +
             "WHERE n.id IN :ids AND n.trangThai = 1")
@@ -367,7 +367,7 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
     // ===== VALIDATION QUERIES =====
 
     /**
-     * Kiá»ƒm tra email Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng bá»Ÿi tÃ i khoáº£n khÃ¡c
+     * Kiểm tra email đã được sử dụng bởi tài khoản khác
      */
     @Query("SELECT CASE WHEN COUNT(n) > 0 THEN true ELSE false END FROM NhanVien n " +
             "JOIN n.taiKhoan tk WHERE tk.email = :email AND " +
@@ -375,7 +375,7 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
     boolean existsByEmailExcludingId(@Param("email") String email, @Param("excludeId") Integer excludeId);
 
     /**
-     * Láº¥y nhÃ¢n viÃªn cÃ³ trÃ¹ng láº·p mÃ£ nhÃ¢n viÃªn
+     * Lấy nhân viên có trùng lặp mã nhân viên
      */
     @Query("SELECT n.maNhanVien, COUNT(n) FROM NhanVien n " +
             "WHERE n.maNhanVien IS NOT NULL " +
@@ -383,7 +383,7 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
     List<Object[]> findDuplicateEmployeeCodes();
 
     /**
-     * Láº¥y nhÃ¢n viÃªn cÃ³ trÃ¹ng láº·p sá»‘ Ä‘iá»‡n thoáº¡i
+     * Lấy nhân viên có trùng lặp số điện thoại
      */
     @Query("SELECT n.sdt, COUNT(n) FROM NhanVien n " +
             "WHERE n.sdt IS NOT NULL " +
@@ -393,7 +393,7 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
     // ===== EXPORT/REPORTING QUERIES =====
 
     /**
-     * Láº¥y dá»¯ liá»‡u Ä‘á»ƒ export Excel
+     * Lấy dữ liệu để export Excel
      */
     @Query("SELECT n.id, n.maNhanVien, n.hoTen, n.sdt, n.trangThai, " +
             "n.ngayTao, n.ngayCapNhat, tk.email " +
@@ -402,7 +402,7 @@ public interface RepoNhanVien extends JpaRepository<NhanVien, Integer> {
     List<Object[]> findAllForExport();
 
     /**
-     * Láº¥y dá»¯ liá»‡u vá»›i search criteria Ä‘á»ƒ export
+     * Lấy dữ liệu với search criteria để export
      */
     @Query("SELECT n.id, n.maNhanVien, n.hoTen, n.sdt, n.trangThai, " +
             "n.ngayTao, n.ngayCapNhat, tk.email " +

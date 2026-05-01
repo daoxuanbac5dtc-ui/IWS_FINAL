@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.NoSuchElementException;
 
 public interface HoaDonService {
-    // TÃ¬m kiáº¿m vÃ  láº¥y danh sÃ¡ch
+    // Tìm kiếm và lấy danh sách
     List<HoaDonDTO> getAllHoaDons();
     List<HoaDonDTO> getHoaDonByStatus(String trangThai);
     List<HoaDonDTO> getPOSInvoices();
@@ -17,14 +17,14 @@ public interface HoaDonService {
     HoaDonDTO getHoaDonById(Integer id);
     List<HoaDonDTO> searchInvoices(String keyword, String trangThai, String loaiHoaDon);
     Optional<HoaDon> findByEmailAndMaHoaDon(String email, String maHoaDon);
-    // Cáº­p nháº­t tráº¡ng thÃ¡i
+    // Cập nhật trạng thái
     HoaDonDTO updateStatus(Integer id, InvoiceStatusUpdateRequest request);
     HoaDonDTO confirmInvoice(Integer id, Integer nhanVienId);
     HoaDonDTO cancelInvoice(Integer id, String lyDo, Integer nhanVienId);
     HoaDonDTO completeInvoice(Integer id, Integer nhanVienId);
     OrderTrackingResponse getTrackingResponse(String email, String orderCode);
     HoaDon save(HoaDon hoaDon);
-    // Thá»‘ng kÃª vÃ  bÃ¡o cÃ¡o
+    // Thống kê và báo cáo
     Map<String, Object> getInvoiceStatistics();
     List<LichSuHoaDonDTO> getInvoiceHistory(Integer hoaDonId);
     HoaDonDTO updateStatus(Integer id, StatusUpdateRequest request);

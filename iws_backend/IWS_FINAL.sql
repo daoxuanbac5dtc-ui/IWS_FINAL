@@ -626,18 +626,18 @@ GO
 
 -- 15. Insert dữ liệu bảng khach_hang
 INSERT INTO khach_hang (id_vi_diem, id_tai_khoan, ma_khach_hang, ho_ten, sdt, trang_thai, ngay_tao, ngay_cap_nhat) VALUES
-(1, 4, 'KH001', N'Phạm Thị Khách Hàng', '0901234567', 1, GETDATE(), GETDATE()),
-(2, 5, 'KH002', N'Hoàng Văn Khách', '0901234568', 1, GETDATE(), GETDATE()),
-(3, 6, 'KH003', N'Vũ Thị Minh', '0901234569', 1, GETDATE(), GETDATE()),
-(4, 7, 'KH004', N'Đỗ Văn Thành', '0901234570', 1, GETDATE(), GETDATE()),
-(5, 8, 'KH005', N'Bùi Thị Lan', '0901234571', 1, GETDATE(), GETDATE())
+(1, 4, 'KH001', N'Nguyễn Văn An', '0901234567', 1, GETDATE(), GETDATE()),
+(2, 5, 'KH002', N'Nguyễn Văn Bình', '0901234568', 1, GETDATE(), GETDATE()),
+(3, 6, 'KH003', N'Nguyễn Văn Cường', '0901234569', 1, GETDATE(), GETDATE()),
+(4, 7, 'KH004', N'Nguyễn Văn Đạt', '0901234570', 1, GETDATE(), GETDATE()),
+(5, 8, 'KH005', N'Nguyễn Văn Huy', '0901234571', 1, GETDATE(), GETDATE())
 GO
 
 -- 16. Insert dữ liệu bảng nhan_vien
 INSERT INTO nhan_vien (id_tai_khoan, ma_nhan_vien, ho_ten, sdt, trang_thai, ngay_tao, ngay_cap_nhat) VALUES
-(1, 'NV001', N'Nguyễn Văn Admin', '0987654321', 1, GETDATE(), GETDATE()),
-(2, 'NV002', N'Trần Thị Nhân Viên', '0987654322', 1, GETDATE(), GETDATE()),
-(3, 'NV003', N'Lê Văn Nhân Viên 2', '0987654323', 1, GETDATE(), GETDATE())
+(1, 'NV001', N'Nguyễn Hoàng Minh', '0987654321', 1, GETDATE(), GETDATE()),
+(2, 'NV002', N'Trần Quốc Huy', '0987654322', 1, GETDATE(), GETDATE()),
+(3, 'NV003', N'Lê Minh Khang', '0987654323', 1, GETDATE(), GETDATE())
 GO
 
 -- 17. Insert dữ liệu bảng gio_hang
@@ -660,10 +660,10 @@ GO
 
 -- 19. Insert dữ liệu bảng voucher
 INSERT INTO voucher (ma_voucher, ten_voucher, loai_giam_gia, trang_thai, duong_dan_hinh_anh, gia_tri_giam_toi_da, gia_tri_giam, gia_tri_giam_toi_thieu, so_luong, ngay_bat_dau, ngay_ket_thuc, ngay_tao, ngay_cap_nhat) VALUES
-('VC001', N'Giảm 10% cho đơn hàng đầu tiên', 'PERCENT', 1, '/voucher/vc001.jpg', 500000, 0.10, 1000000, 100, '2024-01-01', '2030-12-31', GETDATE(), GETDATE()),
-('VC002', N'Giảm 200K cho đơn từ 2tr', 'FIXED', 1, '/voucher/vc002.jpg', 200000, 200000, 2000000, 50, '2024-01-01', '2030-12-31', GETDATE(), GETDATE()),
-('VC003', N'Freeship cho đơn từ 1tr5', 'SHIPPING', 1, '/voucher/vc003.jpg', 50000, 50000, 1500000, 200, '2024-01-01', '2030-12-31', GETDATE(), GETDATE()),
-('VC004', N'Giảm 15% cho thành viên VIP', 'PERCENT', 1, '/voucher/vc004.jpg', 1000000, 0.15, 3000000, 30, '2024-06-01', '2030-12-31', GETDATE(), GETDATE())
+('VC001', N'Giảm 10% cho đơn hàng đầu tiên', 'PERCENT', 1, '/voucher/images/vc001.svg', 500000, 0.10, 1000000, 100, '2024-01-01', '2030-12-31', GETDATE(), GETDATE()),
+('VC002', N'Giảm 200K cho đơn từ 2tr', 'FIXED', 1, '/voucher/images/vc002.svg', 200000, 200000, 2000000, 50, '2024-01-01', '2030-12-31', GETDATE(), GETDATE()),
+('VC003', N'Freeship cho đơn từ 1tr5', 'SHIPPING', 1, '/voucher/images/vc003.svg', 50000, 50000, 1500000, 200, '2024-01-01', '2030-12-31', GETDATE(), GETDATE()),
+('VC004', N'Giảm 15% cho thành viên VIP', 'PERCENT', 1, '/voucher/images/vc004.svg', 1000000, 0.15, 3000000, 30, '2024-06-01', '2030-12-31', GETDATE(), GETDATE())
 GO
 
 -- 20. Insert dữ liệu bảng tai_khoan_voucher
@@ -685,10 +685,10 @@ GO
 
 -- 22. Insert dữ liệu bảng hoa_don
 INSERT INTO hoa_don (id_khach_hang, id_nhan_vien, ma_hoa_don, dia_chi, email, ghi_chu, sdt, trang_thai_hoa_don, loai_hoa_don, ten_nguoi_dung, phuong_thuc_thanh_toan, phi_van_chuyen, diem_su_dung, tong_tien, gia_tri_diem, tong_thanh_toan, ngay_hoan_thanh, ngay_xac_nhan, ngay_tao, ngay_cap_nhat, ngay_giao_hang, ngay_nhan_hang, thoi_gian_van_chuyen) VALUES
-(1, 2, 'HD001', N'321 Hàng Bạc, Hoàn Kiếm, Hà Nội', 'khachhang1@gmail.com', N'Giao hàng giờ hành chính', '0901234567', N'Hoàn thành', 'ONLINE', N'Phạm Thị Khách Hàng', 'VNPAY', 30000, 50, 2500000, 1000, 2480000, '2024-07-20 14:30:00', '2024-07-18 09:15:00', '2024-07-18 08:30:00', GETDATE(), '2024-07-19 10:00:00', '2024-07-20 14:30:00', '2024-07-19 08:00:00'),
-(2, 2, 'HD002', N'654 Võ Thị Sáu, Quận 3, TP HCM', 'khachhang2@gmail.com', N'Gọi trước khi giao', '0901234568', N'Đang giao', 'ONLINE', N'Hoàng Văn Khách', 'COD', 30000, 0, 3600000, 1000, 3630000, NULL, '2024-07-22 11:20:00', '2024-07-22 10:45:00', GETDATE(), '2024-07-23 15:30:00', NULL, '2024-07-22 16:00:00'),
-(3, 1, 'HD003', N'987 Láng Hạ, Đống Đa, Hà Nội', 'khachhang3@gmail.com', N'', '0901234569', N'Đã xác nhận', 'ONLINE', N'Vũ Thị Minh', 'MOMO', 30000, 100, 1800000, 1000, 1730000, NULL, '2024-07-23 16:45:00', '2024-07-23 15:20:00', GETDATE(), NULL, NULL, NULL),
-(1, 3, 'HD004', N'', '', N'Mua tại cửa hàng', '', N'Hoàn thành', 'OFFLINE', N'Phạm Thị Khách Hàng', 'CASH', 0, 0, 2000000, 1000, 2000000, '2024-07-21 16:00:00', '2024-07-21 16:00:00', '2024-07-21 16:00:00', GETDATE(), NULL, NULL, NULL)
+(1, 2, 'HD001', N'321 Hàng Bạc, Hoàn Kiếm, Hà Nội', 'khachhang1@gmail.com', N'Giao hàng giờ hành chính', '0901234567', N'Hoàn thành', 'ONLINE', N'Nguyễn Văn An', 'VNPAY', 30000, 50, 2500000, 1000, 2480000, '2024-07-20 14:30:00', '2024-07-18 09:15:00', '2024-07-18 08:30:00', GETDATE(), '2024-07-19 10:00:00', '2024-07-20 14:30:00', '2024-07-19 08:00:00'),
+(2, 2, 'HD002', N'654 Võ Thị Sáu, Quận 3, TP HCM', 'khachhang2@gmail.com', N'Gọi trước khi giao', '0901234568', N'Đang giao', 'ONLINE', N'Nguyễn Văn Bình', 'COD', 30000, 0, 3600000, 1000, 3630000, NULL, '2024-07-22 11:20:00', '2024-07-22 10:45:00', GETDATE(), '2024-07-23 15:30:00', NULL, '2024-07-22 16:00:00'),
+(3, 1, 'HD003', N'987 Láng Hạ, Đống Đa, Hà Nội', 'khachhang3@gmail.com', N'', '0901234569', N'Đã xác nhận', 'ONLINE', N'Nguyễn Văn Cường', 'MOMO', 30000, 100, 1800000, 1000, 1730000, NULL, '2024-07-23 16:45:00', '2024-07-23 15:20:00', GETDATE(), NULL, NULL, NULL),
+(1, 3, 'HD004', N'', '', N'Mua tại cửa hàng', '', N'Hoàn thành', 'OFFLINE', N'Nguyễn Văn An', 'CASH', 0, 0, 2000000, 1000, 2000000, '2024-07-21 16:00:00', '2024-07-21 16:00:00', '2024-07-21 16:00:00', GETDATE(), NULL, NULL, NULL)
 GO
 
 -- 23. Insert dữ liệu bảng hoa_don_chi_tiet
@@ -762,13 +762,16 @@ INSERT INTO chi_tiet_san_pham (ma_chi_tiet, ma_QR, so_luong, gia_ban, gia_goc, t
 ('CTSP012', 'QR012', 10, 2500000.00, 2000000.00, 1, GETDATE(), GETDATE(), 3, 7, 1, 1), -- Nike Air Max 270 Đỏ Size 41
 ('CTSP013', 'QR013', 12, 3200000.00, 2800000.00, 1, GETDATE(), GETDATE(), 1, 8, 2, 2), -- Adidas Ultraboost Đen Size 42
 ('CTSP014', 'QR014', 8, 1800000.00, 1500000.00, 1, GETDATE(), GETDATE(), 2, 5, 3, 3),  -- Converse Trắng Size 39
-('CTSP015', 'QR015', 14, 2000000.00, 1700000.00, 1, GETDATE(), GETDATE(), 9, 8, 4, 4)  -- Vans Xám Size 42
+('CTSP015', 'QR015', 14, 2000000.00, 1700000.00, 1, GETDATE(), GETDATE(), 9, 8, 4, 4),  -- Vans Xám Size 42
+('CTSP016', 'QR016', 20, 1500000.00, 1800000.00, 1, GETDATE(), GETDATE(), 9, 6, 6, 6),  -- New Balance 574 Xám Size 40
+('CTSP017', 'QR017', 12, 2000000.00, 2200000.00, 1, GETDATE(), GETDATE(), 3, 7, 7, 7),  -- Jordan 1 High OG Đỏ Size 41
+('CTSP018', 'QR018', 16, 1800000.00, 2000000.00, 1, GETDATE(), GETDATE(), 2, 8, 8, 8)  -- Under Armour HOVR Trắng Size 42
 GO
 
 -- Thêm voucher mới
 INSERT INTO voucher (ma_voucher, ten_voucher, loai_giam_gia, trang_thai, duong_dan_hinh_anh, gia_tri_giam_toi_da, gia_tri_giam, gia_tri_giam_toi_thieu, so_luong, ngay_bat_dau, ngay_ket_thuc, ngay_tao, ngay_cap_nhat) VALUES
-('VC005', N'Giảm 5% cho tất cả sản phẩm', 'PERCENT', 1, '/voucher/vc005.jpg', 300000, 0.05, 500000, 500, '2024-01-01', '2030-12-31', GETDATE(), GETDATE()),
-('VC006', N'Voucher sinh nhật - Giảm 25%', 'PERCENT', 1, '/voucher/vc006.jpg', 1500000, 0.25, 2000000, 20, '2024-01-01', '2030-12-31', GETDATE(), GETDATE())
+('VC005', N'Giảm 5% cho tất cả sản phẩm', 'PERCENT', 1, '/voucher/images/vc005.svg', 300000, 0.05, 500000, 500, '2024-01-01', '2030-12-31', GETDATE(), GETDATE()),
+('VC006', N'Voucher sinh nhật - Giảm 25%', 'PERCENT', 1, '/voucher/images/vc006.svg', 1500000, 0.25, 2000000, 20, '2024-01-01', '2030-12-31', GETDATE(), GETDATE())
 GO
 
 -- Phân phối voucher cho khách hàng

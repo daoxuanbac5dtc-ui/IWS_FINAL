@@ -10,153 +10,153 @@ import java.util.Optional;
 
 /**
  * Service interface for TaiKhoan (Account) management
- * ÄÃ£ Ä‘Æ°á»£c tá»‘i Æ°u hÃ³a vÃ  sá»­a lá»—i validation, CORS, delete
+ * Đã được tối ưu hóa và sửa lỗi validation, CORS, delete
  */
 public interface TaiKhoanService {
 
     // ================== CORE CRUD OPERATIONS ==================
 
     /**
-     * TÃ¬m táº¥t cáº£ tÃ i khoáº£n
+     * Tìm tất cả tài khoản
      */
     List<TaiKhoan> findAll();
 
     boolean updatePassword(String email, String newPassword);
     /**
-     * TÃ¬m tÃ i khoáº£n theo ID
+     * Tìm tài khoản theo ID
      */
     Optional<TaiKhoan> findById(Integer id);
 
     /**
-     * LÆ°u tÃ i khoáº£n (create hoáº·c update)
+     * Lưu tài khoản (create hoặc update)
      */
     TaiKhoan save(TaiKhoan taiKhoan);
 
     /**
-     * XÃ³a tÃ i khoáº£n theo ID (vá»›i kiá»ƒm tra rÃ ng buá»™c an toÃ n)
+     * Xóa tài khoản theo ID (với kiểm tra ràng buộc an toàn)
      */
     void deleteById(Integer id);
 
     // ================== ACCOUNT CREATION - MAIN METHODS ==================
 
     /**
-     * Táº¡o tÃ i khoáº£n hoÃ n chá»‰nh tá»« DTO (MAIN METHOD)
-     * Tá»± Ä‘á»™ng táº¡o related entities (KhachHang/NhanVien/DiaChi)
+     * Tạo tài khoản hoàn chỉnh từ DTO (MAIN METHOD)
+     * Tự động tạo related entities (KhachHang/NhanVien/DiaChi)
      */
     Map<String, Object> createCompleteAccount(TaiKhoanDTO dto);
 
     /**
-     * Táº¡o tÃ i khoáº£n cÆ¡ báº£n tá»« DTO (chá»‰ táº¡o TaiKhoan)
+     * Tạo tài khoản cơ bản từ DTO (chỉ tạo TaiKhoan)
      */
     TaiKhoan createTaiKhoan(TaiKhoanDTO dto);
 
     /**
-     * Táº¡o tÃ i khoáº£n Ä‘Æ¡n giáº£n (method helper)
+     * Tạo tài khoản đơn giản (method helper)
      */
     TaiKhoan createAccount(String email, String password, TaiKhoan.VaiTro vaiTro);
 
     // ================== AUTHENTICATION & SECURITY ==================
 
     /**
-     * ÄÄƒng nháº­p báº±ng email vÃ  máº­t kháº©u
+     * Đăng nhập bằng email và mật khẩu
      */
     Optional<TaiKhoan> authenticate(String email, String password);
 
     /**
-     * Thay Ä‘á»•i máº­t kháº©u vá»›i verification
+     * Thay đổi mật khẩu với verification
      */
     boolean changePassword(Integer id, String oldPassword, String newPassword);
 
     /**
-     * Reset máº­t kháº©u (cho admin)
+     * Reset mật khẩu (cho admin)
      */
     boolean resetPassword(Integer id, String newPassword);
 
     /**
-     * Kiá»ƒm tra quyá»n truy cáº­p
+     * Kiểm tra quyền truy cập
      */
     boolean hasPermission(Integer accountId, String permission);
 
     // ================== BASIC QUERIES ==================
 
     /**
-     * TÃ¬m theo email
+     * Tìm theo email
      */
     Optional<TaiKhoan> findByEmail(String email);
 
     /**
-     * TÃ¬m theo mÃ£ tÃ i khoáº£n
+     * Tìm theo mã tài khoản
      */
     Optional<TaiKhoan> findByMaTaiKhoan(String maTaiKhoan);
 
     /**
-     * Kiá»ƒm tra email tá»“n táº¡i
+     * Kiểm tra email tồn tại
      */
     boolean existsByEmail(String email);
 
     /**
-     * Kiá»ƒm tra mÃ£ tÃ i khoáº£n tá»“n táº¡i
+     * Kiểm tra mã tài khoản tồn tại
      */
     boolean existsByMaTaiKhoan(String maTaiKhoan);
 
     // ================== ROLE-BASED QUERIES ==================
 
     /**
-     * TÃ¬m theo vai trÃ²
+     * Tìm theo vai trò
      */
     List<TaiKhoan> findByVaiTro(TaiKhoan.VaiTro vaiTro);
 
     /**
-     * TÃ¬m tÃ i khoáº£n khÃ¡ch hÃ ng active
+     * Tìm tài khoản khách hàng active
      */
     List<TaiKhoan> findActiveCustomers();
 
     /**
-     * TÃ¬m tÃ i khoáº£n nhÃ¢n viÃªn active
+     * Tìm tài khoản nhân viên active
      */
     List<TaiKhoan> findActiveEmployees();
 
     /**
-     * TÃ¬m tÃ i khoáº£n admin active
+     * Tìm tài khoản admin active
      */
     List<TaiKhoan> findActiveAdmins();
 
     // ================== STATUS MANAGEMENT ==================
 
     /**
-     * TÃ¬m theo tráº¡ng thÃ¡i
+     * Tìm theo trạng thái
      */
     List<TaiKhoan> findByTrangThai(Integer trangThai);
 
     /**
-     * TÃ¬m tÃ i khoáº£n Ä‘ang hoáº¡t Ä‘á»™ng
+     * Tìm tài khoản đang hoạt động
      */
     List<TaiKhoan> findActiveAccounts();
 
     /**
-     * Chuyá»ƒn Ä‘á»•i tráº¡ng thÃ¡i tÃ i khoáº£n
+     * Chuyển đổi trạng thái tài khoản
      */
     boolean toggleAccountStatus(Integer id);
 
     /**
-     * VÃ´ hiá»‡u hÃ³a tÃ i khoáº£n
+     * Vô hiệu hóa tài khoản
      */
     boolean deactivateAccount(Integer id);
 
     /**
-     * KÃ­ch hoáº¡t tÃ i khoáº£n
+     * Kích hoạt tài khoản
      */
     boolean activateAccount(Integer id);
 
     // ================== SEARCH METHODS ==================
 
     /**
-     * TÃ¬m kiáº¿m cÆ¡ báº£n theo tá»« khÃ³a
+     * Tìm kiếm cơ bản theo từ khóa
      */
     List<TaiKhoan> searchByKeyword(String keyword);
 
     /**
-     * TÃ¬m kiáº¿m nÃ¢ng cao vá»›i nhiá»u tiÃªu chÃ­
+     * Tìm kiếm nâng cao với nhiều tiêu chí
      */
     List<TaiKhoan> searchAdvanced(
             String email,
@@ -168,7 +168,7 @@ public interface TaiKhoanService {
     );
 
     /**
-     * TÃ¬m kiáº¿m vá»›i phÃ¢n trang
+     * Tìm kiếm với phân trang
      */
     Map<String, Object> searchWithPagination(
             String keyword,
@@ -183,159 +183,159 @@ public interface TaiKhoanService {
     // ================== STATISTICS & REPORTING ==================
 
     /**
-     * Äáº¿m tá»•ng sá»‘ tÃ i khoáº£n
+     * Đếm tổng số tài khoản
      */
     long countAll();
 
     /**
-     * Äáº¿m theo vai trÃ²
+     * Đếm theo vai trò
      */
     long countByVaiTro(TaiKhoan.VaiTro vaiTro);
 
     /**
-     * Äáº¿m theo tráº¡ng thÃ¡i
+     * Đếm theo trạng thái
      */
     long countByTrangThai(Integer trangThai);
 
     /**
-     * Äáº¿m tÃ i khoáº£n active theo vai trÃ²
+     * Đếm tài khoản active theo vai trò
      */
     long countActiveByVaiTro(TaiKhoan.VaiTro vaiTro);
 
     /**
-     * Thá»‘ng kÃª tÃ i khoáº£n táº¡o hÃ´m nay
+     * Thống kê tài khoản tạo hôm nay
      */
     long countAccountsCreatedToday();
 
     /**
-     * Thá»‘ng kÃª tÃ i khoáº£n táº¡o thÃ¡ng nÃ y
+     * Thống kê tài khoản tạo tháng này
      */
     long countAccountsCreatedThisMonth();
 
     /**
-     * Láº¥y thá»‘ng kÃª tá»•ng quan dashboard
+     * Lấy thống kê tổng quan dashboard
      */
     Map<String, Object> getDashboardStats();
 
     // ================== DATE RANGE QUERIES ==================
 
     /**
-     * TÃ¬m theo khoáº£ng thá»i gian
+     * Tìm theo khoảng thời gian
      */
     List<TaiKhoan> findByDateRange(Date startDate, Date endDate);
 
     /**
-     * Láº¥y tÃ i khoáº£n má»›i nháº¥t
+     * Lấy tài khoản mới nhất
      */
     List<TaiKhoan> findLatestAccounts(int limit);
 
     /**
-     * TÃ¬m tÃ i khoáº£n Ä‘Æ°á»£c táº¡o trong X ngÃ y qua
+     * Tìm tài khoản được tạo trong X ngày qua
      */
     List<TaiKhoan> findRecentAccounts(int days);
 
     // ================== VALIDATION METHODS ==================
 
     /**
-     * Validate DTO táº¡o tÃ i khoáº£n Ä‘áº§y Ä‘á»§
+     * Validate DTO tạo tài khoản đầy đủ
      */
     boolean validateCreateAccountDto(TaiKhoanDTO dto);
 
     /**
-     * Validate DTO cáº­p nháº­t tÃ i khoáº£n
+     * Validate DTO cập nhật tài khoản
      */
     boolean validateUpdateAccountDto(TaiKhoanDTO dto, Integer accountId);
 
     /**
-     * Validate email format theo chuáº©n
+     * Validate email format theo chuẩn
      */
     boolean isValidEmail(String email);
 
     /**
-     * Validate máº­t kháº©u máº¡nh
+     * Validate mật khẩu mạnh
      */
     boolean isValidPassword(String password);
 
     /**
-     * Validate sá»‘ Ä‘iá»‡n thoáº¡i Viá»‡t Nam
+     * Validate số điện thoại Việt Nam
      */
     boolean isValidPhoneNumber(String phone);
 
     /**
-     * Validate tham sá»‘ tÃ¬m kiáº¿m
+     * Validate tham số tìm kiếm
      */
     boolean isValidSearchParams(String email, String maTaiKhoan, String vaiTro, Integer trangThai);
 
     // ================== BUSINESS RULES ==================
 
     /**
-     * Kiá»ƒm tra cÃ³ thá»ƒ xÃ³a tÃ i khoáº£n khÃ´ng (business rules)
+     * Kiểm tra có thể xóa tài khoản không (business rules)
      */
     boolean canDeleteAccount(Integer id);
 
     /**
-     * Kiá»ƒm tra cÃ³ thá»ƒ thay Ä‘á»•i vai trÃ² khÃ´ng
+     * Kiểm tra có thể thay đổi vai trò không
      */
     boolean canChangeRole(Integer accountId, TaiKhoan.VaiTro newRole);
 
     /**
-     * Kiá»ƒm tra cÃ³ pháº£i admin cuá»‘i cÃ¹ng Ä‘ang hoáº¡t Ä‘á»™ng khÃ´ng
+     * Kiểm tra có phải admin cuối cùng đang hoạt động không
      */
     boolean isLastActiveAdmin(Integer accountId);
 
     // ================== UTILITY METHODS ==================
 
     /**
-     * Táº¡o mÃ£ tÃ i khoáº£n unique tá»± Ä‘á»™ng
+     * Tạo mã tài khoản unique tự động
      */
     String generateMaTaiKhoan();
 
     /**
-     * Parse vai trÃ² tá»« string (há»— trá»£ tiáº¿ng Viá»‡t vÃ  tiáº¿ng Anh)
+     * Parse vai trò từ string (hỗ trợ tiếng Việt và tiếng Anh)
      */
     TaiKhoan.VaiTro parseVaiTro(String vaiTroString);
 
     /**
-     * Chuáº©n hÃ³a email (lowercase, trim)
+     * Chuẩn hóa email (lowercase, trim)
      */
     String normalizeEmail(String email);
 
     /**
-     * Hash máº­t kháº©u an toÃ n
+     * Hash mật khẩu an toàn
      */
     String hashPassword(String password);
 
     /**
-     * Verify máº­t kháº©u Ä‘Ã£ hash
+     * Verify mật khẩu đã hash
      */
     boolean verifyPassword(String password, String hashedPassword);
 
     // ================== ADDRESS RELATED ==================
 
     /**
-     * Kiá»ƒm tra cÃ³ Ä‘á»§ dá»¯ liá»‡u Ä‘á»‹a chá»‰ khÃ´ng
+     * Kiểm tra có đủ dữ liệu địa chỉ không
      */
     boolean hasRequiredAddressData(TaiKhoanDTO dto);
 
     /**
-     * Validate dá»¯ liá»‡u Ä‘á»‹a chá»‰
+     * Validate dữ liệu địa chỉ
      */
     void validateAddressData(TaiKhoanDTO dto);
 
     // ================== ACCOUNT MAINTENANCE ==================
 
     /**
-     * Dá»n dáº¹p tÃ i khoáº£n khÃ´ng hoáº¡t Ä‘á»™ng
+     * Dọn dẹp tài khoản không hoạt động
      */
     int cleanupInactiveAccounts(int daysInactive);
 
     /**
-     * Export dá»¯ liá»‡u tÃ i khoáº£n
+     * Export dữ liệu tài khoản
      */
     Map<String, Object> exportAccountData(Integer accountId);
 
     /**
-     * Ghi log hoáº¡t Ä‘á»™ng tÃ i khoáº£n
+     * Ghi log hoạt động tài khoản
      */
     void logAccountActivity(Integer accountId, String activity, String details);
 }

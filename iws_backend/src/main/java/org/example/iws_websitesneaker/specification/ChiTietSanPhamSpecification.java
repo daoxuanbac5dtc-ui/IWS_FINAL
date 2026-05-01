@@ -16,7 +16,7 @@ public class ChiTietSanPhamSpecification {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // Join vá»›i báº£ng sáº£n pháº©m
+            // Join với bảng sản phẩm
             Join<ChiTietSanPham, SanPham> sanPhamJoin = root.join("sanPham", JoinType.LEFT);
 
             // Filter theo keyword
@@ -29,37 +29,37 @@ public class ChiTietSanPhamSpecification {
                 predicates.add(keywordPredicate);
             }
 
-            // Filter theo danh má»¥c
+            // Filter theo danh mục
             if (filter.getDanhMucId() != null) {
                 predicates.add(criteriaBuilder.equal(sanPhamJoin.get("danhMuc").get("id"), filter.getDanhMucId()));
             }
 
-            // Filter theo thÆ°Æ¡ng hiá»‡u
+            // Filter theo thương hiệu
             if (filter.getThuongHieuId() != null) {
                 predicates.add(criteriaBuilder.equal(sanPhamJoin.get("thuongHieu").get("id"), filter.getThuongHieuId()));
             }
 
-            // Filter theo mÃ u sáº¯c
+            // Filter theo màu sắc
             if (filter.getMauSacId() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("mauSac").get("id"), filter.getMauSacId()));
             }
 
-            // Filter theo kÃ­ch cá»¡
+            // Filter theo kích cỡ
             if (filter.getKichCoId() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("kichCo").get("id"), filter.getKichCoId()));
             }
 
-            // Filter theo cháº¥t liá»‡u
+            // Filter theo chất liệu
             if (filter.getChatLieuId() != null) {
                 predicates.add(criteriaBuilder.equal(sanPhamJoin.get("chatLieu").get("id"), filter.getChatLieuId()));
             }
 
-            // Filter theo Ä‘áº¿ giÃ y
+            // Filter theo đế giày
             if (filter.getDeGiayId() != null) {
                 predicates.add(criteriaBuilder.equal(sanPhamJoin.get("deGiay").get("id"), filter.getDeGiayId()));
             }
 
-            // Filter theo giÃ¡
+            // Filter theo giá
             if (filter.getMinPrice() != null) {
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("giaBan"), filter.getMinPrice()));
             }
@@ -68,7 +68,7 @@ public class ChiTietSanPhamSpecification {
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("giaBan"), filter.getMaxPrice()));
             }
 
-            // Chá»‰ láº¥y sáº£n pháº©m active
+            // Chỉ lấy sản phẩm active
             predicates.add(criteriaBuilder.equal(root.get("trangThai"), 1));
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));

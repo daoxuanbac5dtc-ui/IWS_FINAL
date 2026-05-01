@@ -6,6 +6,14 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const router = createRouter({
     history: createWebHistory(),
+    scrollBehavior(to) {
+        if (to.hash) {
+            return {
+                el: to.hash,
+                behavior: 'smooth'
+            };
+        }
+    },
     routes: [
         // ROUTE USER - Trang chủ người dùng (KHÔNG CẦN ĐĂNG NHẬP)
         {

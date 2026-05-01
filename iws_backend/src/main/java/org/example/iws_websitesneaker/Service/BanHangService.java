@@ -9,37 +9,37 @@ import java.util.Map;
 
 public interface BanHangService {
 
-    // ===== QUáº¢N LÃ HÃ“A ÄÆ N CHá»œ =====
+    // ===== QUẢN LÝ HÓA ĐƠN CHỜ =====
 
     /**
-     * Táº¡o hÃ³a Ä‘Æ¡n chá» má»›i
+     * Tạo hóa đơn chờ mới
      */
     HoaDonChoResponse taoHoaDonCho(Integer nhanVienId);
 
     /**
-     * Láº¥y danh sÃ¡ch hÃ³a Ä‘Æ¡n chá»
+     * Lấy danh sách hóa đơn chờ
      */
     List<HoaDonChoResponse> layDanhSachHoaDonCho();
 
     /**
-     * Láº¥y chi tiáº¿t hÃ³a Ä‘Æ¡n chá»
+     * Lấy chi tiết hóa đơn chờ
      */
     HoaDonChoDetailResponse layChiTietHoaDonCho(Integer hoaDonId);
 
     /**
-     * Láº¥y tá»•ng quan hÃ³a Ä‘Æ¡n chá» (cho sidebar)
+     * Lấy tổng quan hóa đơn chờ (cho sidebar)
      */
     HoaDonChoTongQuanResponse layTongQuanHoaDonCho(Integer hoaDonId);
 
     /**
-     * XÃ³a hÃ³a Ä‘Æ¡n chá»
+     * Xóa hóa đơn chờ
      */
     void xoaHoaDonCho(Integer hoaDonId);
 
-    // ===== QUáº¢N LÃ Sáº¢N PHáº¨M =====
+    // ===== QUẢN LÝ SẢN PHẨM =====
 
     /**
-     * TÃ¬m kiáº¿m sáº£n pháº©m vá»›i filter vÃ  phÃ¢n trang
+     * Tìm kiếm sản phẩm với filter và phân trang
      */
     Page<SanPhamChiTietBanHangResponse> timKiemSanPham(
             SanPhamChiTietFilterRequest filter,
@@ -47,24 +47,24 @@ public interface BanHangService {
     );
 
     /**
-     * Láº¥y chi tiáº¿t sáº£n pháº©m
+     * Lấy chi tiết sản phẩm
      */
     SanPhamChiTietBanHangResponse layChiTietSanPham(Integer chiTietSanPhamId);
 
     /**
-     * Scan QR code Ä‘á»ƒ láº¥y sáº£n pháº©m
+     * Scan QR code để lấy sản phẩm
      */
     ScanQRResponse scanQRSanPham(String qrCode);
 
     /**
-     * Láº¥y sáº£n pháº©m tÆ°Æ¡ng tá»±
+     * Lấy sản phẩm tương tự
      */
     List<SanPhamChiTietBanHangResponse> laySanPhamTuongTu(Integer chiTietSanPhamId);
 
-    // ===== QUáº¢N LÃ Sáº¢N PHáº¨M TRONG HÃ“A ÄÆ N =====
+    // ===== QUẢN LÝ SẢN PHẨM TRONG HÓA ĐƠN =====
 
     /**
-     * ThÃªm sáº£n pháº©m vÃ o hÃ³a Ä‘Æ¡n
+     * Thêm sản phẩm vào hóa đơn
      */
     HoaDonChoTongQuanResponse themSanPhamVaoHoaDon(
             Integer hoaDonId,
@@ -72,7 +72,7 @@ public interface BanHangService {
     );
 
     /**
-     * Cáº­p nháº­t sáº£n pháº©m trong hÃ³a Ä‘Æ¡n
+     * Cập nhật sản phẩm trong hóa đơn
      */
     HoaDonChoTongQuanResponse capNhatSanPhamTrongHoaDon(
             Integer hoaDonId,
@@ -81,7 +81,7 @@ public interface BanHangService {
     );
 
     /**
-     * XÃ³a sáº£n pháº©m khá»i hÃ³a Ä‘Æ¡n
+     * Xóa sản phẩm khỏi hóa đơn
      */
     HoaDonChoTongQuanResponse xoaSanPhamKhoiHoaDon(
             Integer hoaDonId,
@@ -89,115 +89,115 @@ public interface BanHangService {
     );
 
     /**
-     * TÃ­nh giÃ¡ sáº£n pháº©m (bao gá»“m khuyáº¿n mÃ£i)
+     * Tính giá sản phẩm (bao gồm khuyến mãi)
      */
     TinhGiaResponse tinhGiaSanPham(TinhGiaRequest request);
 
-    // ===== QUáº¢N LÃ KHÃCH HÃ€NG =====
+    // ===== QUẢN LÝ KHÁCH HÀNG =====
 
     /**
-     * TÃ¬m kiáº¿m khÃ¡ch hÃ ng
+     * Tìm kiếm khách hàng
      */
     Page<KhachHangResponse> timKiemKhachHang(String keyword, Pageable pageable);
 
     /**
-     * Táº¡o khÃ¡ch hÃ ng nhanh
+     * Tạo khách hàng nhanh
      */
     KhachHangResponse taoKhachHangNhanh(TaoKhachHangNhanhRequest request);
 
     /**
-     * Láº¥y thÃ´ng tin chi tiáº¿t khÃ¡ch hÃ ng
+     * Lấy thông tin chi tiết khách hàng
      */
     KhachHangDetailResponse layThongTinKhachHang(Integer khachHangId);
 
     /**
-     * Ãp dá»¥ng khÃ¡ch hÃ ng cho hÃ³a Ä‘Æ¡n
+     * Áp dụng khách hàng cho hóa đơn
      */
     HoaDonChoTongQuanResponse apDungKhachHang(Integer hoaDonId, Integer khachHangId);
 
     /**
-     * Bá» khÃ¡ch hÃ ng khá»i hÃ³a Ä‘Æ¡n
+     * Bỏ khách hàng khỏi hóa đơn
      */
     HoaDonChoTongQuanResponse boKhachHang(Integer hoaDonId);
 
-    // ===== QUáº¢N LÃ VOUCHER =====
+    // ===== QUẢN LÝ VOUCHER =====
 
     /**
-     * Láº¥y danh sÃ¡ch voucher kháº£ dá»¥ng
+     * Lấy danh sách voucher khả dụng
      */
     List<VoucherResponse> layDanhSachVoucherKhaDung(Integer khachHangId, Double tongTien);
 
     /**
-     * Kiá»ƒm tra voucher cÃ³ há»£p lá»‡ khÃ´ng
+     * Kiểm tra voucher có hợp lệ không
      */
     VoucherValidationResponse kiemTraVoucher(ValidateVoucherRequest request);
 
     /**
-     * Ãp dá»¥ng voucher cho hÃ³a Ä‘Æ¡n
+     * Áp dụng voucher cho hóa đơn
      */
     HoaDonChoTongQuanResponse apDungVoucher(Integer hoaDonId, Integer voucherId);
 
     /**
-     * Bá» voucher khá»i hÃ³a Ä‘Æ¡n
+     * Bỏ voucher khỏi hóa đơn
      */
     HoaDonChoTongQuanResponse boVoucher(Integer hoaDonId);
 
-    // ===== THANH TOÃN =====
+    // ===== THANH TOÁN =====
 
     /**
-     * Thanh toÃ¡n hÃ³a Ä‘Æ¡n
+     * Thanh toán hóa đơn
      */
     HoaDonResponse thanhToanHoaDon(Integer hoaDonId, ThanhToanRequest request);
 
     /**
-     * Kiá»ƒm tra tá»“n kho trÆ°á»›c khi thanh toÃ¡n
+     * Kiểm tra tồn kho trước khi thanh toán
      */
     List<InventoryCheckResponse> kiemTraTonKho(Integer hoaDonId);
 
-    // ===== THá»NG KÃŠ =====
+    // ===== THỐNG KÊ =====
 
     /**
-     * Láº¥y thá»‘ng kÃª bÃ¡n hÃ ng trong ngÃ y
+     * Lấy thống kê bán hàng trong ngày
      */
     Map<String, Object> layThongKeBanHangTrongNgay();
 
     /**
-     * Láº¥y sáº£n pháº©m bÃ¡n cháº¡y
+     * Lấy sản phẩm bán chạy
      */
     List<Map<String, Object>> laySanPhamBanChay(int limit);
 
     /**
-     * Láº¥y thá»‘ng kÃª doanh thu theo khoáº£ng thá»i gian
+     * Lấy thống kê doanh thu theo khoảng thời gian
      */
     Map<String, Object> layThongKeDoanhThu(String tuNgay, String denNgay);
 
     /**
-     * Láº¥y danh sÃ¡ch danh má»¥c
+     * Lấy danh sách danh mục
      */
     List<DanhMucResponse> layDanhSachDanhMuc();
 
     /**
-     * Láº¥y danh sÃ¡ch thÆ°Æ¡ng hiá»‡u
+     * Lấy danh sách thương hiệu
      */
     List<ThuongHieuResponse> layDanhSachThuongHieu();
 
     /**
-     * Láº¥y danh sÃ¡ch mÃ u sáº¯c
+     * Lấy danh sách màu sắc
      */
     List<MauSacResponse> layDanhSachMauSac();
 
     /**
-     * Láº¥y danh sÃ¡ch kÃ­ch cá»¡
+     * Lấy danh sách kích cỡ
      */
     List<KichCoResponse> layDanhSachKichCo();
 
     /**
-     * Láº¥y danh sÃ¡ch cháº¥t liá»‡u
+     * Lấy danh sách chất liệu
      */
     List<ChatLieuResponse> layDanhSachChatLieu();
 
     /**
-     * Láº¥y danh sÃ¡ch Ä‘áº¿ giÃ y
+     * Lấy danh sách đế giày
      */
     List<DeGiayResponse> layDanhSachDeGiay();
 
@@ -206,39 +206,39 @@ public interface BanHangService {
     String chuyenDoiMaTaiKhoanSangMaNhanVien(String maTaiKhoan);
 
     /**
-     * TÃ¬m ID nhÃ¢n viÃªn linh hoáº¡t (mÃ£ NV hoáº·c mÃ£ TK)
+     * Tìm ID nhân viên linh hoạt (mã NV hoặc mã TK)
      */
     Integer timNhanVienIdLinhHoat(String ma);
 
     HoaDonChoTongQuanResponse chuyenSangGiaoHang(Integer hoaDonId, GiaoHangRequest request);
 
     /**
-     * TÃ­nh phÃ­ ship dá»±a trÃªn Ä‘á»‹a chá»‰ vÃ  tá»•ng tiá»n
+     * Tính phí ship dựa trên địa chỉ và tổng tiền
      */
     TinhPhiShipResponse tinhPhiShip(TinhPhiShipRequest request);
 
     /**
-     * Cáº­p nháº­t thÃ´ng tin giao hÃ ng
+     * Cập nhật thông tin giao hàng
      */
     HoaDonChoTongQuanResponse capNhatThongTinGiaoHang(Integer hoaDonId, CapNhatGiaoHangRequest request);
 
     /**
-     * XÃ¡c nháº­n giao hÃ ng (chuyá»ƒn sang tráº¡ng thÃ¡i chá» giao)
+     * Xác nhận giao hàng (chuyển sang trạng thái chờ giao)
      */
     HoaDonResponse xacNhanGiaoHang(Integer hoaDonId);
 
     /**
-     * Há»§y giao hÃ ng vÃ  chuyá»ƒn vá» bÃ¡n táº¡i quáº§y
+     * Hủy giao hàng và chuyển về bán tại quầy
      */
     HoaDonChoTongQuanResponse huyGiaoHang(Integer hoaDonId);
 
     /**
-     * Cáº­p nháº­t tráº¡ng thÃ¡i Ä‘ang giao hÃ ng
+     * Cập nhật trạng thái đang giao hàng
      */
     HoaDonResponse capNhatDangGiao(Integer hoaDonId);
 
     /**
-     * XÃ¡c nháº­n Ä‘Ã£ giao hÃ ng thÃ nh cÃ´ng
+     * Xác nhận đã giao hàng thành công
      */
     HoaDonResponse xacNhanDaGiao(Integer hoaDonId);
 

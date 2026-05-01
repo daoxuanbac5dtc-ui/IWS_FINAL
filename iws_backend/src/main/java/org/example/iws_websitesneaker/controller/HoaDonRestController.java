@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.Normalizer;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -61,7 +62,7 @@ public class HoaDonRestController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", hoaDon);
-            response.put("message", "Táº¡o hÃ³a Ä‘Æ¡n thÃ nh cÃ´ng");
+            response.put("message", "Tạo hóa đơn thành công");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
@@ -74,35 +75,35 @@ public class HoaDonRestController {
     @GetMapping("/my-orders")
     public ResponseEntity<?> getMyOrders(HttpServletRequest request) {
         try {
-            // Láº¥y token tá»« header
+            // Lấy token từ header
             String token = extractTokenFromRequest(request);
             if (token == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Token khÃ´ng tá»“n táº¡i"));
+                        .body(Map.of("error", "Token không tồn tại"));
             }
 
-            // Láº¥y email tá»« token
+            // Lấy email từ token
             String email = jwtUtil.extractEmail(token);
             if (email == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Token khÃ´ng há»£p lá»‡"));
+                        .body(Map.of("error", "Token không hợp lệ"));
             }
 
-            // TÃ¬m tÃ i khoáº£n qua email
+            // Tìm tài khoản qua email
             Optional<TaiKhoan> taiKhoanOpt = taiKhoanService.findByEmail(email);
             if (taiKhoanOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n"));
+                        .body(Map.of("error", "Không tìm thấy tài khoản"));
             }
 
-            // TÃ¬m khÃ¡ch hÃ ng qua tÃ i khoáº£n
+            // Tìm khách hàng qua tài khoản
             KhachHang khachHang = khachHangService.findByTaiKhoanId(taiKhoanOpt.get().getId());
             if (khachHang == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "KhÃ´ng tÃ¬m tháº¥y khÃ¡ch hÃ ng"));
+                        .body(Map.of("error", "Không tìm thấy khách hàng"));
             }
 
-            // Láº¥y danh sÃ¡ch hÃ³a Ä‘Æ¡n cá»§a khÃ¡ch hÃ ng
+            // Lấy danh sách hóa đơn của khách hàng
             List<HoaDonDTO> hoaDons = hoaDonService.getHoaDonsByKhachHangId(khachHang.getId());
 
             return ResponseEntity.ok(hoaDons);
@@ -110,7 +111,7 @@ public class HoaDonRestController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Lá»—i server: " + e.getMessage()));
+                    .body(Map.of("error", "Lỗi server: " + e.getMessage()));
         }
     }
 
@@ -126,11 +127,11 @@ public class HoaDonRestController {
         try {
             HoaDonDTO updatedHoaDon = hoaDonService.updateStatus(id, request);
 
-            // âœ… FIX: Return consistent response format
+            // ✅ FIX: Return consistent response format
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", updatedHoaDon);
-            response.put("message", "Cáº­p nháº­t tráº¡ng thÃ¡i thÃ nh cÃ´ng");
+            response.put("message", "Cập nhật trạng thái thành công");
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -149,7 +150,7 @@ public class HoaDonRestController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", updatedHoaDon);
-            response.put("message", "XÃ¡c nháº­n Ä‘Æ¡n hÃ ng thÃ nh cÃ´ng");
+            response.put("message", "Xác nhận đơn hàng thành công");
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -168,7 +169,7 @@ public class HoaDonRestController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", updatedHoaDon);
-            response.put("message", "HoÃ n thÃ nh Ä‘Æ¡n hÃ ng thÃ nh cÃ´ng");
+            response.put("message", "Hoàn thành đơn hàng thành công");
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -189,7 +190,7 @@ public class HoaDonRestController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", updatedHoaDon);
-            response.put("message", "Há»§y Ä‘Æ¡n hÃ ng thÃ nh cÃ´ng");
+            response.put("message", "Hủy đơn hàng thành công");
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -200,67 +201,67 @@ public class HoaDonRestController {
         }
     }
 
-    // ThÃªm endpoint há»§y Ä‘Æ¡n hÃ ng cho khÃ¡ch hÃ ng
+    // Thêm endpoint hủy đơn hàng cho khách hàng
     @PostMapping("/{id}/cancel")
     public ResponseEntity<?> cancelOrderByCustomer(@PathVariable Integer id, HttpServletRequest request) {
         try {
             String token = extractTokenFromRequest(request);
             if (token == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Token khÃ´ng tá»“n táº¡i"));
+                        .body(Map.of("error", "Token không tồn tại"));
             }
 
             String email = jwtUtil.extractEmail(token);
             Optional<TaiKhoan> taiKhoanOpt = taiKhoanService.findByEmail(email);
             if (taiKhoanOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Token khÃ´ng há»£p lá»‡"));
+                        .body(Map.of("error", "Token không hợp lệ"));
             }
 
-            // Láº¥y thÃ´ng tin hÃ³a Ä‘Æ¡n
+            // Lấy thông tin hóa đơn
             HoaDonDTO hoaDon = hoaDonService.getHoaDonById(id);
             if (hoaDon == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                        .body(Map.of("error", "Không tìm thấy hóa đơn"));
             }
 
             TaiKhoan taiKhoan = taiKhoanOpt.get();
 
-            // ADMIN -> cho phÃ©p
+            // ADMIN -> cho phép
             if (!"ADMIN".equals(taiKhoan.getVaiTro())) {
                 boolean hasAccess = false;
 
-                // Khá»›p theo KhachHangId
+                // Khớp theo KhachHangId
                 KhachHang khachHang = khachHangService.findByTaiKhoanId(taiKhoan.getId());
                 if (khachHang != null && hoaDon.getKhachHangId() != null &&
                         khachHang.getId().equals(hoaDon.getKhachHangId())) {
                     hasAccess = true;
                 }
 
-                // Khá»›p theo email (Ä‘Æ¡n guest)
+                // Khớp theo email (đơn guest)
                 if (!hasAccess && hoaDon.getEmail() != null && hoaDon.getEmail().equals(email)) {
                     hasAccess = true;
                 }
 
                 if (!hasAccess) {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                            .body(Map.of("error", "KhÃ´ng cÃ³ quyá»n há»§y Ä‘Æ¡n hÃ ng nÃ y"));
+                            .body(Map.of("error", "Không có quyền hủy đơn hàng này"));
                 }
             }
 
-            // Tráº¡ng thÃ¡i cho phÃ©p há»§y
+            // Trạng thái cho phép hủy
             String st = hoaDon.getTrangThaiHoaDon();
             if (!Set.of("CHO_XAC_NHAN", "PENDING").contains(st)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("error", "KhÃ´ng thá»ƒ há»§y Ä‘Æ¡n hÃ ng á»Ÿ tráº¡ng thÃ¡i nÃ y"));
+                        .body(Map.of("error", "Không thể hủy đơn hàng ở trạng thái này"));
             }
 
-            // Há»§y Ä‘Æ¡n (ghi chÃº nguyÃªn nhÃ¢n)
-            HoaDonDTO updatedHoaDon = hoaDonService.cancelInvoice(id, "KhÃ¡ch hÃ ng yÃªu cáº§u há»§y");
+            // Hủy đơn (ghi chú nguyên nhân)
+            HoaDonDTO updatedHoaDon = hoaDonService.cancelInvoice(id, "Khách hàng yêu cầu hủy");
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "Há»§y Ä‘Æ¡n hÃ ng thÃ nh cÃ´ng");
+            response.put("message", "Hủy đơn hàng thành công");
             response.put("data", updatedHoaDon);
 
             return ResponseEntity.ok(response);
@@ -268,7 +269,7 @@ public class HoaDonRestController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Lá»—i server: " + e.getMessage()));
+                    .body(Map.of("error", "Lỗi server: " + e.getMessage()));
         }
     }
     @PostMapping("/validate-guest-contact")
@@ -278,11 +279,11 @@ public class HoaDonRestController {
             String sdt = request.get("sdt");
 
             if (email == null || email.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Email khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng"));
+                return ResponseEntity.badRequest().body(Map.of("error", "Email không được để trống"));
             }
 
             if (sdt == null || sdt.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng"));
+                return ResponseEntity.badRequest().body(Map.of("error", "Số điện thoại không được để trống"));
             }
 
             // Simple validation using existing repositories
@@ -291,15 +292,15 @@ public class HoaDonRestController {
 
             if (emailInTaiKhoan || sdtInKhachHang) {
                 return ResponseEntity.status(409).body(Map.of(
-                        "error", "Email hoáº·c sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ tá»“n táº¡i trong há»‡ thá»‘ng",
-                        "suggestion", "Báº¡n cÃ³ thá»ƒ Ä‘Ã£ cÃ³ tÃ i khoáº£n. Vui lÃ²ng Ä‘Äƒng nháº­p Ä‘á»ƒ Ä‘Æ°á»£c hÆ°á»Ÿng Æ°u Ä‘Ã£i!"
+                        "error", "Email hoặc số điện thoại đã tồn tại trong hệ thống",
+                        "suggestion", "Bạn có thể đã có tài khoản. Vui lòng đăng nhập để được hưởng ưu đãi!"
                 ));
             }
 
-            return ResponseEntity.ok(Map.of("valid", true, "message", "ThÃ´ng tin há»£p lá»‡"));
+            return ResponseEntity.ok(Map.of("valid", true, "message", "Thông tin hợp lệ"));
 
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Lá»—i server: " + e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of("error", "Lỗi server: " + e.getMessage()));
         }
     }
 
@@ -311,50 +312,50 @@ public class HoaDonRestController {
         return null;
     }
 
-    // Endpoint láº¥y chi tiáº¿t tráº£ hÃ ng cá»§a hÃ³a Ä‘Æ¡n
+    // Endpoint lấy chi tiết trả hàng của hóa đơn
     @GetMapping("/{id}/tra-hang")
     public ResponseEntity<?> getChiTietTraHang(@PathVariable Integer id, HttpServletRequest request) {
         try {
-            // Kiá»ƒm tra quyá»n truy cáº­p (tÆ°Æ¡ng tá»± nhÆ° endpoint chi-tiet)
+            // Kiểm tra quyền truy cập (tương tự như endpoint chi-tiet)
             String token = extractTokenFromRequest(request);
             if (token == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Token khÃ´ng tá»“n táº¡i"));
+                        .body(Map.of("error", "Token không tồn tại"));
             }
 
             String email = jwtUtil.extractEmail(token);
             if (email == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Token khÃ´ng há»£p lá»‡"));
+                        .body(Map.of("error", "Token không hợp lệ"));
             }
 
-            // Láº¥y thÃ´ng tin hÃ³a Ä‘Æ¡n
+            // Lấy thông tin hóa đơn
             HoaDonDTO hoaDon = hoaDonService.getHoaDonById(id);
             if (hoaDon == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                        .body(Map.of("error", "Không tìm thấy hóa đơn"));
             }
 
-            // Kiá»ƒm tra quyá»n sá»Ÿ há»¯u
+            // Kiểm tra quyền sở hữu
             Optional<TaiKhoan> taiKhoanOpt = taiKhoanService.findByEmail(email);
             if (taiKhoanOpt.isPresent()) {
                 TaiKhoan taiKhoan = taiKhoanOpt.get();
 
-                // Náº¿u khÃ´ng pháº£i admin, kiá»ƒm tra quyá»n sá»Ÿ há»¯u
+                // Nếu không phải admin, kiểm tra quyền sở hữu
                 if (!"ADMIN".equals(taiKhoan.getVaiTro())) {
                     KhachHang khachHang = khachHangService.findByTaiKhoanId(taiKhoan.getId());
                     if (khachHang == null || !khachHang.getId().equals(hoaDon.getKhachHangId())) {
                         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                                .body(Map.of("error", "KhÃ´ng cÃ³ quyá»n truy cáº­p Ä‘Æ¡n hÃ ng nÃ y"));
+                                .body(Map.of("error", "Không có quyền truy cập đơn hàng này"));
                     }
                 }
             }
 
-            // Láº¥y chi tiáº¿t tráº£ hÃ ng
+            // Lấy chi tiết trả hàng
             List<ChiTietTraHangDTO> chiTietTraHangList = chiTietTraHangService.getChiTietTraHangByHoaDon(id);
             Map<String, Object> returnStats = chiTietTraHangService.getReturnStatistics(id);
 
-            // Táº¡o response
+            // Tạo response
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", Map.of(
@@ -368,82 +369,82 @@ public class HoaDonRestController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Lá»—i server: " + e.getMessage()));
+                    .body(Map.of("error", "Lỗi server: " + e.getMessage()));
         }
     }
 
-    // Endpoint táº¡o yÃªu cáº§u tráº£ hÃ ng cho khÃ¡ch hÃ ng
+    // Endpoint tạo yêu cầu trả hàng cho khách hàng
     @PostMapping("/{id}/tao-tra-hang")
     public ResponseEntity<?> createReturnRequest(@PathVariable Integer id,
                                                  @RequestBody Map<String, Object> request,
                                                  HttpServletRequest httpRequest) {
         try {
-            // Kiá»ƒm tra quyá»n truy cáº­p
+            // Kiểm tra quyền truy cập
             String token = extractTokenFromRequest(httpRequest);
             if (token == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Token khÃ´ng tá»“n táº¡i"));
+                        .body(Map.of("error", "Token không tồn tại"));
             }
 
             String email = jwtUtil.extractEmail(token);
             Optional<TaiKhoan> taiKhoanOpt = taiKhoanService.findByEmail(email);
             if (taiKhoanOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Token khÃ´ng há»£p lá»‡"));
+                        .body(Map.of("error", "Token không hợp lệ"));
             }
 
-            // Láº¥y thÃ´ng tin hÃ³a Ä‘Æ¡n
+            // Lấy thông tin hóa đơn
             HoaDonDTO hoaDon = hoaDonService.getHoaDonById(id);
             if (hoaDon == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                        .body(Map.of("error", "Không tìm thấy hóa đơn"));
             }
 
-            // Kiá»ƒm tra quyá»n sá»Ÿ há»¯u
+            // Kiểm tra quyền sở hữu
             KhachHang khachHang = khachHangService.findByTaiKhoanId(taiKhoanOpt.get().getId());
             if (khachHang == null || !khachHang.getId().equals(hoaDon.getKhachHangId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("error", "KhÃ´ng cÃ³ quyá»n táº¡o yÃªu cáº§u tráº£ hÃ ng cho Ä‘Æ¡n hÃ ng nÃ y"));
+                        .body(Map.of("error", "Không có quyền tạo yêu cầu trả hàng cho đơn hàng này"));
             }
 
-            // Kiá»ƒm tra tráº¡ng thÃ¡i hÃ³a Ä‘Æ¡n (chá»‰ cho phÃ©p tráº£ hÃ ng khi COMPLETED)
-            if (!"COMPLETED".equals(hoaDon.getTrangThaiHoaDon())) {
+            // Kiểm tra trạng thái hóa đơn (chỉ cho phép trả hàng khi COMPLETED)
+            if (!isCompletedInvoiceStatus(hoaDon.getTrangThaiHoaDon())) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("error", "Chá»‰ cÃ³ thá»ƒ tráº£ hÃ ng khi Ä‘Æ¡n hÃ ng Ä‘Ã£ hoÃ n thÃ nh"));
+                        .body(Map.of("error", "Chỉ có thể trả hàng khi đơn hàng đã hoàn thành"));
             }
 
-            // Láº¥y thÃ´ng tin tá»« request
+            // Lấy thông tin từ request
             Integer chiTietSanPhamId = (Integer) request.get("chiTietSanPhamId");
             Integer soLuong = (Integer) request.get("soLuong");
             String lyDo = (String) request.get("lyDo");
-            String duongDanAnh = (String) request.get("duongDanAnh"); // âœ… THÃŠM
+            String duongDanAnh = (String) request.get("duongDanAnh"); // ✅ THÊM
 
             if (chiTietSanPhamId == null || soLuong == null || soLuong <= 0) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("error", "ThÃ´ng tin sáº£n pháº©m vÃ  sá»‘ lÆ°á»£ng khÃ´ng há»£p lá»‡"));
+                        .body(Map.of("error", "Thông tin sản phẩm và số lượng không hợp lệ"));
             }
 
-            // âœ… THÃŠM: Validate lÃ½ do tráº£ hÃ ng
+            // ✅ THÊM: Validate lý do trả hàng
             if (lyDo == null || lyDo.trim().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("error", "Vui lÃ²ng nháº­p lÃ½ do tráº£ hÃ ng"));
+                        .body(Map.of("error", "Vui lòng nhập lý do trả hàng"));
             }
 
-            // Táº¡o DTO cho chi tiáº¿t tráº£ hÃ ng
+            // Tạo DTO cho chi tiết trả hàng
             ChiTietTraHangDTO chiTietTraHangDTO = new ChiTietTraHangDTO();
             chiTietTraHangDTO.setChiTietSanPhamId(chiTietSanPhamId);
             chiTietTraHangDTO.setSoLuong(soLuong);
-            chiTietTraHangDTO.setLyDo(lyDo); // âœ… THÃŠM
-            chiTietTraHangDTO.setDuongDanAnh(duongDanAnh); // âœ… THÃŠM
+            chiTietTraHangDTO.setLyDo(lyDo); // ✅ THÊM
+            chiTietTraHangDTO.setDuongDanAnh(duongDanAnh); // ✅ THÊM
             chiTietTraHangDTO.setHoaDonId(id);
             chiTietTraHangDTO.setTrangThaiHoaDon("PENDING");
 
-            // Táº¡o yÃªu cáº§u tráº£ hÃ ng
+            // Tạo yêu cầu trả hàng
             ChiTietTraHangDTO created = chiTietTraHangService.createChiTietTraHang(chiTietTraHangDTO);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "Táº¡o yÃªu cáº§u tráº£ hÃ ng thÃ nh cÃ´ng");
+            response.put("message", "Tạo yêu cầu trả hàng thành công");
             response.put("data", created);
 
             return ResponseEntity.ok(response);
@@ -451,7 +452,7 @@ public class HoaDonRestController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Lá»—i server: " + e.getMessage()));
+                    .body(Map.of("error", "Lỗi server: " + e.getMessage()));
         }
     }
     @PostMapping("/{id}/tao-tra-hang-with-image")
@@ -463,72 +464,72 @@ public class HoaDonRestController {
             @RequestParam(value = "anhMinhChung", required = false) MultipartFile anhMinhChung,
             HttpServletRequest httpRequest) {
         try {
-            // Kiá»ƒm tra quyá»n truy cáº­p (tÆ°Æ¡ng tá»± nhÆ° endpoint trÃªn)
+            // Kiểm tra quyền truy cập (tương tự như endpoint trên)
             String token = extractTokenFromRequest(httpRequest);
             if (token == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Token khÃ´ng tá»“n táº¡i"));
+                        .body(Map.of("error", "Token không tồn tại"));
             }
 
             String email = jwtUtil.extractEmail(token);
             Optional<TaiKhoan> taiKhoanOpt = taiKhoanService.findByEmail(email);
             if (taiKhoanOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Token khÃ´ng há»£p lá»‡"));
+                        .body(Map.of("error", "Token không hợp lệ"));
             }
 
-            // Láº¥y thÃ´ng tin hÃ³a Ä‘Æ¡n
+            // Lấy thông tin hóa đơn
             HoaDonDTO hoaDon = hoaDonService.getHoaDonById(id);
             if (hoaDon == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                        .body(Map.of("error", "Không tìm thấy hóa đơn"));
             }
 
-            // Kiá»ƒm tra quyá»n sá»Ÿ há»¯u
+            // Kiểm tra quyền sở hữu
             KhachHang khachHang = khachHangService.findByTaiKhoanId(taiKhoanOpt.get().getId());
             if (khachHang == null || !khachHang.getId().equals(hoaDon.getKhachHangId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("error", "KhÃ´ng cÃ³ quyá»n táº¡o yÃªu cáº§u tráº£ hÃ ng cho Ä‘Æ¡n hÃ ng nÃ y"));
+                        .body(Map.of("error", "Không có quyền tạo yêu cầu trả hàng cho đơn hàng này"));
             }
 
-            // Kiá»ƒm tra tráº¡ng thÃ¡i hÃ³a Ä‘Æ¡n
-            if (!"COMPLETED".equals(hoaDon.getTrangThaiHoaDon())) {
+            // Kiểm tra trạng thái hóa đơn
+            if (!isCompletedInvoiceStatus(hoaDon.getTrangThaiHoaDon())) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("error", "Chá»‰ cÃ³ thá»ƒ tráº£ hÃ ng khi Ä‘Æ¡n hÃ ng Ä‘Ã£ hoÃ n thÃ nh"));
+                        .body(Map.of("error", "Chỉ có thể trả hàng khi đơn hàng đã hoàn thành"));
             }
 
-            // Validate dá»¯ liá»‡u Ä‘áº§u vÃ o
+            // Validate dữ liệu đầu vào
             if (chiTietSanPhamId == null || soLuong == null || soLuong <= 0) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("error", "ThÃ´ng tin sáº£n pháº©m vÃ  sá»‘ lÆ°á»£ng khÃ´ng há»£p lá»‡"));
+                        .body(Map.of("error", "Thông tin sản phẩm và số lượng không hợp lệ"));
             }
 
             if (lyDo == null || lyDo.trim().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("error", "Vui lÃ²ng nháº­p lÃ½ do tráº£ hÃ ng"));
+                        .body(Map.of("error", "Vui lòng nhập lý do trả hàng"));
             }
 
-            // Xá»­ lÃ½ upload áº£nh náº¿u cÃ³
+            // Xử lý upload ảnh nếu có
             String duongDanAnh = null;
             if (anhMinhChung != null && !anhMinhChung.isEmpty()) {
-                // Validate file áº£nh
+                // Validate file ảnh
                 String contentType = anhMinhChung.getContentType();
                 if (contentType == null || !contentType.startsWith("image/")) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body(Map.of("error", "File upload pháº£i lÃ  áº£nh"));
+                            .body(Map.of("error", "File upload phải là ảnh"));
                 }
 
-                // Kiá»ƒm tra kÃ­ch thÆ°á»›c file (max 5MB)
+                // Kiểm tra kích thước file (max 5MB)
                 if (anhMinhChung.getSize() > 5 * 1024 * 1024) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body(Map.of("error", "KÃ­ch thÆ°á»›c áº£nh khÃ´ng Ä‘Æ°á»£c vÆ°á»£t quÃ¡ 5MB"));
+                            .body(Map.of("error", "Kích thước ảnh không được vượt quá 5MB"));
                 }
 
-                // Upload áº£nh (cáº§n implement uploadImageService)
+                // Upload ảnh (cần implement uploadImageService)
                 duongDanAnh = uploadImageService.saveImage(anhMinhChung, "return-images");
             }
 
-            // Táº¡o DTO cho chi tiáº¿t tráº£ hÃ ng
+            // Tạo DTO cho chi tiết trả hàng
             ChiTietTraHangDTO chiTietTraHangDTO = new ChiTietTraHangDTO();
             chiTietTraHangDTO.setChiTietSanPhamId(chiTietSanPhamId);
             chiTietTraHangDTO.setSoLuong(soLuong);
@@ -537,12 +538,12 @@ public class HoaDonRestController {
             chiTietTraHangDTO.setHoaDonId(id);
             chiTietTraHangDTO.setTrangThaiHoaDon("PENDING");
 
-            // Táº¡o yÃªu cáº§u tráº£ hÃ ng
+            // Tạo yêu cầu trả hàng
             ChiTietTraHangDTO created = chiTietTraHangService.createChiTietTraHang(chiTietTraHangDTO);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "Táº¡o yÃªu cáº§u tráº£ hÃ ng thÃ nh cÃ´ng");
+            response.put("message", "Tạo yêu cầu trả hàng thành công");
             response.put("data", created);
 
             return ResponseEntity.ok(response);
@@ -550,63 +551,63 @@ public class HoaDonRestController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Lá»—i server: " + e.getMessage()));
+                    .body(Map.of("error", "Lỗi server: " + e.getMessage()));
         }
     }
     @GetMapping("/{id}/voucher-details")
     public ResponseEntity<?> getVoucherDetailsByHoaDon(@PathVariable Integer id, HttpServletRequest request) {
         try {
-            // Kiá»ƒm tra quyá»n truy cáº­p (tÆ°Æ¡ng tá»± nhÆ° endpoint chi-tiet)
+            // Kiểm tra quyền truy cập (tương tự như endpoint chi-tiet)
             String token = extractTokenFromRequest(request);
             if (token == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Token khÃ´ng tá»“n táº¡i"));
+                        .body(Map.of("error", "Token không tồn tại"));
             }
 
             String email = jwtUtil.extractEmail(token);
             if (email == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Token khÃ´ng há»£p lá»‡"));
+                        .body(Map.of("error", "Token không hợp lệ"));
             }
 
-            // Láº¥y thÃ´ng tin hÃ³a Ä‘Æ¡n
+            // Lấy thông tin hóa đơn
             HoaDonDTO hoaDon = hoaDonService.getHoaDonById(id);
             if (hoaDon == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                        .body(Map.of("error", "Không tìm thấy hóa đơn"));
             }
 
-            // Kiá»ƒm tra quyá»n sá»Ÿ há»¯u
+            // Kiểm tra quyền sở hữu
             Optional<TaiKhoan> taiKhoanOpt = taiKhoanService.findByEmail(email);
             if (taiKhoanOpt.isPresent()) {
                 TaiKhoan taiKhoan = taiKhoanOpt.get();
 
-                // Náº¿u khÃ´ng pháº£i admin, kiá»ƒm tra quyá»n sá»Ÿ há»¯u
+                // Nếu không phải admin, kiểm tra quyền sở hữu
                 if (!"ADMIN".equals(taiKhoan.getVaiTro())) {
                     KhachHang khachHang = khachHangService.findByTaiKhoanId(taiKhoan.getId());
                     if (khachHang == null || !khachHang.getId().equals(hoaDon.getKhachHangId())) {
                         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                                .body(Map.of("error", "KhÃ´ng cÃ³ quyá»n truy cáº­p Ä‘Æ¡n hÃ ng nÃ y"));
+                                .body(Map.of("error", "Không có quyền truy cập đơn hàng này"));
                     }
                 }
             }
 
-            // Láº¥y chi tiáº¿t voucher
+            // Lấy chi tiết voucher
             List<ChiTietVoucherDTO> chiTietVoucherList = chiTietVoucherService.findByHoaDonId(id);
 
-            // TÃ­nh tá»•ng tiáº¿t kiá»‡m
+            // Tính tổng tiết kiệm
             BigDecimal tongTietKiem = chiTietVoucherList.stream()
                     .map(ChiTietVoucherDTO::getSoTienGiam)
                     .filter(Objects::nonNull)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            // Táº¡o response vá»›i thÃ´ng tin voucher chi tiáº¿t
+            // Tạo response với thông tin voucher chi tiết
             Map<String, Object> voucherInfo = new HashMap<>();
             voucherInfo.put("chiTietVoucherList", chiTietVoucherList);
             voucherInfo.put("soLuongVoucher", chiTietVoucherList.size());
             voucherInfo.put("tongTietKiem", tongTietKiem);
 
-            // Thá»‘ng kÃª voucher theo loáº¡i
+            // Thống kê voucher theo loại
             Map<String, Long> thongKeTheoLoai = chiTietVoucherList.stream()
                     .collect(Collectors.groupingBy(
                             ChiTietVoucherDTO::getLoaiGiamGia,
@@ -614,7 +615,7 @@ public class HoaDonRestController {
                     ));
             voucherInfo.put("thongKeTheoLoai", thongKeTheoLoai);
 
-            // TÃ­nh % tiáº¿t kiá»‡m náº¿u cÃ³ voucher
+            // Tính % tiết kiệm nếu có voucher
             if (!chiTietVoucherList.isEmpty() && hoaDon.getTongTien() != null) {
                 double phanTramTietKiem = tongTietKiem.divide(hoaDon.getTongTien(), 4, RoundingMode.HALF_UP)
                         .multiply(BigDecimal.valueOf(100)).doubleValue();
@@ -635,113 +636,113 @@ public class HoaDonRestController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Lá»—i server: " + e.getMessage()));
+                    .body(Map.of("error", "Lỗi server: " + e.getMessage()));
         }
     }
 
     /**
-     * âœ… Cáº¬P NHáº¬T: Endpoint chi-tiet Ä‘á»ƒ bao gá»“m thÃ´ng tin voucher
+     * ✅ CẬP NHẬT: Endpoint chi-tiet để bao gồm thông tin voucher
      */
     @GetMapping("/{id}/chi-tiet")
     public ResponseEntity<?> getHoaDonChiTiet(@PathVariable Integer id, HttpServletRequest request) {
         try {
-            System.out.println("ðŸ” DEBUG chi-tiet - HÃ³a Ä‘Æ¡n ID: " + id);
+            System.out.println("🔍 DEBUG chi-tiet - Hóa đơn ID: " + id);
 
-            // Kiá»ƒm tra quyá»n truy cáº­p
+            // Kiểm tra quyền truy cập
             String token = extractTokenFromRequest(request);
             if (token == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Token khÃ´ng tá»“n táº¡i"));
+                        .body(Map.of("error", "Token không tồn tại"));
             }
 
             String email = jwtUtil.extractEmail(token);
             if (email == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Token khÃ´ng há»£p lá»‡"));
+                        .body(Map.of("error", "Token không hợp lệ"));
             }
 
-            System.out.println("ðŸ”‘ DEBUG chi-tiet - Email: " + email);
+            System.out.println("🔑 DEBUG chi-tiet - Email: " + email);
 
-            // Láº¥y thÃ´ng tin hÃ³a Ä‘Æ¡n
+            // Lấy thông tin hóa đơn
             HoaDonDTO hoaDon = hoaDonService.getHoaDonById(id);
             if (hoaDon == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                        .body(Map.of("error", "Không tìm thấy hóa đơn"));
             }
 
-            // DEBUG: In ra thÃ´ng tin hÃ³a Ä‘Æ¡n
-            System.out.println("ðŸ“‹ DEBUG chi-tiet - HÃ³a Ä‘Æ¡n: " + hoaDon.getMaHoaDon());
-            System.out.println("ðŸ“‹ DEBUG chi-tiet - KhachHangId tá»« DTO: " + hoaDon.getKhachHangId());
-            System.out.println("ðŸ“‹ DEBUG chi-tiet - Email tá»« DTO: " + hoaDon.getEmail());
+            // DEBUG: In ra thông tin hóa đơn
+            System.out.println("📋 DEBUG chi-tiet - Hóa đơn: " + hoaDon.getMaHoaDon());
+            System.out.println("📋 DEBUG chi-tiet - KhachHangId từ DTO: " + hoaDon.getKhachHangId());
+            System.out.println("📋 DEBUG chi-tiet - Email từ DTO: " + hoaDon.getEmail());
 
-            // âœ… Sá»¬A: Kiá»ƒm tra quyá»n sá»Ÿ há»¯u linh hoáº¡t hÆ¡n
+            // ✅ SỬA: Kiểm tra quyền sở hữu linh hoạt hơn
             Optional<TaiKhoan> taiKhoanOpt = taiKhoanService.findByEmail(email);
             if (taiKhoanOpt.isPresent()) {
                 TaiKhoan taiKhoan = taiKhoanOpt.get();
-                System.out.println("ðŸ‘¤ DEBUG chi-tiet - TaiKhoan ID: " + taiKhoan.getId() + ", Role: " + taiKhoan.getVaiTro());
+                System.out.println("👤 DEBUG chi-tiet - TaiKhoan ID: " + taiKhoan.getId() + ", Role: " + taiKhoan.getVaiTro());
 
-                // Náº¿u khÃ´ng pháº£i admin, kiá»ƒm tra quyá»n sá»Ÿ há»¯u
+                // Nếu không phải admin, kiểm tra quyền sở hữu
                 if (!"ADMIN".equals(taiKhoan.getVaiTro())) {
                     boolean hasAccess = false;
 
                     KhachHang khachHang = khachHangService.findByTaiKhoanId(taiKhoan.getId());
                     if (khachHang != null) {
-                        System.out.println("ðŸ‘¤ DEBUG chi-tiet - KhachHang ID: " + khachHang.getId());
+                        System.out.println("👤 DEBUG chi-tiet - KhachHang ID: " + khachHang.getId());
 
-                        // Kiá»ƒm tra nhiá»u Ä‘iá»u kiá»‡n
+                        // Kiểm tra nhiều điều kiện
                         if (hoaDon.getKhachHangId() != null && khachHang.getId().equals(hoaDon.getKhachHangId())) {
                             hasAccess = true;
-                            System.out.println("âœ… DEBUG chi-tiet - Khá»›p qua KhachHang ID");
+                            System.out.println("✅ DEBUG chi-tiet - Khớp qua KhachHang ID");
                         } else if (hoaDon.getEmail() != null && hoaDon.getEmail().equals(email)) {
                             hasAccess = true;
-                            System.out.println("âœ… DEBUG chi-tiet - Khá»›p qua email");
+                            System.out.println("✅ DEBUG chi-tiet - Khớp qua email");
                         } else {
-                            System.out.println("âŒ DEBUG chi-tiet - KhÃ´ng khá»›p Ä‘iá»u kiá»‡n nÃ o");
+                            System.out.println("❌ DEBUG chi-tiet - Không khớp điều kiện nào");
                             System.out.println("   - KhachHang.ID: " + khachHang.getId());
                             System.out.println("   - HoaDon.KhachHangId: " + hoaDon.getKhachHangId());
                             System.out.println("   - HoaDon.Email: " + hoaDon.getEmail());
                         }
                     } else {
-                        System.out.println("âŒ DEBUG chi-tiet - KhÃ´ng tÃ¬m tháº¥y KhachHang");
+                        System.out.println("❌ DEBUG chi-tiet - Không tìm thấy KhachHang");
                     }
 
                     if (!hasAccess) {
                         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                                .body(Map.of("error", "KhÃ´ng cÃ³ quyá»n truy cáº­p Ä‘Æ¡n hÃ ng nÃ y"));
+                                .body(Map.of("error", "Không có quyền truy cập đơn hàng này"));
                     }
                 } else {
-                    System.out.println("âœ… DEBUG chi-tiet - Admin cÃ³ quyá»n truy cáº­p táº¥t cáº£");
+                    System.out.println("✅ DEBUG chi-tiet - Admin có quyền truy cập tất cả");
                 }
             }
 
-            // âœ… GIá»® NGUYÃŠN: Láº¥y chi tiáº¿t sáº£n pháº©m cá»§a hÃ³a Ä‘Æ¡n (giá»‘ng code cÅ©)
+            // ✅ GIỮ NGUYÊN: Lấy chi tiết sản phẩm của hóa đơn (giống code cũ)
             List<HoaDonChiTietDTO> chiTietList = hoaDonChiTietServiceImpl.getChiTietByHoaDonId(id);
 
-            // âœ… THÃŠM Láº I: Láº¥y chi tiáº¿t voucher vÃ  cÃ¡c thÃ´ng tin khÃ¡c nhÆ° code gá»‘c
+            // ✅ THÊM LẠI: Lấy chi tiết voucher và các thông tin khác như code gốc
             List<ChiTietVoucherDTO> chiTietVoucherList = null;
             BigDecimal tongTietKiemVoucher = BigDecimal.ZERO;
 
             try {
-                // Thá»­ láº¥y voucher info náº¿u service cÃ³ sáºµn
+                // Thử lấy voucher info nếu service có sẵn
                 if (chiTietVoucherService != null) {
                     chiTietVoucherList = chiTietVoucherService.findByHoaDonId(id);
                     tongTietKiemVoucher = chiTietVoucherList.stream()
                             .map(ChiTietVoucherDTO::getSoTienGiam)
                             .filter(Objects::nonNull)
                             .reduce(BigDecimal.ZERO, BigDecimal::add);
-                    System.out.println("ðŸŽ« DEBUG chi-tiet - Sá»‘ voucher: " + chiTietVoucherList.size());
+                    System.out.println("🎫 DEBUG chi-tiet - Số voucher: " + chiTietVoucherList.size());
                 }
             } catch (Exception e) {
-                System.out.println("âš ï¸ DEBUG chi-tiet - KhÃ´ng thá»ƒ láº¥y voucher info: " + e.getMessage());
+                System.out.println("⚠️ DEBUG chi-tiet - Không thể lấy voucher info: " + e.getMessage());
                 chiTietVoucherList = new ArrayList<>();
             }
 
-            // âœ… GIá»® NGUYÃŠN: Táº¡o response vá»›i Ä‘áº§y Ä‘á»§ thÃ´ng tin nhÆ° code gá»‘c
+            // ✅ GIỮ NGUYÊN: Tạo response với đầy đủ thông tin như code gốc
             Map<String, Object> dataMap = new HashMap<>();
             dataMap.put("hoaDon", hoaDon);
             dataMap.put("chiTietSanPham", chiTietList);
 
-            // ThÃªm voucher info náº¿u cÃ³
+            // Thêm voucher info nếu có
             if (chiTietVoucherList != null) {
                 dataMap.put("chiTietVoucher", chiTietVoucherList);
                 dataMap.put("tongTietKiemVoucher", tongTietKiemVoucher);
@@ -751,14 +752,14 @@ public class HoaDonRestController {
             response.put("success", true);
             response.put("data", dataMap);
 
-            System.out.println("âœ… DEBUG chi-tiet - Tráº£ vá» thÃ nh cÃ´ng vá»›i " + chiTietList.size() + " sáº£n pháº©m");
+            System.out.println("✅ DEBUG chi-tiet - Trả về thành công với " + chiTietList.size() + " sản phẩm");
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            System.out.println("ðŸ’¥ DEBUG chi-tiet - Lá»—i: " + e.getMessage());
+            System.out.println("💥 DEBUG chi-tiet - Lỗi: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Lá»—i server: " + e.getMessage()));
+                    .body(Map.of("error", "Lỗi server: " + e.getMessage()));
         }
     }
     @PostMapping("/api/hoa-don/{id}/cancel-by-customer")
@@ -770,15 +771,15 @@ public class HoaDonRestController {
             String token = extractTokenFromRequest(request);
             if (token == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Token khÃ´ng tá»“n táº¡i"));
+                        .body(Map.of("error", "Token không tồn tại"));
             }
             String email = jwtUtil.extractEmail(token);
 
-            HoaDonDTO updated = hoaDonService.cancelInvoiceByCustomer(id, "KhÃ¡ch hÃ ng yÃªu cáº§u há»§y", email);
+            HoaDonDTO updated = hoaDonService.cancelInvoiceByCustomer(id, "Khách hàng yêu cầu hủy", email);
 
             return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", "Há»§y Ä‘Æ¡n hÃ ng thÃ nh cÃ´ng",
+                    "message", "Hủy đơn hàng thành công",
                     "data", updated
             ));
         } catch (IllegalAccessException e) {
@@ -790,7 +791,28 @@ public class HoaDonRestController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Lá»—i server: " + e.getMessage()));
+                    .body(Map.of("error", "Lỗi server: " + e.getMessage()));
         }
+    }
+
+    private boolean isCompletedInvoiceStatus(String status) {
+        return "COMPLETED".equals(normalizeInvoiceStatus(status));
+    }
+
+    private String normalizeInvoiceStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return "";
+        }
+
+        String normalized = Normalizer.normalize(status.trim().toUpperCase(), Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .replace('\u0110', 'D')
+                .replaceAll("[^A-Z0-9]+", "_")
+                .replaceAll("^_+|_+$", "");
+
+        return switch (normalized) {
+            case "DA_THANH_TOAN", "HOAN_THANH" -> "COMPLETED";
+            default -> normalized;
+        };
     }
 }

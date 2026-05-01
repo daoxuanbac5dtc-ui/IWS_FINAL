@@ -14,6 +14,6 @@ public class DanhMucResponse {
     private String tenDanhMuc;
     private Integer trangThai;
     private Integer soLuongSanPham;
-    private Date ngayTao;           // â† THÃŠM field nÃ y
+    private Date ngayTao;           // ← THÊM field này
     private Date ngayCapNhat;
 }

@@ -7,6 +7,7 @@ import org.example.iws_websitesneaker.Service.KhachHangService;
 import org.example.iws_websitesneaker.Service.NhanVienService;
 import org.example.iws_websitesneaker.entity.*;
 import org.example.iws_websitesneaker.repository.RepoTaiKhoan;
+import org.example.iws_websitesneaker.util.TextEncodingGuard;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
     @Autowired
     private NhanVienService nhanVienService;
 
-    // ===== CONSTANTS - CÃC Háº°NG Sá» =====
+    // ===== CONSTANTS - CÁC HẰNG SỐ =====
     private static final String EMAIL_PATTERN =
             "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
     private static final Pattern EMAIL_REGEX = Pattern.compile(EMAIL_PATTERN);
@@ -45,7 +46,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         try {
             return taiKhoanRepository.findAll();
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ¬m táº¥t cáº£ tÃ i khoáº£n: " + e.getMessage());
+            System.err.println("Lỗi tìm tất cả tài khoản: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -55,7 +56,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         try {
             return taiKhoanRepository.findById(id);
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ¬m tÃ i khoáº£n theo ID: " + e.getMessage());
+            System.err.println("Lỗi tìm tài khoản theo ID: " + e.getMessage());
             return Optional.empty();
         }
     }
@@ -67,28 +68,28 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             if (taiKhoanOpt.isPresent()) {
                 TaiKhoan taiKhoan = taiKhoanOpt.get();
 
-                // Kiá»ƒm tra tÃ i khoáº£n cÃ³ active khÃ´ng
+                // Kiểm tra tài khoản có active không
                 if (!taiKhoan.isActive()) {
                     System.err.println("Account is inactive: " + taiKhoan.getMaTaiKhoan());
                     return false;
                 }
 
-                // Hash máº­t kháº©u má»›i báº±ng Spring Security BCrypt
+                // Hash mật khẩu mới bằng Spring Security BCrypt
                 String hashedPassword = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode(newPassword);
                 taiKhoan.setMatKhau(hashedPassword);
                 taiKhoan.setNgayCapNhat(new Date());
 
                 taiKhoanRepository.save(taiKhoan);
 
-                System.out.println("âœ… Password updated successfully for account: " + taiKhoan.getMaTaiKhoan());
+                System.out.println("✅ Password updated successfully for account: " + taiKhoan.getMaTaiKhoan());
                 return true;
             } else {
-                System.err.println("âŒ Account not found for email: " + email);
+                System.err.println("❌ Account not found for email: " + email);
                 return false;
             }
 
         } catch (Exception e) {
-            System.err.println("âŒ Error updating password: " + e.getMessage());
+            System.err.println("❌ Error updating password: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -105,9 +106,9 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             }
             return taiKhoanRepository.save(taiKhoan);
         } catch (DataIntegrityViolationException e) {
-            throw new RuntimeException("Lá»—i rÃ ng buá»™c database: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi ràng buộc database: " + e.getMessage(), e);
         } catch (Exception e) {
-            throw new RuntimeException("Lá»—i lÆ°u tÃ i khoáº£n: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi lưu tài khoản: " + e.getMessage(), e);
         }
     }
 
@@ -115,120 +116,120 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteById(Integer id) {
         try {
-            System.out.println("=== XÃ“A TÃ€I KHOáº¢N SERVICE ===");
-            System.out.println("Äang xÃ³a tÃ i khoáº£n ID: " + id);
+            System.out.println("=== XÓA TÀI KHOẢN SERVICE ===");
+            System.out.println("Đang xóa tài khoản ID: " + id);
 
             if (!canDeleteAccount(id)) {
-                throw new IllegalStateException("KhÃ´ng thá»ƒ xÃ³a tÃ i khoáº£n nÃ y");
+                throw new IllegalStateException("Không thể xóa tài khoản này");
             }
 
-            // Láº¥y thÃ´ng tin tÃ i khoáº£n trÆ°á»›c khi xÃ³a
+            // Lấy thông tin tài khoản trước khi xóa
             Optional<TaiKhoan> accountOpt = findById(id);
             if (accountOpt.isEmpty()) {
-                throw new IllegalArgumentException("KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n vá»›i ID: " + id);
+                throw new IllegalArgumentException("Không tìm thấy tài khoản với ID: " + id);
             }
 
             TaiKhoan account = accountOpt.get();
-            System.out.println("TÃ i khoáº£n cáº§n xÃ³a: " + account.getEmail() + " (" + account.getVaiTro() + ")");
+            System.out.println("Tài khoản cần xóa: " + account.getEmail() + " (" + account.getVaiTro() + ")");
 
-            // BÆ°á»›c 1: XÃ³a táº¥t cáº£ dá»¯ liá»‡u liÃªn quan theo thá»© tá»± Ä‘Ãºng
+            // Bước 1: Xóa tất cả dữ liệu liên quan theo thứ tự đúng
             try {
-                // 1.1: XÃ³a voucher cá»§a tÃ i khoáº£n (báº£ng tai_khoan_voucher)
+                // 1.1: Xóa voucher của tài khoản (bảng tai_khoan_voucher)
                 deleteAccountVouchers(id);
 
-                // 1.2: XÃ³a cÃ¡c Ä‘Æ¡n hÃ ng vÃ  dá»¯ liá»‡u giao dá»‹ch (náº¿u cÃ³)
+                // 1.2: Xóa các đơn hàng và dữ liệu giao dịch (nếu có)
                 deleteAccountOrders(id);
 
-                // 1.3: XÃ³a Ä‘á»‹a chá»‰
+                // 1.3: Xóa địa chỉ
                 if (diaChiService != null) {
                     try {
                         diaChiService.deleteByTaiKhoanId(id);
-                        System.out.println("âœ… ÄÃ£ xÃ³a Ä‘á»‹a chá»‰ cho tÃ i khoáº£n: " + id);
+                        System.out.println("✅ Đã xóa địa chỉ cho tài khoản: " + id);
                     } catch (Exception e) {
-                        System.err.println("âš ï¸ Cáº£nh bÃ¡o: KhÃ´ng thá»ƒ xÃ³a Ä‘á»‹a chá»‰: " + e.getMessage());
+                        System.err.println("⚠️ Cảnh báo: Không thể xóa địa chỉ: " + e.getMessage());
                     }
                 }
 
-                // 1.4: XÃ³a entity theo vai trÃ²
+                // 1.4: Xóa entity theo vai trò
                 if (account.getVaiTro() == TaiKhoan.VaiTro.USER) {
                     try {
                         if (khachHangService != null) {
                             khachHangService.deleteByTaiKhoanId(id);
-                            System.out.println("âœ… ÄÃ£ xÃ³a dá»¯ liá»‡u khÃ¡ch hÃ ng cho tÃ i khoáº£n: " + id);
+                            System.out.println("✅ Đã xóa dữ liệu khách hàng cho tài khoản: " + id);
                         }
                     } catch (Exception e) {
-                        System.err.println("âš ï¸ Cáº£nh bÃ¡o: KhÃ´ng thá»ƒ xÃ³a dá»¯ liá»‡u khÃ¡ch hÃ ng: " + e.getMessage());
+                        System.err.println("⚠️ Cảnh báo: Không thể xóa dữ liệu khách hàng: " + e.getMessage());
                     }
                 } else if (account.getVaiTro() == TaiKhoan.VaiTro.NHANVIEN) {
                     try {
                         if (nhanVienService != null) {
                             nhanVienService.deleteByTaiKhoanId(id);
-                            System.out.println("âœ… ÄÃ£ xÃ³a dá»¯ liá»‡u nhÃ¢n viÃªn cho tÃ i khoáº£n: " + id);
+                            System.out.println("✅ Đã xóa dữ liệu nhân viên cho tài khoản: " + id);
                         }
                     } catch (Exception e) {
-                        System.err.println("âš ï¸ Cáº£nh bÃ¡o: KhÃ´ng thá»ƒ xÃ³a dá»¯ liá»‡u nhÃ¢n viÃªn: " + e.getMessage());
+                        System.err.println("⚠️ Cảnh báo: Không thể xóa dữ liệu nhân viên: " + e.getMessage());
                     }
                 }
 
             } catch (Exception relatedError) {
-                System.err.println("âŒ Lá»—i xÃ³a entity liÃªn quan: " + relatedError.getMessage());
-                throw new RuntimeException("KhÃ´ng thá»ƒ xÃ³a tÃ i khoáº£n do cÃ³ dá»¯ liá»‡u liÃªn quan khÃ´ng thá»ƒ xÃ³a: " + relatedError.getMessage());
+                System.err.println("❌ Lỗi xóa entity liên quan: " + relatedError.getMessage());
+                throw new RuntimeException("Không thể xóa tài khoản do có dữ liệu liên quan không thể xóa: " + relatedError.getMessage());
             }
 
-            // BÆ°á»›c 2: XÃ³a tÃ i khoáº£n chÃ­nh
+            // Bước 2: Xóa tài khoản chính
             try {
                 taiKhoanRepository.deleteById(id);
-                System.out.println("âœ… XÃ³a tÃ i khoáº£n thÃ nh cÃ´ng: " + id);
+                System.out.println("✅ Xóa tài khoản thành công: " + id);
 
-                // Ghi log viá»‡c xÃ³a
-                logAccountActivity(id, "DELETE", "TÃ i khoáº£n Ä‘Ã£ Ä‘Æ°á»£c xÃ³a thÃ nh cÃ´ng");
+                // Ghi log việc xóa
+                logAccountActivity(id, "DELETE", "Tài khoản đã được xóa thành công");
 
             } catch (Exception mainDeleteError) {
-                System.err.println("âŒ Lá»—i xÃ³a tÃ i khoáº£n chÃ­nh: " + mainDeleteError.getMessage());
+                System.err.println("❌ Lỗi xóa tài khoản chính: " + mainDeleteError.getMessage());
 
-                // Kiá»ƒm tra lá»—i database cá»¥ thá»ƒ
+                // Kiểm tra lỗi database cụ thể
                 if (mainDeleteError.getMessage().contains("constraint") ||
                         mainDeleteError.getMessage().contains("foreign key") ||
                         mainDeleteError.getMessage().contains("REFERENCE")) {
-                    throw new RuntimeException("KhÃ´ng thá»ƒ xÃ³a tÃ i khoáº£n: váº«n cÃ²n dá»¯ liá»‡u liÃªn quan chÆ°a Ä‘Æ°á»£c xÃ³a");
+                    throw new RuntimeException("Không thể xóa tài khoản: vẫn còn dữ liệu liên quan chưa được xóa");
                 }
 
-                throw new RuntimeException("KhÃ´ng thá»ƒ xÃ³a tÃ i khoáº£n: " + mainDeleteError.getMessage());
+                throw new RuntimeException("Không thể xóa tài khoản: " + mainDeleteError.getMessage());
             }
 
         } catch (Exception e) {
-            System.err.println("âŒ XÃ³a tÃ i khoáº£n tháº¥t báº¡i: " + e.getMessage());
+            System.err.println("❌ Xóa tài khoản thất bại: " + e.getMessage());
             e.printStackTrace();
-            throw new RuntimeException("KhÃ´ng thá»ƒ xÃ³a tÃ i khoáº£n: " + e.getMessage(), e);
+            throw new RuntimeException("Không thể xóa tài khoản: " + e.getMessage(), e);
         }
     }
     private void deleteAccountVouchers(Integer accountId) {
         try {
-            // Sá»­ dá»¥ng SQL Ä‘á»ƒ xÃ³a trá»±c tiáº¿p tá»« báº£ng tai_khoan_voucher
+            // Sử dụng SQL để xóa trực tiếp từ bảng tai_khoan_voucher
             taiKhoanRepository.deleteAccountVouchers(accountId);
-            System.out.println("âœ… ÄÃ£ xÃ³a voucher cho tÃ i khoáº£n: " + accountId);
+            System.out.println("✅ Đã xóa voucher cho tài khoản: " + accountId);
         } catch (Exception e) {
-            System.err.println("âŒ Lá»—i xÃ³a voucher: " + e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ xÃ³a voucher cá»§a tÃ i khoáº£n: " + e.getMessage());
+            System.err.println("❌ Lỗi xóa voucher: " + e.getMessage());
+            throw new RuntimeException("Không thể xóa voucher của tài khoản: " + e.getMessage());
         }
     }
 
     /**
-     * XÃ³a táº¥t cáº£ Ä‘Æ¡n hÃ ng vÃ  dá»¯ liá»‡u giao dá»‹ch cá»§a tÃ i khoáº£n
+     * Xóa tất cả đơn hàng và dữ liệu giao dịch của tài khoản
      */
     private void deleteAccountOrders(Integer accountId) {
         try {
-            // XÃ³a cÃ¡c báº£ng liÃªn quan Ä‘áº¿n Ä‘Æ¡n hÃ ng theo thá»© tá»±:
-            // 1. XÃ³a chi tiáº¿t Ä‘Æ¡n hÃ ng
-            // 2. XÃ³a Ä‘Æ¡n hÃ ng
-            // 3. XÃ³a cÃ¡c giao dá»‹ch khÃ¡c
+            // Xóa các bảng liên quan đến đơn hàng theo thứ tự:
+            // 1. Xóa chi tiết đơn hàng
+            // 2. Xóa đơn hàng
+            // 3. Xóa các giao dịch khác
 
             taiKhoanRepository.deleteAccountOrders(accountId);
-            System.out.println("âœ… ÄÃ£ xÃ³a Ä‘Æ¡n hÃ ng cho tÃ i khoáº£n: " + accountId);
+            System.out.println("✅ Đã xóa đơn hàng cho tài khoản: " + accountId);
         } catch (Exception e) {
-            System.err.println("âŒ Lá»—i xÃ³a Ä‘Æ¡n hÃ ng: " + e.getMessage());
-            // CÃ³ thá»ƒ khÃ´ng cÃ³ Ä‘Æ¡n hÃ ng nÃ o, chá»‰ log warning
-            System.err.println("âš ï¸ Tiáº¿p tá»¥c xÃ³a tÃ i khoáº£n...");
+            System.err.println("❌ Lỗi xóa đơn hàng: " + e.getMessage());
+            // Có thể không có đơn hàng nào, chỉ log warning
+            System.err.println("⚠️ Tiếp tục xóa tài khoản...");
         }
     }
     // ================== ACCOUNT CREATION - MAIN METHODS ==================
@@ -236,39 +237,39 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> createCompleteAccount(TaiKhoanDTO dto) {
-        System.out.println("=== Táº¡o tÃ i khoáº£n hoÃ n chá»‰nh ===");
+        System.out.println("=== Tạo tài khoản hoàn chỉnh ===");
 
         try {
-            // KIá»‚M TRA TRÃ™NG Láº¶P TRÆ¯á»šC KHI Báº®T Äáº¦U TRANSACTION
+            // KIỂM TRA TRÙNG LẶP TRƯỚC KHI BẮT ĐẦU TRANSACTION
             if (!validateCreateAccountDto(dto)) {
-                throw new IllegalArgumentException("Dá»¯ liá»‡u tÃ i khoáº£n khÃ´ng há»£p lá»‡");
+                throw new IllegalArgumentException("Dữ liệu tài khoản không hợp lệ");
             }
 
             if (existsByEmail(dto.getEmail())) {
-                throw new IllegalArgumentException("Email Ä‘Ã£ tá»“n táº¡i: " + dto.getEmail());
+                throw new IllegalArgumentException("Email đã tồn tại: " + dto.getEmail());
             }
 
-            // KIá»‚M TRA TRÃ™NG Láº¶P Sá» ÄIá»†N THOáº I
+            // KIỂM TRA TRÙNG LẶP SỐ ĐIỆN THOẠI
             if (dto.needsPersonalInfo() && dto.getSdt() != null) {
                 String cleanPhone = dto.getSdt().trim().replaceAll("\\s+", "");
 
                 if (dto.getVaiTro() == TaiKhoan.VaiTro.NHANVIEN || "NHANVIEN".equals(dto.getVaiTroString())) {
                     if (nhanVienService.existsBySdt(cleanPhone)) {
-                        throw new IllegalArgumentException("Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng: " + cleanPhone);
+                        throw new IllegalArgumentException("Số điện thoại đã được sử dụng: " + cleanPhone);
                     }
                 } else if (dto.getVaiTro() == TaiKhoan.VaiTro.USER || "USER".equals(dto.getVaiTroString())) {
                     if (khachHangService.existsBySdt(cleanPhone)) {
-                        throw new IllegalArgumentException("Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng: " + cleanPhone);
+                        throw new IllegalArgumentException("Số điện thoại đã được sử dụng: " + cleanPhone);
                     }
                 }
             }
 
-            // Táº¡o tÃ i khoáº£n chÃ­nh
+            // Tạo tài khoản chính
             TaiKhoan taiKhoan = createTaiKhoan(dto);
             Map<String, Object> result = new HashMap<>();
             result.put("taiKhoan", taiKhoan);
 
-            // Táº¡o entities liÃªn quan
+            // Tạo entities liên quan
             try {
                 if (taiKhoan.getVaiTro() == TaiKhoan.VaiTro.USER) {
                     KhachHang khachHang = createKhachHangForAccount(dto, taiKhoan);
@@ -283,25 +284,25 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
                     result.put("diaChi", diaChi);
                 }
             } catch (Exception relatedError) {
-                System.err.println("Cáº£nh bÃ¡o: Lá»—i táº¡o dá»¯ liá»‡u liÃªn quan: " + relatedError.getMessage());
-                throw new RuntimeException("Lá»—i táº¡o " + getRoleDisplayName(taiKhoan.getVaiTro()) + ": " + relatedError.getMessage(), relatedError);
+                System.err.println("Cảnh báo: Lỗi tạo dữ liệu liên quan: " + relatedError.getMessage());
+                throw new RuntimeException("Lỗi tạo " + getRoleDisplayName(taiKhoan.getVaiTro()) + ": " + relatedError.getMessage(), relatedError);
             }
 
-            logAccountActivity(taiKhoan.getId(), "CREATE", "TÃ i khoáº£n Ä‘Æ°á»£c táº¡o thÃ nh cÃ´ng");
+            logAccountActivity(taiKhoan.getId(), "CREATE", "Tài khoản được tạo thành công");
             return result;
 
         } catch (Exception e) {
-            System.err.println("Lá»—i táº¡o tÃ i khoáº£n: " + e.getMessage());
+            System.err.println("Lỗi tạo tài khoản: " + e.getMessage());
             throw e;
         }
     }
 
     private String getRoleDisplayName(TaiKhoan.VaiTro vaiTro) {
         switch (vaiTro) {
-            case USER: return "khÃ¡ch hÃ ng";
-            case NHANVIEN: return "nhÃ¢n viÃªn";
+            case USER: return "khách hàng";
+            case NHANVIEN: return "nhân viên";
             case ADMIN: return "admin";
-            default: return "ngÆ°á»i dÃ¹ng";
+            default: return "người dùng";
         }
     }
 
@@ -310,11 +311,11 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
     public TaiKhoan createTaiKhoan(TaiKhoanDTO dto) {
         try {
             if (!validateCreateAccountDto(dto)) {
-                throw new IllegalArgumentException("Dá»¯ liá»‡u tÃ i khoáº£n khÃ´ng há»£p lá»‡");
+                throw new IllegalArgumentException("Dữ liệu tài khoản không hợp lệ");
             }
 
             if (existsByEmail(dto.getEmail())) {
-                throw new IllegalArgumentException("Email Ä‘Ã£ tá»“n táº¡i");
+                throw new IllegalArgumentException("Email đã tồn tại");
             }
 
             TaiKhoan taiKhoan = new TaiKhoan();
@@ -322,17 +323,17 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             taiKhoan.setEmail(normalizeEmail(dto.getEmail()));
             taiKhoan.setMatKhau(hashPassword(dto.getMatKhau()));
 
-            // Xá»­ lÃ½ vai trÃ²
+            // Xử lý vai trò
             if (dto.getVaiTro() != null) {
                 taiKhoan.setVaiTro(dto.getVaiTro());
             } else if (dto.getVaiTroString() != null) {
                 TaiKhoan.VaiTro role = parseVaiTro(dto.getVaiTroString());
                 if (role == null) {
-                    throw new IllegalArgumentException("Vai trÃ² khÃ´ng há»£p lá»‡: " + dto.getVaiTroString());
+                    throw new IllegalArgumentException("Vai trò không hợp lệ: " + dto.getVaiTroString());
                 }
                 taiKhoan.setVaiTro(role);
             } else {
-                throw new IllegalArgumentException("Vai trÃ² lÃ  báº¯t buá»™c");
+                throw new IllegalArgumentException("Vai trò là bắt buộc");
             }
 
             taiKhoan.setTrangThai(dto.getTrangThai() != null ? dto.getTrangThai() : 1);
@@ -342,8 +343,8 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             return taiKhoanRepository.save(taiKhoan);
 
         } catch (Exception e) {
-            System.err.println("Lá»—i táº¡o TaiKhoan: " + e.getMessage());
-            throw new RuntimeException("Lá»—i táº¡o tÃ i khoáº£n: " + e.getMessage(), e);
+            System.err.println("Lỗi tạo TaiKhoan: " + e.getMessage());
+            throw new RuntimeException("Lỗi tạo tài khoản: " + e.getMessage(), e);
         }
     }
 
@@ -351,13 +352,13 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
     public TaiKhoan createAccount(String email, String password, TaiKhoan.VaiTro vaiTro) {
         try {
             if (!isValidEmail(email)) {
-                throw new IllegalArgumentException("Email khÃ´ng há»£p lá»‡");
+                throw new IllegalArgumentException("Email không hợp lệ");
             }
             if (!isValidPassword(password)) {
-                throw new IllegalArgumentException("Máº­t kháº©u khÃ´ng há»£p lá»‡");
+                throw new IllegalArgumentException("Mật khẩu không hợp lệ");
             }
             if (existsByEmail(email)) {
-                throw new IllegalArgumentException("Email Ä‘Ã£ tá»“n táº¡i");
+                throw new IllegalArgumentException("Email đã tồn tại");
             }
 
             TaiKhoan taiKhoan = new TaiKhoan();
@@ -372,7 +373,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             return save(taiKhoan);
 
         } catch (Exception e) {
-            throw new RuntimeException("Lá»—i táº¡o tÃ i khoáº£n Ä‘Æ¡n giáº£n: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi tạo tài khoản đơn giản: " + e.getMessage(), e);
         }
     }
 
@@ -398,7 +399,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             return Optional.empty();
 
         } catch (Exception e) {
-            System.err.println("Lá»—i xÃ¡c thá»±c: " + e.getMessage());
+            System.err.println("Lỗi xác thực: " + e.getMessage());
             return Optional.empty();
         }
     }
@@ -423,11 +424,11 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             account.setMatKhau(hashPassword(newPassword));
             save(account);
 
-            logAccountActivity(id, "PASSWORD_CHANGE", "Äá»•i máº­t kháº©u thÃ nh cÃ´ng");
+            logAccountActivity(id, "PASSWORD_CHANGE", "Đổi mật khẩu thành công");
             return true;
 
         } catch (Exception e) {
-            System.err.println("Lá»—i Ä‘á»•i máº­t kháº©u: " + e.getMessage());
+            System.err.println("Lỗi đổi mật khẩu: " + e.getMessage());
             return false;
         }
     }
@@ -448,11 +449,11 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             account.setMatKhau(hashPassword(newPassword));
             save(account);
 
-            logAccountActivity(id, "PASSWORD_RESET", "Reset máº­t kháº©u bá»Ÿi admin");
+            logAccountActivity(id, "PASSWORD_RESET", "Reset mật khẩu bởi admin");
             return true;
 
         } catch (Exception e) {
-            System.err.println("Lá»—i reset máº­t kháº©u: " + e.getMessage());
+            System.err.println("Lỗi reset mật khẩu: " + e.getMessage());
             return false;
         }
     }
@@ -467,20 +468,20 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
 
             TaiKhoan account = accountOpt.get();
 
-            // Logic phÃ¢n quyá»n cÆ¡ báº£n theo vai trÃ²
+            // Logic phân quyền cơ bản theo vai trò
             switch (account.getVaiTro()) {
                 case ADMIN:
-                    return true; // Admin cÃ³ táº¥t cáº£ quyá»n
+                    return true; // Admin có tất cả quyền
                 case NHANVIEN:
-                    return !permission.startsWith("ADMIN_"); // NhÃ¢n viÃªn cÃ³ quyá»n non-admin
+                    return !permission.startsWith("ADMIN_"); // Nhân viên có quyền non-admin
                 case USER:
-                    return permission.startsWith("USER_"); // User chá»‰ cÃ³ quyá»n user
+                    return permission.startsWith("USER_"); // User chỉ có quyền user
                 default:
                     return false;
             }
 
         } catch (Exception e) {
-            System.err.println("Lá»—i kiá»ƒm tra quyá»n: " + e.getMessage());
+            System.err.println("Lỗi kiểm tra quyền: " + e.getMessage());
             return false;
         }
     }
@@ -495,7 +496,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             }
             return taiKhoanRepository.findByEmail(normalizeEmail(email));
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ¬m theo email: " + e.getMessage());
+            System.err.println("Lỗi tìm theo email: " + e.getMessage());
             return Optional.empty();
         }
     }
@@ -509,7 +510,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             TaiKhoan result = taiKhoanRepository.findByMaTaiKhoan(maTaiKhoan);
             return Optional.ofNullable(result);
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ¬m theo mÃ£ tÃ i khoáº£n: " + e.getMessage());
+            System.err.println("Lỗi tìm theo mã tài khoản: " + e.getMessage());
             return Optional.empty();
         }
     }
@@ -522,7 +523,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             }
             return taiKhoanRepository.existsByEmail(normalizeEmail(email));
         } catch (Exception e) {
-            System.err.println("Lá»—i kiá»ƒm tra email tá»“n táº¡i: " + e.getMessage());
+            System.err.println("Lỗi kiểm tra email tồn tại: " + e.getMessage());
             return false;
         }
     }
@@ -535,7 +536,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             }
             return taiKhoanRepository.existsByMaTaiKhoan(maTaiKhoan);
         } catch (Exception e) {
-            System.err.println("Lá»—i kiá»ƒm tra mÃ£ tÃ i khoáº£n tá»“n táº¡i: " + e.getMessage());
+            System.err.println("Lỗi kiểm tra mã tài khoản tồn tại: " + e.getMessage());
             return false;
         }
     }
@@ -547,7 +548,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         try {
             return taiKhoanRepository.findByVaiTro(vaiTro);
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ¬m theo vai trÃ²: " + e.getMessage());
+            System.err.println("Lỗi tìm theo vai trò: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -557,7 +558,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         try {
             return taiKhoanRepository.findByVaiTroAndTrangThai(TaiKhoan.VaiTro.USER, 1);
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ¬m khÃ¡ch hÃ ng hoáº¡t Ä‘á»™ng: " + e.getMessage());
+            System.err.println("Lỗi tìm khách hàng hoạt động: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -567,7 +568,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         try {
             return taiKhoanRepository.findByVaiTroAndTrangThai(TaiKhoan.VaiTro.NHANVIEN, 1);
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ¬m nhÃ¢n viÃªn hoáº¡t Ä‘á»™ng: " + e.getMessage());
+            System.err.println("Lỗi tìm nhân viên hoạt động: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -577,7 +578,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         try {
             return taiKhoanRepository.findByVaiTroAndTrangThai(TaiKhoan.VaiTro.ADMIN, 1);
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ¬m admin hoáº¡t Ä‘á»™ng: " + e.getMessage());
+            System.err.println("Lỗi tìm admin hoạt động: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -589,7 +590,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         try {
             return taiKhoanRepository.findByTrangThai(trangThai);
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ¬m theo tráº¡ng thÃ¡i: " + e.getMessage());
+            System.err.println("Lỗi tìm theo trạng thái: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -599,7 +600,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         try {
             return taiKhoanRepository.findByTrangThai(1);
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ¬m tÃ i khoáº£n hoáº¡t Ä‘á»™ng: " + e.getMessage());
+            System.err.println("Lỗi tìm tài khoản hoạt động: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -615,10 +616,10 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             TaiKhoan account = accountOpt.get();
             Integer newStatus = (account.getTrangThai() == 1) ? 0 : 1;
 
-            // Kiá»ƒm tra admin cuá»‘i cÃ¹ng
+            // Kiểm tra admin cuối cùng
             if (account.getVaiTro() == TaiKhoan.VaiTro.ADMIN && newStatus == 0) {
                 if (isLastActiveAdmin(id)) {
-                    throw new IllegalStateException("KhÃ´ng thá»ƒ vÃ´ hiá»‡u hÃ³a admin cuá»‘i cÃ¹ng");
+                    throw new IllegalStateException("Không thể vô hiệu hóa admin cuối cùng");
                 }
             }
 
@@ -626,11 +627,11 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             save(account);
 
             String action = newStatus == 1 ? "ACTIVATE" : "DEACTIVATE";
-            logAccountActivity(id, action, "Tráº¡ng thÃ¡i Ä‘Ã£ Ä‘Æ°á»£c chuyá»ƒn Ä‘á»•i");
+            logAccountActivity(id, action, "Trạng thái đã được chuyển đổi");
             return true;
 
         } catch (Exception e) {
-            System.err.println("Lá»—i chuyá»ƒn Ä‘á»•i tráº¡ng thÃ¡i: " + e.getMessage());
+            System.err.println("Lỗi chuyển đổi trạng thái: " + e.getMessage());
             return false;
         }
     }
@@ -645,19 +646,19 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
 
             TaiKhoan account = accountOpt.get();
 
-            // Kiá»ƒm tra admin cuá»‘i cÃ¹ng
+            // Kiểm tra admin cuối cùng
             if (account.getVaiTro() == TaiKhoan.VaiTro.ADMIN && isLastActiveAdmin(id)) {
-                throw new IllegalStateException("KhÃ´ng thá»ƒ vÃ´ hiá»‡u hÃ³a admin cuá»‘i cÃ¹ng");
+                throw new IllegalStateException("Không thể vô hiệu hóa admin cuối cùng");
             }
 
             account.setTrangThai(0);
             save(account);
 
-            logAccountActivity(id, "DEACTIVATE", "TÃ i khoáº£n Ä‘Ã£ bá»‹ vÃ´ hiá»‡u hÃ³a");
+            logAccountActivity(id, "DEACTIVATE", "Tài khoản đã bị vô hiệu hóa");
             return true;
 
         } catch (Exception e) {
-            System.err.println("Lá»—i vÃ´ hiá»‡u hÃ³a tÃ i khoáº£n: " + e.getMessage());
+            System.err.println("Lỗi vô hiệu hóa tài khoản: " + e.getMessage());
             return false;
         }
     }
@@ -674,11 +675,11 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             account.setTrangThai(1);
             save(account);
 
-            logAccountActivity(id, "ACTIVATE", "TÃ i khoáº£n Ä‘Ã£ Ä‘Æ°á»£c kÃ­ch hoáº¡t");
+            logAccountActivity(id, "ACTIVATE", "Tài khoản đã được kích hoạt");
             return true;
 
         } catch (Exception e) {
-            System.err.println("Lá»—i kÃ­ch hoáº¡t tÃ i khoáº£n: " + e.getMessage());
+            System.err.println("Lỗi kích hoạt tài khoản: " + e.getMessage());
             return false;
         }
     }
@@ -693,7 +694,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             }
             return taiKhoanRepository.searchByKeyword(keyword.trim());
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ¬m kiáº¿m theo tá»« khÃ³a: " + e.getMessage());
+            System.err.println("Lỗi tìm kiếm theo từ khóa: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -704,7 +705,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         try {
             return findAll().stream()
                     .filter(account -> {
-                        // Lá»c theo email
+                        // Lọc theo email
                         if (email != null && !email.trim().isEmpty()) {
                             if (account.getEmail() == null ||
                                     !account.getEmail().toLowerCase().contains(email.toLowerCase())) {
@@ -712,7 +713,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
                             }
                         }
 
-                        // Lá»c theo mÃ£ tÃ i khoáº£n
+                        // Lọc theo mã tài khoản
                         if (maTaiKhoan != null && !maTaiKhoan.trim().isEmpty()) {
                             if (account.getMaTaiKhoan() == null ||
                                     !account.getMaTaiKhoan().toLowerCase().contains(maTaiKhoan.toLowerCase())) {
@@ -720,17 +721,17 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
                             }
                         }
 
-                        // Lá»c theo vai trÃ²
+                        // Lọc theo vai trò
                         if (vaiTro != null && !account.getVaiTro().equals(vaiTro)) {
                             return false;
                         }
 
-                        // Lá»c theo tráº¡ng thÃ¡i
+                        // Lọc theo trạng thái
                         if (trangThai != null && !account.getTrangThai().equals(trangThai)) {
                             return false;
                         }
 
-                        // Lá»c theo khoáº£ng thá»i gian
+                        // Lọc theo khoảng thời gian
                         if (startDate != null && account.getNgayTao() != null &&
                                 account.getNgayTao().before(startDate)) {
                             return false;
@@ -745,7 +746,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
                     .collect(Collectors.toList());
 
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ¬m kiáº¿m nÃ¢ng cao: " + e.getMessage());
+            System.err.println("Lỗi tìm kiếm nâng cao: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -763,7 +764,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
                 allResults = findAll();
             }
 
-            // Ãp dá»¥ng filters
+            // Áp dụng filters
             if (vaiTro != null || trangThai != null) {
                 allResults = allResults.stream()
                         .filter(account -> {
@@ -778,10 +779,10 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
                         .collect(Collectors.toList());
             }
 
-            // Ãp dá»¥ng sorting
+            // Áp dụng sorting
             sortAccountList(allResults, sortBy, sortDir);
 
-            // Ãp dá»¥ng pagination
+            // Áp dụng pagination
             int totalElements = allResults.size();
             int totalPages = (int) Math.ceil((double) totalElements / size);
             int startIndex = page * size;
@@ -800,7 +801,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             return result;
 
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ¬m kiáº¿m cÃ³ phÃ¢n trang: " + e.getMessage());
+            System.err.println("Lỗi tìm kiếm có phân trang: " + e.getMessage());
             Map<String, Object> emptyResult = new HashMap<>();
             emptyResult.put("content", new ArrayList<>());
             emptyResult.put("totalElements", 0);
@@ -818,7 +819,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         try {
             return taiKhoanRepository.count();
         } catch (Exception e) {
-            System.err.println("Lá»—i Ä‘áº¿m táº¥t cáº£ tÃ i khoáº£n: " + e.getMessage());
+            System.err.println("Lỗi đếm tất cả tài khoản: " + e.getMessage());
             return 0;
         }
     }
@@ -828,7 +829,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         try {
             return taiKhoanRepository.countByVaiTro(vaiTro);
         } catch (Exception e) {
-            System.err.println("Lá»—i Ä‘áº¿m theo vai trÃ²: " + e.getMessage());
+            System.err.println("Lỗi đếm theo vai trò: " + e.getMessage());
             return 0;
         }
     }
@@ -838,7 +839,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         try {
             return taiKhoanRepository.countByTrangThai(trangThai);
         } catch (Exception e) {
-            System.err.println("Lá»—i Ä‘áº¿m theo tráº¡ng thÃ¡i: " + e.getMessage());
+            System.err.println("Lỗi đếm theo trạng thái: " + e.getMessage());
             return 0;
         }
     }
@@ -848,7 +849,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         try {
             return taiKhoanRepository.countActiveByVaiTro(vaiTro);
         } catch (Exception e) {
-            System.err.println("Lá»—i Ä‘áº¿m hoáº¡t Ä‘á»™ng theo vai trÃ²: " + e.getMessage());
+            System.err.println("Lỗi đếm hoạt động theo vai trò: " + e.getMessage());
             return 0;
         }
     }
@@ -858,7 +859,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         try {
             return taiKhoanRepository.countAccountsCreatedToday(new Date());
         } catch (Exception e) {
-            System.err.println("Lá»—i Ä‘áº¿m tÃ i khoáº£n táº¡o hÃ´m nay: " + e.getMessage());
+            System.err.println("Lỗi đếm tài khoản tạo hôm nay: " + e.getMessage());
             return 0;
         }
     }
@@ -868,7 +869,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         try {
             return taiKhoanRepository.countAccountsCreatedThisMonth(new Date());
         } catch (Exception e) {
-            System.err.println("Lá»—i Ä‘áº¿m tÃ i khoáº£n táº¡o thÃ¡ng nÃ y: " + e.getMessage());
+            System.err.println("Lỗi đếm tài khoản tạo tháng này: " + e.getMessage());
             return 0;
         }
     }
@@ -893,7 +894,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             return stats;
 
         } catch (Exception e) {
-            System.err.println("Lá»—i láº¥y thá»‘ng kÃª dashboard: " + e.getMessage());
+            System.err.println("Lỗi lấy thống kê dashboard: " + e.getMessage());
             return new HashMap<>();
         }
     }
@@ -905,7 +906,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         try {
             return taiKhoanRepository.findByNgayTaoBetween(startDate, endDate);
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ¬m theo khoáº£ng ngÃ y: " + e.getMessage());
+            System.err.println("Lỗi tìm theo khoảng ngày: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -918,7 +919,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
                     .limit(limit)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ¬m tÃ i khoáº£n má»›i nháº¥t: " + e.getMessage());
+            System.err.println("Lỗi tìm tài khoản mới nhất: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -930,7 +931,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             Date now = new Date();
             return findByDateRange(cutoffDate, now);
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ¬m tÃ i khoáº£n gáº§n Ä‘Ã¢y: " + e.getMessage());
+            System.err.println("Lỗi tìm tài khoản gần đây: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -941,40 +942,52 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
     public boolean validateCreateAccountDto(TaiKhoanDTO dto) {
         try {
             if (dto == null) {
-                System.err.println("âŒ DTO lÃ  null");
+                System.err.println("❌ DTO là null");
                 return false;
             }
 
-            // Validate thÃ´ng tin cÆ¡ báº£n
+            // Validate thông tin cơ bản
             if (!dto.isValidBasicInfo()) {
-                System.err.println("âŒ ThÃ´ng tin cÆ¡ báº£n khÃ´ng há»£p lá»‡");
+                System.err.println("❌ Thông tin cơ bản không hợp lệ");
                 return false;
             }
 
             if (!isValidEmail(dto.getEmail())) {
-                System.err.println("âŒ Email khÃ´ng há»£p lá»‡: " + dto.getEmail());
+                System.err.println("❌ Email không hợp lệ: " + dto.getEmail());
                 return false;
             }
 
             if (!isValidPassword(dto.getMatKhau())) {
-                System.err.println("âŒ Máº­t kháº©u khÃ´ng há»£p lá»‡");
+                System.err.println("❌ Mật khẩu không hợp lệ");
                 return false;
             }
 
-            // Validate vai trÃ²
+            // Validate vai trò
             if (dto.getVaiTro() == null && (dto.getVaiTroString() == null || dto.getVaiTroString().trim().isEmpty())) {
-                System.err.println("âŒ KhÃ´ng cÃ³ vai trÃ² Ä‘Æ°á»£c chá»‰ Ä‘á»‹nh");
+                System.err.println("❌ Không có vai trò được chỉ định");
                 return false;
             }
 
-            // Validate thÃ´ng tin cÃ¡ nhÃ¢n cho non-admin
+            // Validate thông tin cá nhân cho non-admin
             if (dto.needsPersonalInfo()) {
+                if (TextEncodingGuard.hasEncodingIssue(dto.getHoTen())) {
+                    System.err.println("Dữ liệu họ tên có dấu hiệu lỗi mã hóa: " + dto.getHoTen());
+                    return false;
+                }
+                TaiKhoanDTO.DiaChiDto addressDto = dto.getEffectiveAddress();
+                if (addressDto != null
+                        && (TextEncodingGuard.hasEncodingIssue(addressDto.getTenTinh())
+                        || TextEncodingGuard.hasEncodingIssue(addressDto.getTenPhuong())
+                        || TextEncodingGuard.hasEncodingIssue(addressDto.getDiaChiChiTiet()))) {
+                    System.err.println("Dữ liệu địa chỉ có dấu hiệu lỗi mã hóa");
+                    return false;
+                }
                 if (!dto.isValidPersonalInfo()) {
-                    System.err.println("âŒ ThÃ´ng tin cÃ¡ nhÃ¢n khÃ´ng há»£p lá»‡");
+                    System.err.println("❌ Thông tin cá nhân không hợp lệ");
                     return false;
                 }
                 if (!isValidPhoneNumber(dto.getSdt())) {
-                    System.err.println("âŒ Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng há»£p lá»‡: " + dto.getSdt());
+                    System.err.println("❌ Số điện thoại không hợp lệ: " + dto.getSdt());
                     return false;
                 }
             }
@@ -982,7 +995,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             return true;
 
         } catch (Exception e) {
-            System.err.println("Lá»—i validation DTO: " + e.getMessage());
+            System.err.println("Lỗi validation DTO: " + e.getMessage());
             return false;
         }
     }
@@ -992,26 +1005,30 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         try {
             if (dto == null || accountId == null) return false;
 
-            // Kiá»ƒm tra tÃ i khoáº£n cÃ³ tá»“n táº¡i
+            // Kiểm tra tài khoản có tồn tại
             if (findById(accountId).isEmpty()) return false;
 
-            // Validate email náº¿u cÃ³
+            // Validate email nếu có
             if (dto.getEmail() != null && !isValidEmail(dto.getEmail())) return false;
 
-            // Validate máº­t kháº©u náº¿u cÃ³
+            // Validate mật khẩu nếu có
             if (dto.getMatKhau() != null && !dto.getMatKhau().isEmpty() && !isValidPassword(dto.getMatKhau())) {
                 return false;
             }
 
-            // Validate sá»‘ Ä‘iá»‡n thoáº¡i náº¿u cÃ³
+            // Validate số điện thoại nếu có
             if (dto.getSdt() != null && !dto.getSdt().isEmpty() && !isValidPhoneNumber(dto.getSdt())) {
+                return false;
+            }
+
+            if (TextEncodingGuard.hasEncodingIssue(dto.getHoTen())) {
                 return false;
             }
 
             return true;
 
         } catch (Exception e) {
-            System.err.println("Lá»—i validation DTO cáº­p nháº­t: " + e.getMessage());
+            System.err.println("Lỗi validation DTO cập nhật: " + e.getMessage());
             return false;
         }
     }
@@ -1037,19 +1054,19 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
     @Override
     public boolean isValidSearchParams(String email, String maTaiKhoan, String vaiTro, Integer trangThai) {
         try {
-            // Validate email format náº¿u cÃ³
+            // Validate email format nếu có
             if (email != null && !email.trim().isEmpty() && !isValidEmail(email)) {
                 return false;
             }
 
-            // Validate vai trÃ² náº¿u cÃ³
+            // Validate vai trò nếu có
             if (vaiTro != null && !vaiTro.trim().isEmpty()) {
                 if (parseVaiTro(vaiTro) == null) {
                     return false;
                 }
             }
 
-            // Validate tráº¡ng thÃ¡i náº¿u cÃ³
+            // Validate trạng thái nếu có
             if (trangThai != null && trangThai != 0 && trangThai != 1) {
                 return false;
             }
@@ -1057,7 +1074,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             return true;
 
         } catch (Exception e) {
-            System.err.println("Lá»—i validation tham sá»‘ tÃ¬m kiáº¿m: " + e.getMessage());
+            System.err.println("Lỗi validation tham số tìm kiếm: " + e.getMessage());
             return false;
         }
     }
@@ -1074,120 +1091,120 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
 
             TaiKhoan account = accountOpt.get();
 
-            // Quy táº¯c 1: KhÃ´ng thá»ƒ xÃ³a admin cuá»‘i cÃ¹ng Ä‘ang hoáº¡t Ä‘á»™ng
+            // Quy tắc 1: Không thể xóa admin cuối cùng đang hoạt động
             if (account.getVaiTro() == TaiKhoan.VaiTro.ADMIN && account.getTrangThai() == 1) {
                 long activeAdminCount = countActiveByVaiTro(TaiKhoan.VaiTro.ADMIN);
                 if (activeAdminCount <= 1) {
-                    System.out.println("âŒ KhÃ´ng thá»ƒ xÃ³a admin cuá»‘i cÃ¹ng Ä‘ang hoáº¡t Ä‘á»™ng");
+                    System.out.println("❌ Không thể xóa admin cuối cùng đang hoạt động");
                     return false;
                 }
             }
 
-            // Quy táº¯c 2: Kiá»ƒm tra dá»¯ liá»‡u liÃªn quan quan trá»ng
+            // Quy tắc 2: Kiểm tra dữ liệu liên quan quan trọng
             try {
                 int relatedDataCount = taiKhoanRepository.countRelatedData(id);
                 List<String> relatedTables = taiKhoanRepository.getRelatedTables(id);
 
-                System.out.println("Dá»¯ liá»‡u liÃªn quan cho tÃ i khoáº£n " + id + ": " + relatedDataCount + " records");
-                System.out.println("Báº£ng cÃ³ dá»¯ liá»‡u: " + String.join(", ", relatedTables));
+                System.out.println("Dữ liệu liên quan cho tài khoản " + id + ": " + relatedDataCount + " records");
+                System.out.println("Bảng có dữ liệu: " + String.join(", ", relatedTables));
 
-                // Cho phÃ©p xÃ³a náº¿u chá»‰ cÃ³ dá»¯ liá»‡u trong cÃ¡c báº£ng "an toÃ n"
+                // Cho phép xóa nếu chỉ có dữ liệu trong các bảng "an toàn"
                 List<String> safeTables = Arrays.asList("dia_chi", "khach_hang", "nhan_vien", "tai_khoan_voucher");
                 boolean canDelete = relatedTables.stream().allMatch(safeTables::contains);
 
                 if (!canDelete) {
-                    System.out.println("âŒ TÃ i khoáº£n cÃ³ dá»¯ liá»‡u quan trá»ng khÃ´ng thá»ƒ xÃ³a");
+                    System.out.println("❌ Tài khoản có dữ liệu quan trọng không thể xóa");
                     return false;
                 }
 
             } catch (Exception e) {
-                System.err.println("Lá»—i kiá»ƒm tra dá»¯ liá»‡u liÃªn quan: " + e.getMessage());
-                // Náº¿u khÃ´ng kiá»ƒm tra Ä‘Æ°á»£c, cho phÃ©p xÃ³a nhÆ°ng cáº£nh bÃ¡o
-                System.out.println("âš ï¸ KhÃ´ng thá»ƒ kiá»ƒm tra dá»¯ liá»‡u liÃªn quan, tiáº¿p tá»¥c xÃ³a...");
+                System.err.println("Lỗi kiểm tra dữ liệu liên quan: " + e.getMessage());
+                // Nếu không kiểm tra được, cho phép xóa nhưng cảnh báo
+                System.out.println("⚠️ Không thể kiểm tra dữ liệu liên quan, tiếp tục xóa...");
             }
 
             return true;
 
         } catch (Exception e) {
-            System.err.println("Lá»—i kiá»ƒm tra kháº£ nÄƒng xÃ³a tÃ i khoáº£n: " + e.getMessage());
+            System.err.println("Lỗi kiểm tra khả năng xóa tài khoản: " + e.getMessage());
             return false;
         }
     }
     @Transactional(rollbackFor = Exception.class)
     public void safeDeleteById(Integer id) {
         try {
-            System.out.println("=== XÃ“A AN TOÃ€N TÃ€I KHOáº¢N ===");
+            System.out.println("=== XÓA AN TOÀN TÀI KHOẢN ===");
 
-            // Kiá»ƒm tra trÆ°á»›c khi xÃ³a
+            // Kiểm tra trước khi xóa
             if (!canDeleteAccount(id)) {
-                throw new IllegalStateException("KhÃ´ng Ä‘Æ°á»£c phÃ©p xÃ³a tÃ i khoáº£n nÃ y");
+                throw new IllegalStateException("Không được phép xóa tài khoản này");
             }
 
             Optional<TaiKhoan> accountOpt = findById(id);
             if (accountOpt.isEmpty()) {
-                throw new IllegalArgumentException("KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n");
+                throw new IllegalArgumentException("Không tìm thấy tài khoản");
             }
 
             TaiKhoan account = accountOpt.get();
 
-            // Thá»­ xÃ³a tá»«ng bÆ°á»›c vá»›i checkpoint
+            // Thử xóa từng bước với checkpoint
             executeDeleteSteps(id, account);
 
-            System.out.println("âœ… XÃ³a tÃ i khoáº£n thÃ nh cÃ´ng: " + id);
+            System.out.println("✅ Xóa tài khoản thành công: " + id);
 
         } catch (Exception e) {
-            System.err.println("âŒ Lá»—i xÃ³a tÃ i khoáº£n: " + e.getMessage());
-            // Transaction sáº½ tá»± Ä‘á»™ng rollback do @Transactional(rollbackFor = Exception.class)
-            throw new RuntimeException("XÃ³a tÃ i khoáº£n tháº¥t báº¡i: " + e.getMessage(), e);
+            System.err.println("❌ Lỗi xóa tài khoản: " + e.getMessage());
+            // Transaction sẽ tự động rollback do @Transactional(rollbackFor = Exception.class)
+            throw new RuntimeException("Xóa tài khoản thất bại: " + e.getMessage(), e);
         }
     }
 
     private void executeDeleteSteps(Integer id, TaiKhoan account) {
-        // BÆ°á»›c 1: XÃ³a voucher (quan trá»ng nháº¥t - lÃ  nguyÃªn nhÃ¢n lá»—i)
+        // Bước 1: Xóa voucher (quan trọng nhất - là nguyên nhân lỗi)
         try {
             taiKhoanRepository.deleteAccountVouchers(id);
-            System.out.println("âœ… Step 1: ÄÃ£ xÃ³a voucher");
+            System.out.println("✅ Step 1: Đã xóa voucher");
         } catch (Exception e) {
-            throw new RuntimeException("Lá»—i xÃ³a voucher: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi xóa voucher: " + e.getMessage(), e);
         }
 
-        // BÆ°á»›c 2: XÃ³a Ä‘Æ¡n hÃ ng (náº¿u cÃ³)
+        // Bước 2: Xóa đơn hàng (nếu có)
         try {
             taiKhoanRepository.deleteAccountOrderDetails(id);
             taiKhoanRepository.deleteAccountOrders(id);
-            System.out.println("âœ… Step 2: ÄÃ£ xÃ³a Ä‘Æ¡n hÃ ng");
+            System.out.println("✅ Step 2: Đã xóa đơn hàng");
         } catch (Exception e) {
-            System.out.println("âš ï¸ Step 2: KhÃ´ng cÃ³ Ä‘Æ¡n hÃ ng Ä‘á»ƒ xÃ³a");
+            System.out.println("⚠️ Step 2: Không có đơn hàng để xóa");
         }
 
-        // BÆ°á»›c 3: XÃ³a Ä‘á»‹a chá»‰
+        // Bước 3: Xóa địa chỉ
         try {
             if (diaChiService != null) {
                 diaChiService.deleteByTaiKhoanId(id);
             }
-            System.out.println("âœ… Step 3: ÄÃ£ xÃ³a Ä‘á»‹a chá»‰");
+            System.out.println("✅ Step 3: Đã xóa địa chỉ");
         } catch (Exception e) {
-            System.out.println("âš ï¸ Step 3: Lá»—i xÃ³a Ä‘á»‹a chá»‰: " + e.getMessage());
+            System.out.println("⚠️ Step 3: Lỗi xóa địa chỉ: " + e.getMessage());
         }
 
-        // BÆ°á»›c 4: XÃ³a thÃ´ng tin khÃ¡ch hÃ ng/nhÃ¢n viÃªn
+        // Bước 4: Xóa thông tin khách hàng/nhân viên
         try {
             if (account.getVaiTro() == TaiKhoan.VaiTro.USER && khachHangService != null) {
                 khachHangService.deleteByTaiKhoanId(id);
             } else if (account.getVaiTro() == TaiKhoan.VaiTro.NHANVIEN && nhanVienService != null) {
                 nhanVienService.deleteByTaiKhoanId(id);
             }
-            System.out.println("âœ… Step 4: ÄÃ£ xÃ³a thÃ´ng tin cÃ¡ nhÃ¢n");
+            System.out.println("✅ Step 4: Đã xóa thông tin cá nhân");
         } catch (Exception e) {
-            System.out.println("âš ï¸ Step 4: Lá»—i xÃ³a thÃ´ng tin cÃ¡ nhÃ¢n: " + e.getMessage());
+            System.out.println("⚠️ Step 4: Lỗi xóa thông tin cá nhân: " + e.getMessage());
         }
 
-        // BÆ°á»›c 5: XÃ³a tÃ i khoáº£n chÃ­nh
+        // Bước 5: Xóa tài khoản chính
         try {
             taiKhoanRepository.deleteById(id);
-            System.out.println("âœ… Step 5: ÄÃ£ xÃ³a tÃ i khoáº£n chÃ­nh");
+            System.out.println("✅ Step 5: Đã xóa tài khoản chính");
         } catch (Exception e) {
-            throw new RuntimeException("Lá»—i xÃ³a tÃ i khoáº£n chÃ­nh: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi xóa tài khoản chính: " + e.getMessage(), e);
         }
     }
     @Override
@@ -1198,7 +1215,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
 
             TaiKhoan account = accountOpt.get();
 
-            // KhÃ´ng thá»ƒ Ä‘á»•i vai trÃ² tá»« ADMIN náº¿u lÃ  admin hoáº¡t Ä‘á»™ng cuá»‘i cÃ¹ng
+            // Không thể đổi vai trò từ ADMIN nếu là admin hoạt động cuối cùng
             if (account.getVaiTro() == TaiKhoan.VaiTro.ADMIN &&
                     newRole != TaiKhoan.VaiTro.ADMIN &&
                     account.getTrangThai() == 1) {
@@ -1211,7 +1228,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             return true;
 
         } catch (Exception e) {
-            System.err.println("Lá»—i kiá»ƒm tra kháº£ nÄƒng Ä‘á»•i vai trÃ²: " + e.getMessage());
+            System.err.println("Lỗi kiểm tra khả năng đổi vai trò: " + e.getMessage());
             return false;
         }
     }
@@ -1230,7 +1247,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             return isActiveAdmin && activeAdminCount <= 1;
 
         } catch (Exception e) {
-            System.err.println("Lá»—i kiá»ƒm tra admin cuá»‘i cÃ¹ng: " + e.getMessage());
+            System.err.println("Lỗi kiểm tra admin cuối cùng: " + e.getMessage());
             return false;
         }
     }
@@ -1253,13 +1270,13 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             } while (existsByMaTaiKhoan(maTaiKhoan) && attempts < 1000);
 
             if (attempts >= 1000) {
-                throw new RuntimeException("KhÃ´ng thá»ƒ táº¡o mÃ£ tÃ i khoáº£n unique sau 1000 láº§n thá»­");
+                throw new RuntimeException("Không thể tạo mã tài khoản unique sau 1000 lần thử");
             }
 
             return maTaiKhoan;
 
         } catch (Exception e) {
-            System.err.println("Lá»—i táº¡o mÃ£ tÃ i khoáº£n: " + e.getMessage());
+            System.err.println("Lỗi tạo mã tài khoản: " + e.getMessage());
             return "TK" + System.currentTimeMillis();
         }
     }
@@ -1275,21 +1292,21 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             switch (role) {
                 case "USER":
                 case "KHACHHANG":
-                case "KHÃCH HÃ€NG":
+                case "KHÁCH HÀNG":
                     return TaiKhoan.VaiTro.USER;
                 case "NHANVIEN":
-                case "NHÃ‚N VIÃŠN":
+                case "NHÂN VIÊN":
                 case "EMPLOYEE":
                     return TaiKhoan.VaiTro.NHANVIEN;
                 case "ADMIN":
                 case "ADMINISTRATOR":
-                case "QUáº¢N TRá»Š":
+                case "QUẢN TRỊ":
                     return TaiKhoan.VaiTro.ADMIN;
                 default:
                     return null;
             }
         } catch (Exception e) {
-            System.err.println("Lá»—i parse vai trÃ²: " + e.getMessage());
+            System.err.println("Lỗi parse vai trò: " + e.getMessage());
             return null;
         }
     }
@@ -1306,7 +1323,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             return new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode(password);
         } catch (Exception e) {
             System.err.println("Error hashing password: " + e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ hash máº­t kháº©u");
+            throw new RuntimeException("Không thể hash mật khẩu");
         }
     }
 
@@ -1324,7 +1341,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
 
     @Override
     public boolean hasRequiredAddressData(TaiKhoanDTO dto) {
-        if (dto.isAdmin()) return true; // Admin khÃ´ng cáº§n Ä‘á»‹a chá»‰
+        if (dto.isAdmin()) return true; // Admin không cần địa chỉ
 
         TaiKhoanDTO.DiaChiDto address = dto.getEffectiveAddress();
         if (address == null) return false;
@@ -1341,14 +1358,14 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
 
         TaiKhoanDTO.DiaChiDto address = dto.getEffectiveAddress();
         if (address == null) {
-            throw new IllegalArgumentException("Dá»¯ liá»‡u Ä‘á»‹a chá»‰ khÃ´ng há»£p lá»‡");
+            throw new IllegalArgumentException("Dữ liệu địa chỉ không hợp lệ");
         }
 
         boolean hasLocation = (address.getTenTinh() != null && !address.getTenTinh().trim().isEmpty()) ||
                 (address.getTenPhuong() != null && !address.getTenPhuong().trim().isEmpty());
 
         if (!hasLocation) {
-            throw new IllegalArgumentException("Äá»‹a chá»‰ pháº£i cÃ³ Ã­t nháº¥t tÃªn tá»‰nh hoáº·c tÃªn phÆ°á»ng");
+            throw new IllegalArgumentException("Địa chỉ phải có ít nhất tên tỉnh hoặc tên phường");
         }
     }
 
@@ -1362,7 +1379,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             List<TaiKhoan> inactiveAccounts = findAll().stream()
                     .filter(account -> account.getTrangThai() == 0)
                     .filter(account -> account.getNgayCapNhat() != null && account.getNgayCapNhat().before(cutoffDate))
-                    .filter(account -> account.getVaiTro() != TaiKhoan.VaiTro.ADMIN) // KhÃ´ng bao giá» dá»n dáº¹p admin
+                    .filter(account -> account.getVaiTro() != TaiKhoan.VaiTro.ADMIN) // Không bao giờ dọn dẹp admin
                     .collect(Collectors.toList());
 
             int cleanedCount = 0;
@@ -1373,14 +1390,14 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
                         cleanedCount++;
                     }
                 } catch (Exception e) {
-                    System.err.println("Lá»—i dá»n dáº¹p tÃ i khoáº£n " + account.getId() + ": " + e.getMessage());
+                    System.err.println("Lỗi dọn dẹp tài khoản " + account.getId() + ": " + e.getMessage());
                 }
             }
 
             return cleanedCount;
 
         } catch (Exception e) {
-            System.err.println("Lá»—i dá»n dáº¹p tÃ i khoáº£n khÃ´ng hoáº¡t Ä‘á»™ng: " + e.getMessage());
+            System.err.println("Lỗi dọn dẹp tài khoản không hoạt động: " + e.getMessage());
             return 0;
         }
     }
@@ -1408,7 +1425,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             return exportData;
 
         } catch (Exception e) {
-            System.err.println("Lá»—i export dá»¯ liá»‡u tÃ i khoáº£n: " + e.getMessage());
+            System.err.println("Lỗi export dữ liệu tài khoản: " + e.getMessage());
             return new HashMap<>();
         }
     }
@@ -1416,15 +1433,15 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
     @Override
     public void logAccountActivity(Integer accountId, String activity, String details) {
         try {
-            // TODO: Thá»±c hiá»‡n ghi log hoáº¡t Ä‘á»™ng thá»±c sá»± (database, file, etc.)
-            System.out.println(String.format("[ACCOUNT_LOG] ID: %d, Hoáº¡t Ä‘á»™ng: %s, Chi tiáº¿t: %s, Thá»i gian: %s",
+            // TODO: Thực hiện ghi log hoạt động thực sự (database, file, etc.)
+            System.out.println(String.format("[ACCOUNT_LOG] ID: %d, Hoạt động: %s, Chi tiết: %s, Thời gian: %s",
                     accountId, activity, details, new Date()));
         } catch (Exception e) {
-            System.err.println("Lá»—i ghi log hoáº¡t Ä‘á»™ng tÃ i khoáº£n: " + e.getMessage());
+            System.err.println("Lỗi ghi log hoạt động tài khoản: " + e.getMessage());
         }
     }
 
-    // ================== HELPER METHODS - PHÆ¯Æ NG THá»¨C Há»– TRá»¢ ==================
+    // ================== HELPER METHODS - PHƯƠNG THỨC HỖ TRỢ ==================
 
     private KhachHang createKhachHangForAccount(TaiKhoanDTO dto, TaiKhoan taiKhoan) {
         try {
@@ -1441,7 +1458,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             return khachHang;
 
         } catch (Exception e) {
-            throw new RuntimeException("Lá»—i táº¡o KhachHang: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi tạo KhachHang: " + e.getMessage(), e);
         }
     }
 
@@ -1460,7 +1477,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             return nhanVien;
 
         } catch (Exception e) {
-            throw new RuntimeException("Lá»—i táº¡o NhanVien: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi tạo NhanVien: " + e.getMessage(), e);
         }
     }
 
@@ -1468,15 +1485,15 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
         try {
             TaiKhoanDTO.DiaChiDto addressDto = dto.getEffectiveAddress();
             if (addressDto == null) {
-                throw new IllegalArgumentException("KhÃ´ng cÃ³ dá»¯ liá»‡u Ä‘á»‹a chá»‰");
+                throw new IllegalArgumentException("Không có dữ liệu địa chỉ");
             }
 
             DiaChi diaChi = new DiaChi();
             diaChi.setTaiKhoan(taiKhoan);
             diaChi.setMaTinh(addressDto.getMaTinh() != null ? addressDto.getMaTinh() : "01");
             diaChi.setMaPhuong(addressDto.getMaPhuong() != null ? addressDto.getMaPhuong() : "00001");
-            diaChi.setTenTinh(addressDto.getTenTinh() != null ? addressDto.getTenTinh() : ("Tá»‰nh " + diaChi.getMaTinh()));
-            diaChi.setTenPhuong(addressDto.getTenPhuong() != null ? addressDto.getTenPhuong() : ("PhÆ°á»ng " + diaChi.getMaPhuong()));
+            diaChi.setTenTinh(addressDto.getTenTinh() != null ? addressDto.getTenTinh() : ("Tỉnh " + diaChi.getMaTinh()));
+            diaChi.setTenPhuong(addressDto.getTenPhuong() != null ? addressDto.getTenPhuong() : ("Phường " + diaChi.getMaPhuong()));
             diaChi.setDiaChiChiTiet(addressDto.getDiaChiChiTiet() != null ? addressDto.getDiaChiChiTiet() : "");
             diaChi.setIsDefault(true);
             diaChi.setTrangThai(1);
@@ -1486,7 +1503,7 @@ public class TaiKhoanServiceImpl implements TaiKhoanService {
             return diaChiService.save(diaChi);
 
         } catch (Exception e) {
-            throw new RuntimeException("Lá»—i táº¡o DiaChi: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi tạo DiaChi: " + e.getMessage(), e);
         }
     }
 

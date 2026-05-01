@@ -49,25 +49,25 @@ public class ViDiemServiceImpl implements ViDiemService {
     public ViDiem updateDiem(Integer id, Double diemMoi, String loaiGiaoDich) {
         Optional<ViDiem> viDiemOpt = findById(id);
         if (!viDiemOpt.isPresent()) {
-            throw new RuntimeException("KhÃ´ng tÃ¬m tháº¥y vÃ­ Ä‘iá»ƒm vá»›i ID: " + id);
+            throw new RuntimeException("Không tìm thấy ví điểm với ID: " + id);
         }
 
         ViDiem viDiem = viDiemOpt.get();
 
         if ("CONG_DIEM".equals(loaiGiaoDich)) {
-            // Cá»™ng Ä‘iá»ƒm
+            // Cộng điểm
             viDiem.setTongDiem(viDiem.getTongDiem() + diemMoi);
             viDiem.setSoDiemDaCong(viDiem.getSoDiemDaCong() + diemMoi);
         } else if ("TRU_DIEM".equals(loaiGiaoDich)) {
-            // Trá»« Ä‘iá»ƒm (sá»­ dá»¥ng Ä‘iá»ƒm)
+            // Trừ điểm (sử dụng điểm)
             Double diemHienTai = calculateDiemHienTai(viDiem);
             if (diemHienTai >= diemMoi) {
                 viDiem.setSoDiemDaDung(viDiem.getSoDiemDaDung() + diemMoi);
             } else {
-                throw new RuntimeException("KhÃ´ng Ä‘á»§ Ä‘iá»ƒm Ä‘á»ƒ sá»­ dá»¥ng. Äiá»ƒm hiá»‡n táº¡i: " + diemHienTai);
+                throw new RuntimeException("Không đủ điểm để sử dụng. Điểm hiện tại: " + diemHienTai);
             }
         } else {
-            throw new RuntimeException("Loáº¡i giao dá»‹ch khÃ´ng há»£p lá»‡. Sá»­ dá»¥ng CONG_DIEM hoáº·c TRU_DIEM");
+            throw new RuntimeException("Loại giao dịch không hợp lệ. Sử dụng CONG_DIEM hoặc TRU_DIEM");
         }
 
         viDiem.setNgayCapNhat(new Date());
@@ -88,7 +88,7 @@ public class ViDiemServiceImpl implements ViDiemService {
     public Double getDiemHienTai(Integer id) {
         Optional<ViDiem> viDiemOpt = findById(id);
         if (!viDiemOpt.isPresent()) {
-            throw new RuntimeException("KhÃ´ng tÃ¬m tháº¥y vÃ­ Ä‘iá»ƒm vá»›i ID: " + id);
+            throw new RuntimeException("Không tìm thấy ví điểm với ID: " + id);
         }
         return calculateDiemHienTai(viDiemOpt.get());
     }
@@ -97,14 +97,14 @@ public class ViDiemServiceImpl implements ViDiemService {
     public Double getGiaTriTien(Integer id) {
         Optional<ViDiem> viDiemOpt = findById(id);
         if (!viDiemOpt.isPresent()) {
-            throw new RuntimeException("KhÃ´ng tÃ¬m tháº¥y vÃ­ Ä‘iá»ƒm vá»›i ID: " + id);
+            throw new RuntimeException("Không tìm thấy ví điểm với ID: " + id);
         }
         ViDiem viDiem = viDiemOpt.get();
         Double diemHienTai = calculateDiemHienTai(viDiem);
         return diemHienTai * viDiem.getGiaTriDiem();
     }
 
-    // Helper method Ä‘á»ƒ tÃ­nh Ä‘iá»ƒm hiá»‡n táº¡i
+    // Helper method để tính điểm hiện tại
     private Double calculateDiemHienTai(ViDiem viDiem) {
         Double tongDiem = viDiem.getTongDiem() != null ? viDiem.getTongDiem() : 0.0;
         Double soDiemDaDung = viDiem.getSoDiemDaDung() != null ? viDiem.getSoDiemDaDung() : 0.0;

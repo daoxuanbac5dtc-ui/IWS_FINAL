@@ -52,7 +52,7 @@
                 <i class="fas fa-map-marker-alt text-white text-2xl"></i>
               </div>
               <h3 class="text-2xl font-bold text-gray-900 mb-4">Địa chỉ văn phòng</h3>
-              <p class="text-gray-600 leading-relaxed">134, 15 Huỳnh Văn Nghệ, Phường 15, Quận Tân Bình, TP HCM, Việt Nam</p>
+              <p class="text-gray-600 leading-relaxed">126 Đường Nguyễn Trãi Quận Hà Đông, TP HÀ Nội</p>
               <a href="#" class="inline-flex items-center text-green-600 hover:text-green-700 mt-4 font-semibold">
                 Xem bản đồ <i class="fas fa-arrow-right ml-2"></i>
               </a>
@@ -245,7 +245,7 @@
     </section>
 
     <!-- Map Section -->
-    <section class="relative h-96 bg-gray-200">
+    <section id="stores" class="relative h-96 bg-gray-200">
       <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/20"></div>
       <iframe 
         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.0824710975044!2d106.63657131480079!3d10.805183992303403!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752935e97b0445%3A0x7edabc7f961f6b79!2zMTM0IEh14buzbmggVsSDbiBOZ2jhu4csIFBoxrDhu51uZyAxNSwgVMOibiBCw6xuaCwgVGjDoG5oIHBo4buRIEjhu5MgQ2jDrSBNaW5oLCBWaeG7h3QgTmFt!5e0!3m2!1svi!2s!4v1635841420185!5m2!1svi!2s"
@@ -279,7 +279,7 @@
       </button>
     </div>
 
-    <div class="fixed bottom-6 right-6 z-50 flex flex-col space-y-4">
+    <div class="contact-floating-actions fixed right-6 z-50 flex flex-col space-y-4">
       <!-- Messenger -->
       <button class="group relative w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110">
         <i class="fab fa-facebook-messenger text-2xl"></i>
@@ -297,7 +297,7 @@
       </button>
       
       <!-- Back to top -->
-      <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="group relative w-14 h-14 bg-gradient-to-br from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110">
+      <button @click="scrollToTop" class="group relative w-14 h-14 bg-gradient-to-br from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110">
         <i class="fas fa-arrow-up text-xl"></i>
         <span class="absolute right-full mr-3 bg-gray-900 text-white text-sm px-3 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
           Lên đầu trang
@@ -323,6 +323,11 @@ export default {
     Hero,
     ChatBot
   },
+  methods: {
+    scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
 };
 </script>
 
@@ -335,6 +340,31 @@ export default {
   font-family: 'Inter', sans-serif;
   background-color: #ffffff;
   min-height: 100vh;
+}
+
+.contact-floating-actions {
+  right: 1.5rem !important;
+  bottom: 6.25rem !important;
+  align-items: center;
+  z-index: 1080;
+}
+
+:deep(.chatbot-container) {
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 1100;
+}
+
+@media (max-width: 480px) {
+  .contact-floating-actions {
+    right: 1rem !important;
+    bottom: 5.5rem !important;
+  }
+
+  :deep(.chatbot-container) {
+    right: 1rem;
+    bottom: 1rem;
+  }
 }
 
 /* Animations */

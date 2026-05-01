@@ -1,7 +1,7 @@
 <template>
   <main class="gioithieu">
     <Nav />
-    <Hero />
+    <HeroSection />
     <section id="about-us-content" class="relative overflow-hidden">
       <!-- Background decoration -->
       <div class="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50"></div>
@@ -100,7 +100,7 @@
                 </div>
                 <div class="relative h-96 lg:h-auto bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
                   <div class="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-400/20"></div>
-                  <img src="" alt="Sleek modern running shoe" class="relative z-10 w-4/5 h-4/5 object-contain transform hover:rotate-6 transition-transform duration-500" />
+                  <img :src="productFeatureImage" alt="Sleek modern running shoe" class="relative z-10 w-4/5 h-4/5 object-contain transform hover:rotate-6 transition-transform duration-500" />
                   <div class="absolute bottom-8 right-8 bg-white/90 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg">
                     <span class="text-2xl font-bold text-gray-900">NEW</span>
                   </div>
@@ -123,11 +123,11 @@
                 <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">
                   Khám phá sự khác biệt cùng 
                   <span class="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-pink-400">
-                    [Tên thương hiệu]
+                    Bee Shoes
                   </span>
                 </h2>
                 <p class="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                  Được thành lập từ năm <span class="font-bold text-white">[năm thành lập]</span>, chúng tôi luôn đặt mục tiêu tạo ra những đôi giày thể thao chất lượng, bền bỉ và dẫn đầu xu hướng.
+                  Được thành lập từ năm <span class="font-bold text-white">2026</span>, chúng tôi luôn đặt mục tiêu tạo ra những đôi giày thể thao chất lượng, bền bỉ và dẫn đầu xu hướng.
                 </p>
                 <div class="grid grid-cols-3 gap-8 mt-12 max-w-2xl mx-auto">
                   <div class="text-center">
@@ -240,7 +240,7 @@
               <div class="grid lg:grid-cols-2 gap-0">
                 <div class="relative h-96 lg:h-auto">
                   <div class="absolute inset-0 bg-gradient-to-br from-yellow-400/20 to-orange-400/20"></div>
-                  <img src="" alt="Person running on a scenic trail" class="w-full h-full object-cover" />
+                  <img :src="storyImage" alt="Person running on a scenic trail" class="w-full h-full object-cover" />
                   <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                   <div class="absolute bottom-8 left-8 text-white">
                     <h3 class="text-3xl font-bold mb-2">Hành trình của bạn</h3>
@@ -298,37 +298,17 @@
               <p class="text-xl text-gray-600">Những người đứng sau thành công của chúng tôi</p>
             </div>
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
               <!-- Team Member 1 -->
               <div class="group relative">
                 <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 p-1">
                   <div class="bg-white rounded-2xl p-6">
-                    <div class="relative w-32 h-32 mx-auto mb-4 overflow-hidden rounded-full">
-                      <img src="" alt="" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <div class="relative w-32 h-32 mx-auto mb-4 overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-3xl font-bold text-white group-hover:scale-110 transition-transform duration-500">
+                      <span class="relative z-10">XB</span>
                       <div class="absolute inset-0 bg-gradient-to-t from-red-600/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-1">Phạm Văn Thăng</h3>
-                    <p class="text-sm text-gray-600 mb-3">Developer</p>
-                    <div class="flex justify-center gap-3">
-                      <a href="#" class="text-gray-400 hover:text-red-600 transition-colors">
-                        <i class="fab fa-linkedin"></i>
-                      </a>
-                      <a href="#" class="text-gray-400 hover:text-red-600 transition-colors">
-                        <i class="fab fa-github"></i>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-<div class="group relative">
-                <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 p-1">
-                  <div class="bg-white rounded-2xl p-6">
-                    <div class="relative w-32 h-32 mx-auto mb-4 overflow-hidden rounded-full">
-                      <img src="" alt="" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                      <div class="absolute inset-0 bg-gradient-to-t from-red-600/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-1">Nguyễn Thị Diệu Linh</h3>
-                    <p class="text-sm text-gray-600 mb-3">Developer</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-1">Đào Xuân Bắc</h3>
+                    <p class="text-sm text-gray-600 mb-3">Thành viên nhóm</p>
                     <div class="flex justify-center gap-3">
                       <a href="#" class="text-gray-400 hover:text-red-600 transition-colors">
                         <i class="fab fa-linkedin"></i>
@@ -343,12 +323,12 @@
               <div class="group relative">
                 <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 p-1">
                   <div class="bg-white rounded-2xl p-6">
-                    <div class="relative w-32 h-32 mx-auto mb-4 overflow-hidden rounded-full">
-                      <img src="" alt="" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <div class="relative w-32 h-32 mx-auto mb-4 overflow-hidden rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center text-3xl font-bold text-white group-hover:scale-110 transition-transform duration-500">
+                      <span class="relative z-10">ĐT</span>
                       <div class="absolute inset-0 bg-gradient-to-t from-red-600/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-1">Lê Anh Tú</h3>
-                    <p class="text-sm text-gray-600 mb-3">Developer</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-1">Lê Thành Đạt</h3>
+                    <p class="text-sm text-gray-600 mb-3">Thành viên nhóm</p>
                     <div class="flex justify-center gap-3">
                       <a href="#" class="text-gray-400 hover:text-red-600 transition-colors">
                         <i class="fab fa-linkedin"></i>
@@ -363,38 +343,17 @@
               <div class="group relative">
                 <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 p-1">
                   <div class="bg-white rounded-2xl p-6">
-                    <div class="relative w-32 h-32 mx-auto mb-4 overflow-hidden rounded-full">
-                      <img src="" alt="" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <div class="relative w-32 h-32 mx-auto mb-4 overflow-hidden rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-3xl font-bold text-white group-hover:scale-110 transition-transform duration-500">
+                      <span class="relative z-10">VD</span>
                       <div class="absolute inset-0 bg-gradient-to-t from-red-600/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-1">Nguyễn Đình Đức Lương</h3>
-                    <p class="text-sm text-gray-600 mb-3">Developer</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-1">Trần Viết Dũng</h3>
+                    <p class="text-sm text-gray-600 mb-3">Thành viên nhóm</p>
                     <div class="flex justify-center gap-3">
                       <a href="#" class="text-gray-400 hover:text-red-600 transition-colors">
                         <i class="fab fa-linkedin"></i>
                       </a>
                       <a href="#" class="text-gray-400 hover:text-red-600 transition-colors">
-                        <i class="fab fa-github"></i>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- Team Member 5 -->
-              <div class="group relative">
-                <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-yellow-400 to-yellow-600 p-1">
-                  <div class="bg-white rounded-2xl p-6">
-                    <div class="relative w-32 h-32 mx-auto mb-4 overflow-hidden rounded-full">
-                      <img src="" alt="Phùng Trọng Anh Quân" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                      <div class="absolute inset-0 bg-gradient-to-t from-yellow-600/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-1">Phùng Trọng Anh Quân</h3>
-                    <p class="text-sm text-gray-600 mb-3">Analyst</p>
-                    <div class="flex justify-center gap-3">
-                      <a href="#" class="text-gray-400 hover:text-yellow-600 transition-colors">
-                        <i class="fab fa-linkedin"></i>
-                      </a>
-                      <a href="#" class="text-gray-400 hover:text-yellow-600 transition-colors">
                         <i class="fab fa-github"></i>
                       </a>
                     </div>
@@ -409,6 +368,7 @@
     <section id="footer-section" class="padding-x padding-t bg-black pb-8">
       <Footer />
     </section>
+    <ScrollToggler />
     <!-- ===== ĐÃ THÊM CHATBOT COMPONENT ===== -->
     <ChatBot />
   </main>
@@ -416,17 +376,27 @@
 
 <script>
 import Nav from '@/components/user/Nav.vue';
+import ScrollToggler from '@/components/user/ScrollToggler.vue';
 import Footer from '@/views/user/Footer.vue';
-import Hero from '../Hero.vue';
+import HeroSection from '../HeroSection.vue';
 import ChatBot from '@/components/ChatBotAndReview/ChatBot.vue';
+import productFeatureImage from '@/assets/images/product12.png';
+import storyImage from '@/assets/images/muslim-customer.jpg';
 
 export default {
   name: 'Gioithieu',
   components: {
     Nav,
+    ScrollToggler,
     Footer,
-    Hero,
+    HeroSection,
     ChatBot,
+  },
+  data() {
+    return {
+      productFeatureImage,
+      storyImage,
+    };
   },
 };
 </script>

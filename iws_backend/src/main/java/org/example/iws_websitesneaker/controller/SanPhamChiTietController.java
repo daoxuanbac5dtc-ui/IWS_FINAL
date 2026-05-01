@@ -50,7 +50,7 @@ public class SanPhamChiTietController {
     @PostMapping("/save")
     public ResponseEntity<ChiTietSanPham> save(@RequestBody ChiTietSanPham chiTietSanPham) {
         try {
-            // Set ngÃ y táº¡o náº¿u chÆ°a cÃ³
+            // Set ngày tạo nếu chưa có
             if (chiTietSanPham.getNgayTao() == null) {
                 chiTietSanPham.setNgayTao(new Date());
             }
@@ -67,25 +67,25 @@ public class SanPhamChiTietController {
     @PutMapping("/update/{id}")
     public ResponseEntity<ChiTietSanPham> update(@RequestBody Map<String, Object> requestData, @PathVariable Integer id) {
         try {
-            System.out.println("ðŸ”„ Báº¯t Ä‘áº§u cáº­p nháº­t chi tiáº¿t sáº£n pháº©m ID: " + id);
-            System.out.println("ðŸ“¥ Dá»¯ liá»‡u nháº­n Ä‘Æ°á»£c: " + requestData);
+            System.out.println("🔄 Bắt đầu cập nhật chi tiết sản phẩm ID: " + id);
+            System.out.println("📥 Dữ liệu nhận được: " + requestData);
 
-            // Láº¥y chi tiáº¿t sáº£n pháº©m hiá»‡n táº¡i
+            // Lấy chi tiết sản phẩm hiện tại
             ChiTietSanPham existingChiTiet = sanPhamChiTietService.getById(id);
             if (existingChiTiet == null) {
-                System.err.println("âŒ KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t sáº£n pháº©m ID: " + id);
+                System.err.println("❌ Không tìm thấy chi tiết sản phẩm ID: " + id);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
 
-            // Cáº­p nháº­t cÃ¡c trÆ°á»ng cÆ¡ báº£n
+            // Cập nhật các trường cơ bản
             if (requestData.containsKey("maChiTiet")) {
                 existingChiTiet.setMaChiTiet((String) requestData.get("maChiTiet"));
-                System.out.println("âœ… Cáº­p nháº­t maChiTiet: " + requestData.get("maChiTiet"));
+                System.out.println("✅ Cập nhật maChiTiet: " + requestData.get("maChiTiet"));
             }
 
             if (requestData.containsKey("soLuong")) {
                 existingChiTiet.setSoLuong((Integer) requestData.get("soLuong"));
-                System.out.println("âœ… Cáº­p nháº­t soLuong: " + requestData.get("soLuong"));
+                System.out.println("✅ Cập nhật soLuong: " + requestData.get("soLuong"));
             }
 
             if (requestData.containsKey("giaGoc")) {
@@ -95,7 +95,7 @@ public class SanPhamChiTietController {
                 } else if (giaGoc instanceof Double) {
                     existingChiTiet.setGiaGoc((Double) giaGoc);
                 }
-                System.out.println("âœ… Cáº­p nháº­t giaGoc: " + giaGoc);
+                System.out.println("✅ Cập nhật giaGoc: " + giaGoc);
             }
 
             if (requestData.containsKey("giaBan")) {
@@ -105,71 +105,71 @@ public class SanPhamChiTietController {
                 } else if (giaBan instanceof Double) {
                     existingChiTiet.setGiaBan((Double) giaBan);
                 }
-                System.out.println("âœ… Cáº­p nháº­t giaBan: " + giaBan);
+                System.out.println("✅ Cập nhật giaBan: " + giaBan);
             }
 
             if (requestData.containsKey("trangThai")) {
                 existingChiTiet.setTrangThai((Integer) requestData.get("trangThai"));
-                System.out.println("âœ… Cáº­p nháº­t trangThai: " + requestData.get("trangThai"));
+                System.out.println("✅ Cập nhật trangThai: " + requestData.get("trangThai"));
             }
 
-            // Xá»¬ LÃ Cáº¬P NHáº¬T MÃ€U Sáº®C
+            // XỬ LÝ CẬP NHẬT MÀU SẮC
             if (requestData.containsKey("mauSac")) {
                 Map<String, Object> mauSacData = (Map<String, Object>) requestData.get("mauSac");
                 if (mauSacData != null && mauSacData.containsKey("id")) {
                     Integer mauSacId = (Integer) mauSacData.get("id");
                     try {
-                        // Táº¡o Ä‘á»‘i tÆ°á»£ng MauSac vá»›i ID (giáº£ sá»­ báº¡n cÃ³ entity MauSac)
+                        // Tạo đối tượng MauSac với ID (giả sử bạn có entity MauSac)
                         MauSac mauSac = new MauSac();
                         mauSac.setId(mauSacId);
-                        // Hoáº·c náº¿u cáº§n load Ä‘áº§y Ä‘á»§: mauSac = mauSacService.getById(mauSacId);
+                        // Hoặc nếu cần load đầy đủ: mauSac = mauSacService.getById(mauSacId);
 
                         existingChiTiet.setMauSac(mauSac);
-                        System.out.println("âœ… Cáº­p nháº­t mauSac ID: " + mauSacId);
+                        System.out.println("✅ Cập nhật mauSac ID: " + mauSacId);
                     } catch (Exception e) {
-                        System.err.println("âŒ Lá»—i khi cáº­p nháº­t mÃ u sáº¯c: " + e.getMessage());
+                        System.err.println("❌ Lỗi khi cập nhật màu sắc: " + e.getMessage());
                     }
                 }
             }
 
-            // Xá»¬ LÃ Cáº¬P NHáº¬T KÃCH Cá» 
+            // XỬ LÝ CẬP NHẬT KÍCH CỠ
             if (requestData.containsKey("kichCo")) {
                 Map<String, Object> kichCoData = (Map<String, Object>) requestData.get("kichCo");
                 if (kichCoData != null && kichCoData.containsKey("id")) {
                     Integer kichCoId = (Integer) kichCoData.get("id");
                     try {
-                        // Táº¡o Ä‘á»‘i tÆ°á»£ng KichCo vá»›i ID (giáº£ sá»­ báº¡n cÃ³ entity KichCo)
+                        // Tạo đối tượng KichCo với ID (giả sử bạn có entity KichCo)
                         KichCo kichCo = new KichCo();
                         kichCo.setId(kichCoId);
-                        // Hoáº·c náº¿u cáº§n load Ä‘áº§y Ä‘á»§: kichCo = kichCoService.getById(kichCoId);
+                        // Hoặc nếu cần load đầy đủ: kichCo = kichCoService.getById(kichCoId);
 
                         existingChiTiet.setKichCo(kichCo);
-                        System.out.println("âœ… Cáº­p nháº­t kichCo ID: " + kichCoId);
+                        System.out.println("✅ Cập nhật kichCo ID: " + kichCoId);
                     } catch (Exception e) {
-                        System.err.println("âŒ Lá»—i khi cáº­p nháº­t kÃ­ch cá»¡: " + e.getMessage());
+                        System.err.println("❌ Lỗi khi cập nhật kích cỡ: " + e.getMessage());
                     }
                 }
             }
 
-            // Xá»¬ LÃ Cáº¬P NHáº¬T Sáº¢N PHáº¨M (náº¿u cÃ³)
+            // XỬ LÝ CẬP NHẬT SẢN PHẨM (nếu có)
             if (requestData.containsKey("sanPham")) {
                 Map<String, Object> sanPhamData = (Map<String, Object>) requestData.get("sanPham");
                 if (sanPhamData != null && sanPhamData.containsKey("id")) {
                     Integer sanPhamId = (Integer) sanPhamData.get("id");
                     try {
-                        // Táº¡o Ä‘á»‘i tÆ°á»£ng SanPham vá»›i ID
+                        // Tạo đối tượng SanPham với ID
                         SanPham sanPham = new SanPham();
                         sanPham.setId(sanPhamId);
 
                         existingChiTiet.setSanPham(sanPham);
-                        System.out.println("âœ… Cáº­p nháº­t sanPham ID: " + sanPhamId);
+                        System.out.println("✅ Cập nhật sanPham ID: " + sanPhamId);
                     } catch (Exception e) {
-                        System.err.println("âŒ Lá»—i khi cáº­p nháº­t sáº£n pháº©m: " + e.getMessage());
+                        System.err.println("❌ Lỗi khi cập nhật sản phẩm: " + e.getMessage());
                     }
                 }
             }
 
-            // Xá»¬ LÃ HÃŒNH áº¢NH
+            // XỬ LÝ HÌNH ẢNH
             if (requestData.containsKey("hinhAnh")) {
                 Map<String, Object> hinhAnhData = (Map<String, Object>) requestData.get("hinhAnh");
                 if (hinhAnhData != null && hinhAnhData.containsKey("id")) {
@@ -178,46 +178,46 @@ public class SanPhamChiTietController {
                         try {
                             HinhAnh newHinhAnh = hinhAnhService.getHinhanhById(hinhAnhId).orElse(null);
                             existingChiTiet.setHinhAnh(newHinhAnh);
-                            System.out.println("âœ… Cáº­p nháº­t hÃ¬nh áº£nh ID: " + hinhAnhId);
+                            System.out.println("✅ Cập nhật hình ảnh ID: " + hinhAnhId);
                         } catch (Exception e) {
-                            System.err.println("âŒ Lá»—i khi tÃ¬m hÃ¬nh áº£nh ID: " + hinhAnhId + " - " + e.getMessage());
+                            System.err.println("❌ Lỗi khi tìm hình ảnh ID: " + hinhAnhId + " - " + e.getMessage());
                         }
                     }
                 } else {
                     existingChiTiet.setHinhAnh(null);
-                    System.out.println("âœ… ÄÃ£ xÃ³a hÃ¬nh áº£nh khá»i chi tiáº¿t sáº£n pháº©m");
+                    System.out.println("✅ Đã xóa hình ảnh khỏi chi tiết sản phẩm");
                 }
             }
 
-            // Set ngÃ y cáº­p nháº­t
+            // Set ngày cập nhật
             existingChiTiet.setNgayCapNhat(new Date());
 
-            // Log trÆ°á»›c khi lÆ°u
-            System.out.println("ðŸ“ Tráº¡ng thÃ¡i trÆ°á»›c khi lÆ°u:");
+            // Log trước khi lưu
+            System.out.println("📝 Trạng thái trước khi lưu:");
             System.out.println("   - ID: " + existingChiTiet.getId());
             System.out.println("   - MaChiTiet: " + existingChiTiet.getMaChiTiet());
             System.out.println("   - MauSac ID: " + (existingChiTiet.getMauSac() != null ? existingChiTiet.getMauSac().getId() : "null"));
             System.out.println("   - KichCo ID: " + (existingChiTiet.getKichCo() != null ? existingChiTiet.getKichCo().getId() : "null"));
 
-            // LÆ°u vÃ o database
+            // Lưu vào database
             ChiTietSanPham updated = sanPhamChiTietService.update(existingChiTiet, id);
             if (updated != null) {
-                System.out.println("ðŸŽ‰ Cáº­p nháº­t thÃ nh cÃ´ng chi tiáº¿t sáº£n pháº©m ID: " + id);
+                System.out.println("🎉 Cập nhật thành công chi tiết sản phẩm ID: " + id);
 
-                // Log sau khi lÆ°u
-                System.out.println("ðŸ“ Tráº¡ng thÃ¡i sau khi lÆ°u:");
+                // Log sau khi lưu
+                System.out.println("📝 Trạng thái sau khi lưu:");
                 System.out.println("   - MauSac ID: " + (updated.getMauSac() != null ? updated.getMauSac().getId() : "null"));
                 System.out.println("   - KichCo ID: " + (updated.getKichCo() != null ? updated.getKichCo().getId() : "null"));
 
                 return ResponseEntity.ok(updated);
             }
 
-            System.err.println("âŒ Cáº­p nháº­t tháº¥t báº¡i - khÃ´ng tÃ¬m tháº¥y chi tiáº¿t sáº£n pháº©m");
+            System.err.println("❌ Cập nhật thất bại - không tìm thấy chi tiết sản phẩm");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("ðŸ’¥ Lá»—i khi cáº­p nháº­t chi tiáº¿t sáº£n pháº©m ID: " + id + " - " + e.getMessage());
+            System.err.println("💥 Lỗi khi cập nhật chi tiết sản phẩm ID: " + id + " - " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
@@ -227,14 +227,14 @@ public class SanPhamChiTietController {
         try {
             boolean deleted = sanPhamChiTietService.delete(id);
             if (deleted) {
-                return ResponseEntity.ok("XÃ³a thÃ nh cÃ´ng chi tiáº¿t sáº£n pháº©m cÃ³ ID: " + id);
+                return ResponseEntity.ok("Xóa thành công chi tiết sản phẩm có ID: " + id);
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t sáº£n pháº©m cÃ³ ID: " + id);
+                    .body("Không tìm thấy chi tiết sản phẩm có ID: " + id);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Lá»—i khi xÃ³a chi tiáº¿t sáº£n pháº©m: " + e.getMessage());
+                    .body("Lỗi khi xóa chi tiết sản phẩm: " + e.getMessage());
         }
     }
 
@@ -263,7 +263,7 @@ public class SanPhamChiTietController {
             debugInfo.put("id", chiTiet.getId());
             debugInfo.put("maChiTiet", chiTiet.getMaChiTiet());
 
-            // Debug hÃ¬nh áº£nh
+            // Debug hình ảnh
             if (chiTiet.getHinhAnh() != null) {
                 HinhAnh hinhAnh = chiTiet.getHinhAnh();
                 Map<String, Object> hinhAnhInfo = new HashMap<>();
@@ -273,7 +273,7 @@ public class SanPhamChiTietController {
                 hinhAnhInfo.put("duongDan", hinhAnh.getDuongDan());
                 hinhAnhInfo.put("trangThai", hinhAnh.getTrangThai());
 
-                // Táº¡o URL Ä‘áº§y Ä‘á»§
+                // Tạo URL đầy đủ
                 String fullImageUrl = "http://localhost:8080/hinh-anh/images/" +
                         hinhAnh.getDuongDan().replace("/images/", "").replace("/hinh-anh/images/", "");
                 hinhAnhInfo.put("fullImageUrl", fullImageUrl);
@@ -292,7 +292,7 @@ public class SanPhamChiTietController {
         }
     }
 
-    // ThÃªm endpoint láº¥y táº¥t cáº£ hÃ¬nh áº£nh available
+    // Thêm endpoint lấy tất cả hình ảnh available
     @GetMapping("/available-images")
     public ResponseEntity<List<Map<String, Object>>> getAvailableImages() {
         try {
@@ -306,7 +306,7 @@ public class SanPhamChiTietController {
                 imageInfo.put("duongDan", img.getDuongDan());
                 imageInfo.put("trangThai", img.getTrangThai());
 
-                // Táº¡o URL Ä‘áº§y Ä‘á»§ Ä‘á»ƒ test
+                // Tạo URL đầy đủ để test
                 if (img.getDuongDan() != null) {
                     String cleanPath = img.getDuongDan()
                             .replace("/images/", "")

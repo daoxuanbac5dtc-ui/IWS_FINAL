@@ -23,7 +23,7 @@ public class JwtAuthenticationFilter implements Filter {
     @Autowired
     private LoginService authService;
 
-    // CÃ¡c endpoint khÃ´ng cáº§n authentication (prefix match)
+    // Các endpoint không cần authentication (prefix match)
     private static final List<String> PUBLIC_PATHS = Arrays.asList(
             "/auth/login",
             "/auth/register",
@@ -43,13 +43,13 @@ public class JwtAuthenticationFilter implements Filter {
             "/return-images/"
     );
 
-    // CÃ¡c exact paths khÃ´ng cáº§n authentication
+    // Các exact paths không cần authentication
     private static final List<String> PUBLIC_EXACT_PATHS = Arrays.asList(
             "/",
             "/api/dashboard/health"
     );
 
-    // CÃ¡c endpoint POST cÃ´ng khai (guest cÃ³ thá»ƒ POST)
+    // Các endpoint POST công khai (guest có thể POST)
     private static final List<String> PUBLIC_POST_PATHS = Arrays.asList(
             "/tai-khoan",
             "/api/tai-khoan",
@@ -65,7 +65,7 @@ public class JwtAuthenticationFilter implements Filter {
             "/api/vnpay/create-payment"
     );
 
-    // CÃ¡c endpoint GET cÃ´ng khai
+    // Các endpoint GET công khai
     private static final List<String> PUBLIC_GET_PATHS = Arrays.asList(
             "/san-pham",
             "/danh-muc",
@@ -90,13 +90,13 @@ public class JwtAuthenticationFilter implements Filter {
             "/api/orders/track"
     );
 
-    // CÃ¡c endpoint PUT cÃ´ng khai
+    // Các endpoint PUT công khai
     private static final List<String> PUBLIC_PUT_PATHS = Arrays.asList(
             "/hoa-don",
             "/api/gio-hang/guest/update"
     );
 
-    // Admin-only (cáº§n role ADMIN)
+    // Admin-only (cần role ADMIN)
     private static final List<String> ADMIN_ONLY_PATHS = Arrays.asList(
             "/tai-khoan",
             "/nhan-vien",
@@ -105,7 +105,7 @@ public class JwtAuthenticationFilter implements Filter {
             "/system"
     );
 
-    // CÃ¡c endpoint dÃ nh cho admin vÃ  nhÃ¢n viÃªn
+    // Các endpoint dành cho admin và nhân viên
     private static final List<String> ADMIN_NHANVIEN_PATHS = Arrays.asList(
             "/san-pham",
             "/khach-hang",
@@ -141,17 +141,17 @@ public class JwtAuthenticationFilter implements Filter {
             System.out.println("Auth Header: " + (authHeader != null ? "Bearer ***" : "null"));
         }
 
-        // Bá» qua OPTIONS request (CORS preflight)
+        // Bỏ qua OPTIONS request (CORS preflight)
         if ("OPTIONS".equalsIgnoreCase(method)) {
             chain.doFilter(request, response);
             return;
         }
 
-        // Náº¿u path cÃ´ng khai (guest Ä‘Æ°á»£c truy cáº­p)
+        // Nếu path công khai (guest được truy cập)
         if (isPublicPath(requestURI, method)) {
             if (isDebugEnabled()) System.out.println("Public path - allowing: " + requestURI);
 
-            // Náº¿u cÃ³ JWT thÃ¬ parse user vÃ  gáº¯n vÃ o request (Ä‘á»ƒ optional login)
+            // Nếu có JWT thì parse user và gắn vào request (để optional login)
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7);
                 try {
@@ -173,7 +173,7 @@ public class JwtAuthenticationFilter implements Filter {
                     if (isDebugEnabled()) {
                         System.out.println("Public path - JWT parse failed: " + e.getMessage());
                     }
-                    // KhÃ´ng cháº·n, váº«n cho qua nhÆ° guest
+                    // Không chặn, vẫn cho qua như guest
                 }
             }
 
@@ -181,10 +181,10 @@ public class JwtAuthenticationFilter implements Filter {
             return;
         }
 
-        // Non-public path -> cáº§n token
+        // Non-public path -> cần token
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             if (isDebugEnabled()) System.out.println("No Authorization header for protected path: " + requestURI);
-            sendUnauthorizedResponse(httpResponse, "Vui lÃ²ng Ä‘Äƒng nháº­p");
+            sendUnauthorizedResponse(httpResponse, "Vui lòng đăng nhập");
             return;
         }
 
@@ -193,28 +193,28 @@ public class JwtAuthenticationFilter implements Filter {
         try {
             if (!jwtUtil.validateToken(token)) {
                 if (isDebugEnabled()) System.out.println("Token validation failed for path: " + requestURI);
-                sendUnauthorizedResponse(httpResponse, "Token khÃ´ng há»£p lá»‡ hoáº·c Ä‘Ã£ háº¿t háº¡n");
+                sendUnauthorizedResponse(httpResponse, "Token không hợp lệ hoặc đã hết hạn");
                 return;
             }
             email = jwtUtil.extractEmail(token);
         } catch (Exception e) {
             if (isDebugEnabled()) System.out.println("Token error: " + e.getMessage());
-            sendUnauthorizedResponse(httpResponse, "Token khÃ´ng há»£p lá»‡");
+            sendUnauthorizedResponse(httpResponse, "Token không hợp lệ");
             return;
         }
 
-        // Kiá»ƒm tra user tá»« DB
+        // Kiểm tra user từ DB
         TaiKhoan user = authService.findByEmail(email);
         if (user == null) {
             if (isDebugEnabled()) System.out.println("User not found for email: " + email);
-            sendUnauthorizedResponse(httpResponse, "NgÆ°á»i dÃ¹ng khÃ´ng tá»“n táº¡i");
+            sendUnauthorizedResponse(httpResponse, "Người dùng không tồn tại");
             return;
         }
 
-        // Kiá»ƒm tra tráº¡ng thÃ¡i tÃ i khoáº£n
+        // Kiểm tra trạng thái tài khoản
         if (user.getTrangThai() == null || user.getTrangThai() != 1) {
             if (isDebugEnabled()) System.out.println("User inactive: " + user.getEmail());
-            sendUnauthorizedResponse(httpResponse, "TÃ i khoáº£n Ä‘Ã£ bá»‹ khÃ³a hoáº·c khÃ´ng hoáº¡t Ä‘á»™ng");
+            sendUnauthorizedResponse(httpResponse, "Tài khoản đã bị khóa hoặc không hoạt động");
             return;
         }
 
@@ -222,14 +222,14 @@ public class JwtAuthenticationFilter implements Filter {
             System.out.println("User found: " + user.getEmail() + ", role: " + user.getVaiTro());
         }
 
-        // Kiá»ƒm tra ADMIN-only
+        // Kiểm tra ADMIN-only
         if (isAdminOnlyPath(requestURI) && user.getVaiTro() != TaiKhoan.VaiTro.ADMIN) {
             if (isDebugEnabled()) System.out.println("Admin-only path but user not admin: " + requestURI);
-            sendForbiddenResponse(httpResponse, "Chá»‰ quáº£n trá»‹ viÃªn má»›i cÃ³ quyá»n truy cáº­p");
+            sendForbiddenResponse(httpResponse, "Chỉ quản trị viên mới có quyền truy cập");
             return;
         }
 
-        // Kiá»ƒm tra admin/nhanvien paths (bá» qua náº¿u Ä‘Æ°á»ng dáº«n public POST/PUT)
+        // Kiểm tra admin/nhanvien paths (bỏ qua nếu đường dẫn public POST/PUT)
         if (isAdminNhanVienPath(requestURI)
                 && !isPublicPostPath(requestURI, method)
                 && !isPublicPutPath(requestURI, method)
@@ -237,11 +237,11 @@ public class JwtAuthenticationFilter implements Filter {
                 && user.getVaiTro() != TaiKhoan.VaiTro.NHANVIEN) {
 
             if (isDebugEnabled()) System.out.println("Admin/NV path but role not allowed: " + user.getVaiTro());
-            sendForbiddenResponse(httpResponse, "KhÃ´ng cÃ³ quyá»n truy cáº­p tÃ i nguyÃªn nÃ y");
+            sendForbiddenResponse(httpResponse, "Không có quyền truy cập tài nguyên này");
             return;
         }
 
-        // Äáº·t thÃ´ng tin user vÃ o request attributes Ä‘á»ƒ controller/service cÃ³ thá»ƒ dÃ¹ng
+        // Đặt thông tin user vào request attributes để controller/service có thể dùng
         httpRequest.setAttribute("currentUser", user);
         httpRequest.setAttribute("currentUserId", user.getId());
         httpRequest.setAttribute("currentUserRole", user.getVaiTro() != null ? user.getVaiTro().name() : null);

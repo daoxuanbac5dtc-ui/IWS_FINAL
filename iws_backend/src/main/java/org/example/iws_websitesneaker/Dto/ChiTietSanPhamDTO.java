@@ -21,10 +21,10 @@ public class ChiTietSanPhamDTO {
     private MauSacDTO mauSac;
     private KichCoDTO kichCo;
 
-    // Constructor máº·c Ä‘á»‹nh
+    // Constructor mặc định
     public ChiTietSanPhamDTO() {}
 
-    // Constructor tá»« entity
+    // Constructor từ entity
     public ChiTietSanPhamDTO(ChiTietSanPham entity) {
         this.id = entity.getId();
         this.maChiTiet = entity.getMaChiTiet();
@@ -35,7 +35,7 @@ public class ChiTietSanPhamDTO {
         this.ngayTao = entity.getNgayTao();
         this.ngayCapNhat = entity.getNgayCapNhat();
 
-        // Safe conversion cho sáº£n pháº©m
+        // Safe conversion cho sản phẩm
         if (entity.getSanPham() != null) {
             try {
                 this.sanPham = new SanPhamDTO();
@@ -45,7 +45,7 @@ public class ChiTietSanPhamDTO {
 //                this.sanPham.setMoTa(entity.getSanPham().get());
                 this.sanPham.setTrangThai(entity.getSanPham().getTrangThai());
 
-                // Safe conversion cho thÆ°Æ¡ng hiá»‡u
+                // Safe conversion cho thương hiệu
                 if (entity.getSanPham().getThuongHieu() != null) {
                     ThuongHieuDTO thuongHieu = new ThuongHieuDTO();
                     thuongHieu.setId(entity.getSanPham().getThuongHieu().getId());
@@ -53,7 +53,7 @@ public class ChiTietSanPhamDTO {
                     this.sanPham.setThuongHieu(thuongHieu);
                 }
 
-                // Safe conversion cho danh má»¥c
+                // Safe conversion cho danh mục
                 if (entity.getSanPham().getDanhMuc() != null) {
                     DanhMucDTO danhMuc = new DanhMucDTO();
                     danhMuc.setId(entity.getSanPham().getDanhMuc().getId());
@@ -66,7 +66,7 @@ public class ChiTietSanPhamDTO {
             }
         }
 
-        // Safe conversion cho mÃ u sáº¯c
+        // Safe conversion cho màu sắc
         if (entity.getMauSac() != null) {
             try {
                 this.mauSac = new MauSacDTO();
@@ -80,7 +80,7 @@ public class ChiTietSanPhamDTO {
             }
         }
 
-        // Safe conversion cho kÃ­ch cá»¡
+        // Safe conversion cho kích cỡ
         if (entity.getKichCo() != null) {
             try {
                 this.kichCo = new KichCoDTO();
@@ -94,7 +94,7 @@ public class ChiTietSanPhamDTO {
         }
     }
 
-    // Getters vÃ  Setters
+    // Getters và Setters
     public Integer getId() {
         return id;
     }

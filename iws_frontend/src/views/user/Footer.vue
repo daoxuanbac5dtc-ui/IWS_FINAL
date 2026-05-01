@@ -8,11 +8,41 @@ const router = useRouter();
 
 // Navigation helpers
 const navigateToLink = (link) => {
-    if (link.external || link.link?.startsWith('http')) {
-        window.open(link.link, '_blank', 'noopener,noreferrer');
-    } else if (link.route) {
-        router.push(link.route);
-    } else if (link.link) {
+    const target = link?.link?.trim();
+
+    if (!target) {
+        return;
+    }
+
+    if (target.startsWith('mailto:') || target.startsWith('tel:')) {
+        window.location.href = target;
+        return;
+    }
+
+    if (link.external || target.startsWith('http')) {
+        window.open(target, '_blank', 'noopener,noreferrer');
+        return;
+    }
+
+    router.push(target);
+};
+
+const getLinkHref = (link) => {
+    return link?.link?.trim() || '#';
+};
+
+const canNavigate = (link) => {
+    return Boolean(link?.link?.trim());
+};
+
+const legalLinks = [
+    { label: 'Chính sách bảo mật', link: '' },
+    { label: 'Điều khoản sử dụng', link: '' },
+    { label: 'Sơ đồ trang web', link: '' }
+];
+
+const navigateToLegalLink = (link) => {
+    if (link.link) {
         router.push(link.link);
     }
 };
@@ -62,7 +92,7 @@ const currentYear = new Date().getFullYear();
                         <div class="space-y-2">
                             <div class="flex items-center gap-3 text-gray-300 transition-colors hover:text-white">
                                 <i class="pi pi-map-marker text-sm text-blue-400"></i>
-                                <span class="text-sm">123 Đường ABC, Quận 1, TP.HCM</span>
+                                <span class="text-sm">126 Đường Nguyễn Trãi Quận Hà Đông, TP HÀ Nội</span>
                             </div>
                             <div class="flex items-center gap-3 text-gray-300 transition-colors hover:text-white">
                                 <i class="pi pi-phone text-sm text-green-400"></i>
@@ -101,9 +131,15 @@ const currentYear = new Date().getFullYear();
                             </h3>
                             <ul class="space-y-2">
                                 <li v-for="link in section.links.slice(0, 7)" :key="link.name">
-                                    <a :href="link.link" @click.prevent="navigateToLink(link)" class="group flex cursor-pointer items-center gap-2 text-sm text-gray-300 transition-colors duration-300 hover:text-blue-400">
+                                    <a
+                                        :href="getLinkHref(link)"
+                                        @click.prevent="navigateToLink(link)"
+                                        class="group flex items-center gap-2 text-sm text-gray-300 transition-colors duration-300"
+                                        :class="canNavigate(link) ? 'cursor-pointer hover:text-blue-400' : 'cursor-default hover:text-gray-300'"
+                                        :aria-disabled="!canNavigate(link)"
+                                    >
                                         <i v-if="link.icon" :class="link.icon" class="text-xs text-blue-400 group-hover:text-blue-300"></i>
-                                        <span class="transition-transform duration-300 group-hover:translate-x-1">
+                                        <span class="transition-transform duration-300" :class="{ 'group-hover:translate-x-1': canNavigate(link) }">
                                             {{ link.name }}
                                         </span>
                                         <i v-if="link.isNew" class="pi pi-star-fill ml-auto animate-pulse text-xs text-yellow-400"></i>
@@ -217,9 +253,17 @@ const currentYear = new Date().getFullYear();
                     </div>
 
                     <div class="flex items-center gap-4 text-xs">
-                        <router-link to="/privacy-policy" class="text-gray-400 transition-colors hover:text-white"> Chính sách bảo mật </router-link>
-                        <router-link to="/terms-conditions" class="text-gray-400 transition-colors hover:text-white"> Điều khoản sử dụng </router-link>
-                        <router-link to="/sitemap" class="text-gray-400 transition-colors hover:text-white"> Sơ đồ trang web </router-link>
+                        <a
+                            v-for="link in legalLinks"
+                            :key="link.label"
+                            :href="getLinkHref(link)"
+                            @click.prevent="navigateToLegalLink(link)"
+                            class="text-gray-400 transition-colors"
+                            :class="canNavigate(link) ? 'cursor-pointer hover:text-white' : 'cursor-default hover:text-gray-400'"
+                            :aria-disabled="!canNavigate(link)"
+                        >
+                            {{ link.label }}
+                        </a>
                     </div>
                 </div>
             </div>

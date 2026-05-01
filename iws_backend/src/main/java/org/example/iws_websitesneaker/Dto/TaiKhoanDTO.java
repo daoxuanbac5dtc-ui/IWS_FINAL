@@ -12,25 +12,25 @@ import java.time.LocalDate;
 public class TaiKhoanDTO {
     private String maTaiKhoan;
 
-    @NotBlank(message = "Email khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
-    @Email(message = "Email khÃ´ng há»£p lá»‡")
+    @NotBlank(message = "Email không được để trống")
+    @Email(message = "Email không hợp lệ")
     private String email;
 
-    @NotBlank(message = "Máº­t kháº©u khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
-    @Size(min = 6, message = "Máº­t kháº©u pháº£i cÃ³ Ã­t nháº¥t 6 kÃ½ tá»±")
+    @NotBlank(message = "Mật khẩu không được để trống")
+    @Size(min = 6, message = "Mật khẩu phải có ít nhất 6 ký tự")
     private String matKhau;
 
     private String vaiTroString;
     private TaiKhoan.VaiTro vaiTro;
     private Integer trangThai = 1;
 
-    // ThÃ´ng tin cÃ¡ nhÃ¢n
+    // Thông tin cá nhân
     private String hoTen;
     private String sdt;
     private LocalDate ngaySinh;
     private String chucVu;
 
-    // FIXED: Äá»‹a chá»‰ flat fields
+    // FIXED: Địa chỉ flat fields
     private String maTinh;
     private String maPhuong;
     private String tenTinh;
@@ -46,44 +46,44 @@ public class TaiKhoanDTO {
     // ===== ROLE HANDLING - FIXED =====
 
     /**
-     * Setter cho vai trÃ² tá»« JSON vá»›i nhiá»u format kháº£ dá»¥ng
+     * Setter cho vai trò từ JSON với nhiều format khả dụng
      */
     @JsonProperty("vaiTro")
     public void setVaiTroFromJson(String vaiTroString) {
-        System.out.println("ðŸ”„ Receiving vaiTro from JSON: " + vaiTroString);
+        System.out.println("🔄 Receiving vaiTro from JSON: " + vaiTroString);
 
         this.vaiTroString = vaiTroString;
         if (vaiTroString != null && !vaiTroString.trim().isEmpty()) {
             try {
                 this.vaiTro = parseVaiTroString(vaiTroString.trim());
-                System.out.println("âœ… Parsed vaiTro: " + this.vaiTro);
+                System.out.println("✅ Parsed vaiTro: " + this.vaiTro);
             } catch (IllegalArgumentException e) {
-                System.err.println("âŒ Invalid role string: " + vaiTroString);
+                System.err.println("❌ Invalid role string: " + vaiTroString);
                 this.vaiTro = null;
             }
         }
     }
 
     /**
-     * Setter cho vaiTroString vá»›i auto-parse
+     * Setter cho vaiTroString với auto-parse
      */
     public void setVaiTroString(String vaiTroString) {
-        System.out.println("ðŸ”„ Setting vaiTroString: " + vaiTroString);
+        System.out.println("🔄 Setting vaiTroString: " + vaiTroString);
 
         this.vaiTroString = vaiTroString;
         if (vaiTroString != null && !vaiTroString.trim().isEmpty()) {
             try {
                 this.vaiTro = parseVaiTroString(vaiTroString.trim());
-                System.out.println("âœ… Auto-parsed vaiTro: " + this.vaiTro);
+                System.out.println("✅ Auto-parsed vaiTro: " + this.vaiTro);
             } catch (IllegalArgumentException e) {
-                System.err.println("âŒ Invalid role string: " + vaiTroString);
+                System.err.println("❌ Invalid role string: " + vaiTroString);
                 this.vaiTro = null;
             }
         }
     }
 
     /**
-     * FIXED: Parse vai trÃ² tá»« string vá»›i nhiá»u format
+     * FIXED: Parse vai trò từ string với nhiều format
      */
     private TaiKhoan.VaiTro parseVaiTroString(String roleStr) {
         if (roleStr == null || roleStr.trim().isEmpty()) {
@@ -91,29 +91,29 @@ public class TaiKhoanDTO {
         }
 
         String upperRole = roleStr.trim().toUpperCase();
-        System.out.println("ðŸ” Parsing role: '" + roleStr + "' -> '" + upperRole + "'");
+        System.out.println("🔍 Parsing role: '" + roleStr + "' -> '" + upperRole + "'");
 
         switch (upperRole) {
             case "USER":
             case "KHACHHANG":
-            case "KHÃCH HÃ€NG":
+            case "KHÁCH HÀNG":
             case "CUSTOMER":
                 return TaiKhoan.VaiTro.USER;
 
             case "NHANVIEN":
-            case "NHÃ‚N VIÃŠN":
+            case "NHÂN VIÊN":
             case "EMPLOYEE":
             case "STAFF":
                 return TaiKhoan.VaiTro.NHANVIEN;
 
             case "ADMIN":
             case "ADMINISTRATOR":
-            case "QUáº¢N TRá»Š":
-            case "QUáº¢N_TRá»Š":
+            case "QUẢN TRỊ":
+            case "QUẢN_TRỊ":
                 return TaiKhoan.VaiTro.ADMIN;
 
             default:
-                System.err.println("âŒ Unknown role: " + roleStr);
+                System.err.println("❌ Unknown role: " + roleStr);
                 throw new IllegalArgumentException("Unknown role: " + roleStr);
         }
     }
@@ -121,7 +121,7 @@ public class TaiKhoanDTO {
     // ===== UTILITY METHODS =====
 
     /**
-     * Kiá»ƒm tra cÃ³ dá»¯ liá»‡u Ä‘á»‹a chá»‰ khÃ´ng
+     * Kiểm tra có dữ liệu địa chỉ không
      */
     public boolean hasAddressData() {
         // Check flat fields
@@ -138,7 +138,7 @@ public class TaiKhoanDTO {
     }
 
     /**
-     * Láº¥y Ä‘á»‹a chá»‰ hiá»‡u lá»±c (Æ°u tiÃªn nested object, fallback flat fields)
+     * Lấy địa chỉ hiệu lực (ưu tiên nested object, fallback flat fields)
      */
     public DiaChiDto getEffectiveAddress() {
         // Priority 1: nested object
@@ -161,28 +161,28 @@ public class TaiKhoanDTO {
     }
 
     /**
-     * Kiá»ƒm tra cÃ³ pháº£i Admin khÃ´ng
+     * Kiểm tra có phải Admin không
      */
     public boolean isAdmin() {
         return this.vaiTro == TaiKhoan.VaiTro.ADMIN;
     }
 
     /**
-     * Kiá»ƒm tra cÃ³ pháº£i User khÃ´ng
+     * Kiểm tra có phải User không
      */
     public boolean isUser() {
         return this.vaiTro == TaiKhoan.VaiTro.USER;
     }
 
     /**
-     * Kiá»ƒm tra cÃ³ pháº£i Employee khÃ´ng
+     * Kiểm tra có phải Employee không
      */
     public boolean isEmployee() {
         return this.vaiTro == TaiKhoan.VaiTro.NHANVIEN;
     }
 
     /**
-     * Kiá»ƒm tra cÃ³ cáº§n thÃ´ng tin cÃ¡ nhÃ¢n khÃ´ng
+     * Kiểm tra có cần thông tin cá nhân không
      */
     public boolean needsPersonalInfo() {
         return !isAdmin();
@@ -195,9 +195,9 @@ public class TaiKhoanDTO {
                 matKhau != null && !matKhau.trim().isEmpty() &&
                 vaiTro != null;
 
-        System.out.println("ðŸ” Basic info validation: " + valid);
-        System.out.println("  - Email: " + (email != null ? "âœ“" : "âœ—"));
-        System.out.println("  - Password: " + (matKhau != null ? "âœ“" : "âœ—"));
+        System.out.println("🔍 Basic info validation: " + valid);
+        System.out.println("  - Email: " + (email != null ? "✓" : "✗"));
+        System.out.println("  - Password: " + (matKhau != null ? "✓" : "✗"));
         System.out.println("  - Role: " + vaiTro);
 
         return valid;
@@ -211,9 +211,9 @@ public class TaiKhoanDTO {
         boolean valid = hoTen != null && !hoTen.trim().isEmpty() &&
                 sdt != null && !sdt.trim().isEmpty();
 
-        System.out.println("ðŸ” Personal info validation: " + valid);
-        System.out.println("  - HoTen: " + (hoTen != null ? "âœ“" : "âœ—"));
-        System.out.println("  - SDT: " + (sdt != null ? "âœ“" : "âœ—"));
+        System.out.println("🔍 Personal info validation: " + valid);
+        System.out.println("  - HoTen: " + (hoTen != null ? "✓" : "✗"));
+        System.out.println("  - SDT: " + (sdt != null ? "✓" : "✗"));
 
         return valid;
     }
@@ -228,7 +228,7 @@ public class TaiKhoanDTO {
         boolean personalValid = isValidPersonalInfo();
         boolean addressValid = isValidAddress();
 
-        System.out.println("ðŸ” Overall validation:");
+        System.out.println("🔍 Overall validation:");
         System.out.println("  - Basic: " + basicValid);
         System.out.println("  - Personal: " + personalValid);
         System.out.println("  - Address: " + addressValid);

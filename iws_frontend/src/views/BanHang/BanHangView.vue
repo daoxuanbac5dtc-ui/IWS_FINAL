@@ -54,7 +54,7 @@ export default {
 
         // =================== REFS ===================
         const nhanVienInfo = ref({
-            tenNhanVien: 'Nguyễn Văn A',
+            tenNhanVien: 'Nguyễn Hoàng Minh',
             maNhanVien: 'NV001'
         });
 
@@ -1605,9 +1605,15 @@ export default {
 
         // ✅ THÊM: Helper function để tạo URL ảnh voucher (theo pattern VoucherList.vue)
         const createVoucherImageUrl = (duongDanHinhAnh) => {
-            if (!duongDanHinhAnh) return null;
-            if (duongDanHinhAnh.startsWith('http://') || duongDanHinhAnh.startsWith('https://')) return duongDanHinhAnh;
-            return `http://localhost:8080${duongDanHinhAnh}`;
+            const imageBaseUrl = 'http://localhost:8080';
+            const rawPath = String(duongDanHinhAnh || '').trim();
+            if (!rawPath) return null;
+            if (/^(https?:|data:|blob:)/i.test(rawPath)) return rawPath;
+            if (rawPath.startsWith('/voucher/images/')) return `${imageBaseUrl}${rawPath}`;
+            if (rawPath.startsWith('/voucher/')) return `${imageBaseUrl}${rawPath.replace('/voucher/', '/voucher/images/')}`;
+            if (rawPath.startsWith('voucher/')) return `${imageBaseUrl}/${rawPath.replace(/^voucher\//, 'voucher/images/')}`;
+            if (rawPath.startsWith('/')) return `${imageBaseUrl}${rawPath}`;
+            return `${imageBaseUrl}/voucher/images/${rawPath}`;
         };
 
         // ✅ THÊM: Helper function để xử lý lỗi ảnh voucher
@@ -3263,7 +3269,7 @@ export default {
                                                 <div class="company-tagline">Giày chất lượng - Phong cách hiện đại</div>
                                             </div>
                                             <div class="company-info">
-                                                <div class="info-row"><strong>Địa chỉ:</strong> 123 Đường ABC, Quận XYZ, TP.HCM</div>
+                                                <div class="info-row"><strong>Địa chỉ:</strong> 126 Đường Nguyễn Trãi Quận Hà Đông, TP HÀ Nội</div>
                                                 <div class="info-row"><strong>Điện thoại:</strong> 0123-456-789</div>
                                                 <div class="info-row"><strong>Email:</strong> contact@beeshoes.com</div>
                                                 <div class="info-row"><strong>Website:</strong> www.beeshoes.com</div>

@@ -8,7 +8,6 @@ import org.example.iws_websitesneaker.entity.NhanVien;
 import org.example.iws_websitesneaker.repository.RepoNhanVien;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -36,7 +35,7 @@ public class NhanVienServiceImpl implements NhanVienService {
 
     // Validation patterns - FIXED
     private static final Pattern VIETNAMESE_NAME_PATTERN = Pattern.compile(
-            "^[a-zA-ZÃ€ÃÃ‚ÃƒÃˆÃ‰ÃŠÃŒÃÃ’Ã“Ã”Ã•Ã™ÃšÄ‚ÄÄ¨Å¨Æ Ã Ã¡Ã¢Ã£Ã¨Ã©ÃªÃ¬Ã­Ã²Ã³Ã´ÃµÃ¹ÃºÄƒÄ‘Ä©Å©Æ¡Æ¯Ä‚áº áº¢áº¤áº¦áº¨áºªáº¬áº®áº°áº²áº´áº¶áº¸áººáº¼á»€á»€á»‚Æ°Äƒáº¡áº£áº¥áº§áº©áº«áº­áº¯áº±áº³áºµáº·áº¹áº»áº½á»áº¿á»ƒá»„á»†á»ˆá»Šá»Œá»Žá»á»’á»”á»–á»˜á»šá»œá»žá» á»¢á»¤á»¦á»¨á»ªá»…á»‡á»‰á»‹á»á»á»‘á»“á»•á»—á»™á»›á»á»Ÿá»¡á»£á»¥á»§á»©á»«á»¬á»®á»°á»²á»´Ãá»¶á»¸á»­á»¯á»±á»³á»µÃ½á»·á»¹\\s]+$");
+            "^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềếểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵýỷỹ\\s]+$");
 
     private static final Pattern PHONE_PATTERN = Pattern.compile("^0\\d{9}$");
 
@@ -46,7 +45,6 @@ public class NhanVienServiceImpl implements NhanVienService {
     // ================== PAGINATION METHODS - NEW ==================
 
     @Override
-    @Cacheable(value = "employees", key = "#pageable.pageNumber + '_' + #pageable.pageSize + '_' + #pageable.sort")
     public Page<NhanVien> findAllWithPagination(Pageable pageable) {
         try {
             log.debug("Finding all employees with pagination: {}", pageable);
@@ -117,7 +115,6 @@ public class NhanVienServiceImpl implements NhanVienService {
     // ================== CRUD OPERATIONS - UPDATED ==================
 
     @Override
-    @Cacheable(value = "employees", key = "'all'")
     public List<NhanVien> getAllNhanVien() {
         try {
             List<NhanVien> employees = repoNhanVien.findAllWithTaiKhoan();
@@ -134,7 +131,6 @@ public class NhanVienServiceImpl implements NhanVienService {
     }
 
     @Override
-    @Cacheable(value = "employee", key = "#id")
     public Optional<NhanVien> getNhanVienById(Integer id) {
         try {
             if (id == null || id <= 0) {
@@ -152,24 +148,24 @@ public class NhanVienServiceImpl implements NhanVienService {
     public void addNhanVien(NhanVien nhanVien) {
         try {
             if (nhanVien == null) {
-                throw new IllegalArgumentException("ThÃ´ng tin nhÃ¢n viÃªn khÃ´ng Ä‘Æ°á»£c null");
+                throw new IllegalArgumentException("Thông tin nhân viên không được null");
             }
 
-            // Chuáº©n hÃ³a dá»¯ liá»‡u trÆ°á»›c khi validate
+            // Chuẩn hóa dữ liệu trước khi validate
             normalizeNhanVienData(nhanVien);
 
-            // Validate dá»¯ liá»‡u
+            // Validate dữ liệu
             List<String> validationErrors = validateNhanVienData(nhanVien);
             if (!validationErrors.isEmpty()) {
-                throw new IllegalArgumentException("Dá»¯ liá»‡u khÃ´ng há»£p lá»‡: " + String.join("; ", validationErrors));
+                throw new IllegalArgumentException("Dữ liệu không hợp lệ: " + String.join("; ", validationErrors));
             }
 
-            // Kiá»ƒm tra trÃ¹ng láº·p sá»‘ Ä‘iá»‡n thoáº¡i
+            // Kiểm tra trùng lặp số điện thoại
             if (existsByPhone(nhanVien.getSdt())) {
-                throw new IllegalArgumentException("Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng: " + nhanVien.getSdt());
+                throw new IllegalArgumentException("Số điện thoại đã được sử dụng: " + nhanVien.getSdt());
             }
 
-            // Thiáº¿t láº­p thÃ´ng tin máº·c Ä‘á»‹nh
+            // Thiết lập thông tin mặc định
             if (nhanVien.getNgayTao() == null) {
                 nhanVien.setNgayTao(new Date());
             }
@@ -183,7 +179,7 @@ public class NhanVienServiceImpl implements NhanVienService {
                 nhanVien.setTrangThai(1);
             }
 
-            // Äáº£m báº£o mÃ£ nhÃ¢n viÃªn lÃ  duy nháº¥t
+            // Đảm bảo mã nhân viên là duy nhất
             if (existsByMaNhanVien(nhanVien.getMaNhanVien())) {
                 nhanVien.setMaNhanVien(generateMaNhanVien());
             }
@@ -196,7 +192,7 @@ public class NhanVienServiceImpl implements NhanVienService {
             throw e;
         } catch (Exception e) {
             log.error("Error adding employee: ", e);
-            throw new RuntimeException("Lá»—i há»‡ thá»‘ng khi thÃªm nhÃ¢n viÃªn: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi hệ thống khi thêm nhân viên: " + e.getMessage(), e);
         }
     }
     @Override
@@ -224,21 +220,21 @@ public class NhanVienServiceImpl implements NhanVienService {
     public void updateNhanVien(NhanVien nhanVien) {
         try {
             if (nhanVien == null || nhanVien.getId() == null) {
-                throw new IllegalArgumentException("ThÃ´ng tin nhÃ¢n viÃªn hoáº·c ID khÃ´ng Ä‘Æ°á»£c null");
+                throw new IllegalArgumentException("Thông tin nhân viên hoặc ID không được null");
             }
 
             Optional<NhanVien> existing = getNhanVienById(nhanVien.getId());
             if (existing.isEmpty()) {
-                throw new IllegalArgumentException("KhÃ´ng tÃ¬m tháº¥y nhÃ¢n viÃªn vá»›i ID: " + nhanVien.getId());
+                throw new IllegalArgumentException("Không tìm thấy nhân viên với ID: " + nhanVien.getId());
             }
 
-            // Chuáº©n hÃ³a dá»¯ liá»‡u
+            // Chuẩn hóa dữ liệu
             normalizeNhanVienData(nhanVien);
 
-            // Validate dá»¯ liá»‡u
+            // Validate dữ liệu
             List<String> validationErrors = validateNhanVienData(nhanVien);
             if (!validationErrors.isEmpty()) {
-                throw new IllegalArgumentException("Dá»¯ liá»‡u khÃ´ng há»£p lá»‡: " + String.join("; ", validationErrors));
+                throw new IllegalArgumentException("Dữ liệu không hợp lệ: " + String.join("; ", validationErrors));
             }
 
             NhanVien existingNV = existing.get();
@@ -246,14 +242,14 @@ public class NhanVienServiceImpl implements NhanVienService {
             // Check for duplicate maNhanVien
             if (!Objects.equals(nhanVien.getMaNhanVien(), existingNV.getMaNhanVien())) {
                 if (existsByMaNhanVienExcludingId(nhanVien.getMaNhanVien(), nhanVien.getId())) {
-                    throw new IllegalArgumentException("MÃ£ nhÃ¢n viÃªn Ä‘Ã£ tá»“n táº¡i");
+                    throw new IllegalArgumentException("Mã nhân viên đã tồn tại");
                 }
             }
 
             // Check for duplicate phone number
             if (!Objects.equals(nhanVien.getSdt(), existingNV.getSdt())) {
                 if (isPhoneNumberUsed(nhanVien.getSdt(), nhanVien.getId())) {
-                    throw new IllegalArgumentException("Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng bá»Ÿi nhÃ¢n viÃªn khÃ¡c");
+                    throw new IllegalArgumentException("Số điện thoại đã được sử dụng bởi nhân viên khác");
                 }
             }
 
@@ -270,7 +266,7 @@ public class NhanVienServiceImpl implements NhanVienService {
             throw e;
         } catch (Exception e) {
             log.error("Error updating employee: ", e);
-            throw new RuntimeException("Lá»—i há»‡ thá»‘ng khi cáº­p nháº­t nhÃ¢n viÃªn: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi hệ thống khi cập nhật nhân viên: " + e.getMessage(), e);
         }
     }
 
@@ -279,18 +275,18 @@ public class NhanVienServiceImpl implements NhanVienService {
     public void deleteNhanVien(Integer id) {
         try {
             if (id == null || id <= 0) {
-                throw new IllegalArgumentException("ID nhÃ¢n viÃªn khÃ´ng há»£p lá»‡");
+                throw new IllegalArgumentException("ID nhân viên không hợp lệ");
             }
 
             Optional<NhanVien> nhanVien = getNhanVienById(id);
             if (nhanVien.isEmpty()) {
-                throw new IllegalArgumentException("KhÃ´ng tÃ¬m tháº¥y nhÃ¢n viÃªn vá»›i ID: " + id);
+                throw new IllegalArgumentException("Không tìm thấy nhân viên với ID: " + id);
             }
 
             NhanVien nv = nhanVien.get();
 
             if (!canDeleteNhanVien(id)) {
-                throw new IllegalStateException("KhÃ´ng thá»ƒ xÃ³a nhÃ¢n viÃªn nÃ y do cÃ²n dá»¯ liá»‡u liÃªn quan");
+                throw new IllegalStateException("Không thể xóa nhân viên này do còn dữ liệu liên quan");
             }
 
             // Soft delete
@@ -302,7 +298,7 @@ public class NhanVienServiceImpl implements NhanVienService {
 
         } catch (Exception e) {
             log.error("Error deleting employee: ", e);
-            throw new RuntimeException("Lá»—i khi xÃ³a nhÃ¢n viÃªn: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi khi xóa nhân viên: " + e.getMessage(), e);
         }
     }
 
@@ -311,11 +307,11 @@ public class NhanVienServiceImpl implements NhanVienService {
     public void batchDeleteNhanVien(List<Integer> ids) {
         try {
             if (ids == null || ids.isEmpty()) {
-                throw new IllegalArgumentException("Danh sÃ¡ch ID khÃ´ng Ä‘Æ°á»£c trá»‘ng");
+                throw new IllegalArgumentException("Danh sách ID không được trống");
             }
 
             if (ids.size() > 50) {
-                throw new IllegalArgumentException("Chá»‰ cÃ³ thá»ƒ xÃ³a tá»‘i Ä‘a 50 nhÃ¢n viÃªn cÃ¹ng lÃºc");
+                throw new IllegalArgumentException("Chỉ có thể xóa tối đa 50 nhân viên cùng lúc");
             }
 
             log.info("Batch deleting {} employees: {}", ids.size(), ids);
@@ -334,7 +330,7 @@ public class NhanVienServiceImpl implements NhanVienService {
 
         } catch (Exception e) {
             log.error("Error in batch delete: ", e);
-            throw new RuntimeException("Lá»—i khi xÃ³a hÃ ng loáº¡t: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi khi xóa hàng loạt: " + e.getMessage(), e);
         }
     }
 
@@ -494,57 +490,57 @@ public class NhanVienServiceImpl implements NhanVienService {
         List<String> errors = new ArrayList<>();
 
         if (nhanVien == null) {
-            errors.add("ThÃ´ng tin nhÃ¢n viÃªn khÃ´ng Ä‘Æ°á»£c null");
+            errors.add("Thông tin nhân viên không được null");
             return errors;
         }
 
-        // Validate há» tÃªn
+        // Validate họ tên
         if (nhanVien.getHoTen() == null || nhanVien.getHoTen().trim().isEmpty()) {
-            errors.add("Há» tÃªn khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            errors.add("Họ tên không được để trống");
         } else {
             String hoTen = nhanVien.getHoTen().trim();
             if (hoTen.length() > 225) {
-                errors.add("Há» tÃªn khÃ´ng Ä‘Æ°á»£c quÃ¡ 225 kÃ½ tá»±");
+                errors.add("Họ tên không được quá 225 ký tự");
             } else if (!VIETNAMESE_NAME_PATTERN.matcher(hoTen).matches()) {
-                errors.add("Há» tÃªn chá»‰ chá»©a chá»¯ cÃ¡i vÃ  khoáº£ng tráº¯ng, há»— trá»£ tiáº¿ng Viá»‡t");
+                errors.add("Họ tên chỉ chứa chữ cái và khoảng trắng, hỗ trợ tiếng Việt");
             }
         }
 
-        // Validate sá»‘ Ä‘iá»‡n thoáº¡i
+        // Validate số điện thoại
         if (nhanVien.getSdt() == null || nhanVien.getSdt().trim().isEmpty()) {
-            errors.add("Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            errors.add("Số điện thoại không được để trống");
         } else {
             String cleanPhone = nhanVien.getSdt().trim().replaceAll("\\s+", "");
             if (!PHONE_PATTERN.matcher(cleanPhone).matches()) {
-                errors.add("Sá»‘ Ä‘iá»‡n thoáº¡i pháº£i cÃ³ 10 sá»‘ vÃ  báº¯t Ä‘áº§u báº±ng 0");
+                errors.add("Số điện thoại phải có 10 số và bắt đầu bằng 0");
             }
         }
 
-        // Validate email náº¿u cÃ³ tÃ i khoáº£n
+        // Validate email nếu có tài khoản
         if (nhanVien.getTaiKhoan() != null &&
                 nhanVien.getTaiKhoan().getEmail() != null &&
                 !nhanVien.getTaiKhoan().getEmail().trim().isEmpty()) {
             String email = nhanVien.getTaiKhoan().getEmail().trim();
             if (!EMAIL_PATTERN.matcher(email).matches()) {
-                errors.add("Email khÃ´ng Ä‘Ãºng Ä‘á»‹nh dáº¡ng");
+                errors.add("Email không đúng định dạng");
             }
         }
 
-        // Validate mÃ£ nhÃ¢n viÃªn
+        // Validate mã nhân viên
         if (nhanVien.getMaNhanVien() != null && !nhanVien.getMaNhanVien().trim().isEmpty()) {
             String maNV = nhanVien.getMaNhanVien().trim();
             if (maNV.length() > 25) {
-                errors.add("MÃ£ nhÃ¢n viÃªn khÃ´ng Ä‘Æ°á»£c quÃ¡ 25 kÃ½ tá»±");
+                errors.add("Mã nhân viên không được quá 25 ký tự");
             } else if (!maNV.matches("^[A-Za-z0-9]+$")) {
-                errors.add("MÃ£ nhÃ¢n viÃªn chá»‰ chá»©a chá»¯ cÃ¡i vÃ  sá»‘");
+                errors.add("Mã nhân viên chỉ chứa chữ cái và số");
             }
         }
 
-        // Validate tráº¡ng thÃ¡i
+        // Validate trạng thái
         if (nhanVien.getTrangThai() == null) {
-            errors.add("Tráº¡ng thÃ¡i khÃ´ng Ä‘Æ°á»£c null");
+            errors.add("Trạng thái không được null");
         } else if (nhanVien.getTrangThai() != 0 && nhanVien.getTrangThai() != 1) {
-            errors.add("Tráº¡ng thÃ¡i chá»‰ nháº­n giÃ¡ trá»‹ 0 hoáº·c 1");
+            errors.add("Trạng thái chỉ nhận giá trị 0 hoặc 1");
         }
 
         return errors;
@@ -594,34 +590,34 @@ public class NhanVienServiceImpl implements NhanVienService {
     // ================== NEW HELPER METHODS ==================
 
     /**
-     * Chuáº©n hÃ³a dá»¯ liá»‡u nhÃ¢n viÃªn trÆ°á»›c khi xá»­ lÃ½
+     * Chuẩn hóa dữ liệu nhân viên trước khi xử lý
      */
     private void normalizeNhanVienData(NhanVien nhanVien) {
         if (nhanVien == null) return;
 
-        // Chuáº©n hÃ³a há» tÃªn
+        // Chuẩn hóa họ tên
         if (nhanVien.getHoTen() != null) {
             nhanVien.setHoTen(nhanVien.getHoTen().trim().replaceAll("\\s+", " "));
         }
 
-        // Chuáº©n hÃ³a sá»‘ Ä‘iá»‡n thoáº¡i
+        // Chuẩn hóa số điện thoại
         if (nhanVien.getSdt() != null) {
             nhanVien.setSdt(nhanVien.getSdt().trim().replaceAll("\\s+", ""));
         }
 
-        // Chuáº©n hÃ³a mÃ£ nhÃ¢n viÃªn
+        // Chuẩn hóa mã nhân viên
         if (nhanVien.getMaNhanVien() != null) {
             nhanVien.setMaNhanVien(nhanVien.getMaNhanVien().trim().toUpperCase());
         }
 
-        // Chuáº©n hÃ³a email náº¿u cÃ³
+        // Chuẩn hóa email nếu có
         if (nhanVien.getTaiKhoan() != null && nhanVien.getTaiKhoan().getEmail() != null) {
             nhanVien.getTaiKhoan().setEmail(nhanVien.getTaiKhoan().getEmail().trim().toLowerCase());
         }
     }
 
     /**
-     * Kiá»ƒm tra sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng chÆ°a
+     * Kiểm tra số điện thoại đã được sử dụng chưa
      */
     private boolean existsByPhone(String sdt) {
         try {
@@ -726,11 +722,11 @@ public class NhanVienServiceImpl implements NhanVienService {
                 String statusText = newStatus == 1 ? "activated" : "deactivated";
                 log.info("Employee {}: {} (ID: {})", statusText, nv.getHoTen(), id);
             } else {
-                throw new IllegalArgumentException("KhÃ´ng tÃ¬m tháº¥y nhÃ¢n viÃªn vá»›i ID: " + id);
+                throw new IllegalArgumentException("Không tìm thấy nhân viên với ID: " + id);
             }
         } catch (Exception e) {
             log.error("Error toggling employee status: ", e);
-            throw new RuntimeException("Lá»—i khi thay Ä‘á»•i tráº¡ng thÃ¡i nhÃ¢n viÃªn: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi khi thay đổi trạng thái nhân viên: " + e.getMessage(), e);
         }
     }
 
@@ -1011,25 +1007,25 @@ public class NhanVienServiceImpl implements NhanVienService {
         if (nv.getNgayTao() != null && nv.getNgayCapNhat() != null) {
             long diffInHours = (nv.getNgayCapNhat().getTime() - nv.getNgayTao().getTime()) / (1000 * 60 * 60);
             if (diffInHours < 1) {
-                return "Táº¡o má»›i";
+                return "Tạo mới";
             }
         }
-        return "Cáº­p nháº­t thÃ´ng tin";
+        return "Cập nhật thông tin";
     }
 
     private String generateActivityDescription(NhanVien nv) {
         StringBuilder desc = new StringBuilder();
-        desc.append("NhÃ¢n viÃªn ").append(nv.getHoTen());
+        desc.append("Nhân viên ").append(nv.getHoTen());
 
         if (nv.getMaNhanVien() != null) {
             desc.append(" (").append(nv.getMaNhanVien()).append(")");
         }
 
         String actionType = determineActivityType(nv);
-        desc.append(" Ä‘Ã£ ").append(actionType.toLowerCase());
+        desc.append(" đã ").append(actionType.toLowerCase());
 
         if (needsAdminAttention(nv)) {
-            desc.append(" - Cáº§n xem xÃ©t");
+            desc.append(" - Cần xem xét");
         }
 
         return desc.toString();
@@ -1047,16 +1043,16 @@ public class NhanVienServiceImpl implements NhanVienService {
                         if (region != null && !region.trim().isEmpty()) {
                             regionStats.merge(region, 1L, Long::sum);
                         } else {
-                            regionStats.merge("ChÆ°a xÃ¡c Ä‘á»‹nh", 1L, Long::sum);
+                            regionStats.merge("Chưa xác định", 1L, Long::sum);
                         }
                     } else {
-                        regionStats.merge("ChÆ°a cÃ³ Ä‘á»‹a chá»‰", 1L, Long::sum);
+                        regionStats.merge("Chưa có địa chỉ", 1L, Long::sum);
                     }
                 } catch (Exception e) {
-                    regionStats.merge("Lá»—i dá»¯ liá»‡u", 1L, Long::sum);
+                    regionStats.merge("Lỗi dữ liệu", 1L, Long::sum);
                 }
             } else {
-                regionStats.merge("ChÆ°a cÃ³ tÃ i khoáº£n", 1L, Long::sum);
+                regionStats.merge("Chưa có tài khoản", 1L, Long::sum);
             }
         }
 

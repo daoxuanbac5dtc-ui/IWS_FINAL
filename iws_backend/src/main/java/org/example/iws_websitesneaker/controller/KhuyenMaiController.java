@@ -99,7 +99,7 @@ public class KhuyenMaiController {
 
             KhuyenMai khuyenMai = khuyenMaiService.update(id, request);
 
-            // Náº¿u giÃ¡ trá»‹ khuyáº¿n mÃ£i thay Ä‘á»•i, tÃ­nh láº¡i giÃ¡ cho táº¥t cáº£ sáº£n pháº©m
+            // Nếu giá trị khuyến mãi thay đổi, tính lại giá cho tất cả sản phẩm
             if (!oldGiaTri.equals(request.getGiaTri())) {
                 if (khuyenMaiChiTietService instanceof KhuyenMaiChiTietServiceImpl) {
                     ((KhuyenMaiChiTietServiceImpl) khuyenMaiChiTietService)
@@ -128,7 +128,7 @@ public class KhuyenMaiController {
             khuyenMaiService.delete(id);
 
             Map<String, Object> successResponse = new HashMap<>();
-            successResponse.put("message", "XÃ³a khuyáº¿n mÃ£i thÃ nh cÃ´ng");
+            successResponse.put("message", "Xóa khuyến mãi thành công");
             return ResponseEntity.ok(successResponse);
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();

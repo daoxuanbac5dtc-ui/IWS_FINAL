@@ -25,20 +25,20 @@ public class DeGiayServiceImpl implements DeGiayService {
     public Optional<DeGiay> getDeGiayById(int id) {
         return repoDeGiay.findById(id);
     }
-    //ThÃªm
+    //Thêm
     @Override
     public void addDeGiay(DeGiay deGiay) {
         repoDeGiay.save(deGiay);
     }
-    //Sá»­a
+    //Sửa
     @Override
     public void updateDeGiay(DeGiay deGiay) {
         repoDeGiay.save(deGiay);
     }
-    //XÃ³a
+    //Xóa
     @Override
     public void deleteDeGiay(int id) {
-        repoSanPham.removeDeGiayReference(id);// Gá»¡ rÃ ng buá»™c khÃ³a ngoáº¡i tá»« báº£ng san_pham
+        repoSanPham.removeDeGiayReference(id);// Gỡ ràng buộc khóa ngoại từ bảng san_pham
         repoDeGiay.deleteById(id);
     }
 }

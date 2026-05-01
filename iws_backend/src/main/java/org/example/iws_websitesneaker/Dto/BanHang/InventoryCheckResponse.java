@@ -12,11 +12,11 @@ public class InventoryCheckResponse {
     private String mauSac;
     private String kichCo;
     private Integer soLuongTon;
-    private Integer soLuongCanBan; // THÃŠM field nÃ y
+    private Integer soLuongCanBan; // THÊM field này
     private Boolean coTheban;
     private String thongBao;
 
-    // ThÃªm method tiá»‡n Ã­ch
+    // Thêm method tiện ích
     public boolean isAvailable() {
         return Boolean.TRUE.equals(coTheban);
     }

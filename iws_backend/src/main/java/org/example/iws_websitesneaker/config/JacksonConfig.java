@@ -19,17 +19,17 @@ public class JacksonConfig {
     public ObjectMapper objectMapper() {
         ObjectMapper mapper = new ObjectMapper();
 
-        // ===== QUAN TRá»ŒNG: HIBERNATE MODULE Äá»‚ Xá»¬ LÃ LAZY LOADING =====
+        // ===== QUAN TRỌNG: HIBERNATE MODULE ĐỂ XỬ LÝ LAZY LOADING =====
         Hibernate6Module hibernateModule = new Hibernate6Module();
 
-        // Cáº¥u hÃ¬nh Hibernate module Ä‘á»ƒ trÃ¡nh LazyInitializationException
+        // Cấu hình Hibernate module để tránh LazyInitializationException
         hibernateModule.disable(Hibernate6Module.Feature.USE_TRANSIENT_ANNOTATION);
         hibernateModule.enable(Hibernate6Module.Feature.SERIALIZE_IDENTIFIER_FOR_LAZY_NOT_LOADED_OBJECTS);
 
-        // KHÃ”NG FORCE lazy loading Ä‘á»ƒ trÃ¡nh N+1 queries
+        // KHÔNG FORCE lazy loading để tránh N+1 queries
         hibernateModule.disable(Hibernate6Module.Feature.FORCE_LAZY_LOADING);
 
-        // ÄÄƒng kÃ½ hibernate module
+        // Đăng ký hibernate module
         mapper.registerModule(hibernateModule);
 
         // Register JavaTimeModule for better date/time handling
@@ -40,7 +40,7 @@ public class JacksonConfig {
         mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
         mapper.disable(SerializationFeature.WRITE_NULL_MAP_VALUES);
 
-        // THÃŠM: Xá»­ lÃ½ lazy objects
+        // THÊM: Xử lý lazy objects
         mapper.disable(SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS);
 
         // ===== DESERIALIZATION FEATURES =====
@@ -52,7 +52,7 @@ public class JacksonConfig {
 
         // ===== DATE FORMAT CONFIGURATION =====
         try {
-            // Kiá»ƒm tra xem FlexibleDateFormat cÃ³ tá»“n táº¡i khÃ´ng
+            // Kiểm tra xem FlexibleDateFormat có tồn tại không
             Class<?> flexibleDateFormatClass = Class.forName("org.example.iws_websitesneaker.config.FlexibleDateFormat");
             Object flexibleDateFormat = flexibleDateFormatClass.getDeclaredConstructor().newInstance();
             mapper.setDateFormat((java.text.DateFormat) flexibleDateFormat);
@@ -62,12 +62,12 @@ public class JacksonConfig {
             mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
         }
 
-        System.out.println("âœ… ObjectMapper configured successfully with Hibernate-safe settings");
+        System.out.println("✅ ObjectMapper configured successfully with Hibernate-safe settings");
         return mapper;
     }
 
     /**
-     * Táº¡o FlexibleDateFormat class náº¿u chÆ°a cÃ³
+     * Tạo FlexibleDateFormat class nếu chưa có
      */
     public static class FlexibleDateFormat extends SimpleDateFormat {
         private static final String[] DATE_PATTERNS = {

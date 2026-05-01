@@ -9,147 +9,147 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Interface dá»‹ch vá»¥ quáº£n lÃ½ KhÃ¡ch hÃ ng
- * Äá»‹nh nghÄ©a cÃ¡c phÆ°Æ¡ng thá»©c CRUD vÃ  tÃ¬m kiáº¿m cho khÃ¡ch hÃ ng
+ * Interface dịch vụ quản lý Khách hàng
+ * Định nghĩa các phương thức CRUD và tìm kiếm cho khách hàng
  */
 public interface KhachHangService {
 
-    // ================== CÃC THAO TÃC CRUD CÆ  Báº¢N ==================
+    // ================== CÁC THAO TÁC CRUD CƠ BẢN ==================
 
     /**
-     * Láº¥y táº¥t cáº£ khÃ¡ch hÃ ng
-     * @return Danh sÃ¡ch táº¥t cáº£ khÃ¡ch hÃ ng
+     * Lấy tất cả khách hàng
+     * @return Danh sách tất cả khách hàng
      */
     List<KhachHang> getAllKhachHang();
 
     /**
-     * Láº¥y táº¥t cáº£ khÃ¡ch hÃ ng vá»›i thÃ´ng tin Ä‘áº§y Ä‘á»§ (join fetch)
-     * @return Danh sÃ¡ch táº¥t cáº£ khÃ¡ch hÃ ng vá»›i thÃ´ng tin TaiKhoan
+     * Lấy tất cả khách hàng với thông tin đầy đủ (join fetch)
+     * @return Danh sách tất cả khách hàng với thông tin TaiKhoan
      */
     List<KhachHang> getAllWithCompleteInfo();
 
     /**
-     * Láº¥y khÃ¡ch hÃ ng theo ID
-     * @param id ID cá»§a khÃ¡ch hÃ ng
-     * @return Optional chá»©a khÃ¡ch hÃ ng náº¿u tÃ¬m tháº¥y
+     * Lấy khách hàng theo ID
+     * @param id ID của khách hàng
+     * @return Optional chứa khách hàng nếu tìm thấy
      */
     Optional<KhachHang> getKhachHangById(Integer id);
 
     /**
-     * Láº¥y khÃ¡ch hÃ ng theo ID vá»›i eager loading
-     * @param id ID cá»§a khÃ¡ch hÃ ng
-     * @return Optional chá»©a khÃ¡ch hÃ ng vá»›i thÃ´ng tin Ä‘áº§y Ä‘á»§
+     * Lấy khách hàng theo ID với eager loading
+     * @param id ID của khách hàng
+     * @return Optional chứa khách hàng với thông tin đầy đủ
      */
     Optional<KhachHang> findByIdWithEagerLoading(Integer id);
 
     /**
-     * ThÃªm khÃ¡ch hÃ ng má»›i
-     * @param khachHang ThÃ´ng tin khÃ¡ch hÃ ng cáº§n thÃªm
+     * Thêm khách hàng mới
+     * @param khachHang Thông tin khách hàng cần thêm
      */
     void addKhachHang(KhachHang khachHang);
 
     /**
-     * Cáº­p nháº­t thÃ´ng tin khÃ¡ch hÃ ng
-     * @param khachHang ThÃ´ng tin khÃ¡ch hÃ ng Ä‘Ã£ cáº­p nháº­t
+     * Cập nhật thông tin khách hàng
+     * @param khachHang Thông tin khách hàng đã cập nhật
      */
     void updateKhachHang(KhachHang khachHang);
 
     /**
-     * XÃ³a khÃ¡ch hÃ ng (soft delete)
-     * @param id ID cá»§a khÃ¡ch hÃ ng cáº§n xÃ³a
+     * Xóa khách hàng (soft delete)
+     * @param id ID của khách hàng cần xóa
      */
     void deleteKhachHang(Integer id);
 
     /**
-     * TÃ¬m khÃ¡ch hÃ ng theo ID tÃ i khoáº£n
-     * @param taiKhoanId ID cá»§a tÃ i khoáº£n
-     * @return KhÃ¡ch hÃ ng náº¿u tÃ¬m tháº¥y, null náº¿u khÃ´ng
+     * Tìm khách hàng theo ID tài khoản
+     * @param taiKhoanId ID của tài khoản
+     * @return Khách hàng nếu tìm thấy, null nếu không
      */
     KhachHang findByTaiKhoanId(Integer taiKhoanId);
 
     /**
-     * XÃ³a khÃ¡ch hÃ ng theo ID tÃ i khoáº£n (hard delete khi xÃ³a tÃ i khoáº£n)
-     * @param taiKhoanId ID cá»§a tÃ i khoáº£n
+     * Xóa khách hàng theo ID tài khoản (hard delete khi xóa tài khoản)
+     * @param taiKhoanId ID của tài khoản
      */
     void deleteByTaiKhoanId(Integer taiKhoanId);
 
-    // ================== CÃC PHÆ¯Æ NG THá»¨C TÃŒM KIáº¾M ==================
+    // ================== CÁC PHƯƠNG THỨC TÌM KIẾM ==================
 
     /**
-     * TÃ¬m khÃ¡ch hÃ ng theo ID tÃ i khoáº£n
-     * @param taiKhoanId ID cá»§a tÃ i khoáº£n
-     * @return Optional chá»©a khÃ¡ch hÃ ng náº¿u tÃ¬m tháº¥y
+     * Tìm khách hàng theo ID tài khoản
+     * @param taiKhoanId ID của tài khoản
+     * @return Optional chứa khách hàng nếu tìm thấy
      */
     Optional<KhachHang> findByTaiKhoanIdOptional(Integer taiKhoanId);
 
     /**
-     * Kiá»ƒm tra sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ tá»“n táº¡i chÆ°a
-     * @param sdt Sá»‘ Ä‘iá»‡n thoáº¡i cáº§n kiá»ƒm tra
-     * @return true náº¿u sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ tá»“n táº¡i
+     * Kiểm tra số điện thoại đã tồn tại chưa
+     * @param sdt Số điện thoại cần kiểm tra
+     * @return true nếu số điện thoại đã tồn tại
      */
     boolean existsBySdt(String sdt);
 
     /**
-     * Kiá»ƒm tra mÃ£ khÃ¡ch hÃ ng Ä‘Ã£ tá»“n táº¡i chÆ°a
-     * @param maKhachHang MÃ£ khÃ¡ch hÃ ng cáº§n kiá»ƒm tra
-     * @return true náº¿u mÃ£ khÃ¡ch hÃ ng Ä‘Ã£ tá»“n táº¡i
+     * Kiểm tra mã khách hàng đã tồn tại chưa
+     * @param maKhachHang Mã khách hàng cần kiểm tra
+     * @return true nếu mã khách hàng đã tồn tại
      */
     boolean existsByMaKhachHang(String maKhachHang);
 
     /**
-     * TÃ¬m khÃ¡ch hÃ ng theo mÃ£ khÃ¡ch hÃ ng
-     * @param maKhachHang MÃ£ khÃ¡ch hÃ ng
-     * @return Optional chá»©a khÃ¡ch hÃ ng náº¿u tÃ¬m tháº¥y
+     * Tìm khách hàng theo mã khách hàng
+     * @param maKhachHang Mã khách hàng
+     * @return Optional chứa khách hàng nếu tìm thấy
      */
     Optional<KhachHang> findByMaKhachHang(String maKhachHang);
 
     /**
-     * TÃ¬m khÃ¡ch hÃ ng theo há» tÃªn vÃ  sá»‘ Ä‘iá»‡n thoáº¡i
-     * @param hoTen Há» tÃªn khÃ¡ch hÃ ng
-     * @param sdt Sá»‘ Ä‘iá»‡n thoáº¡i
-     * @return KhÃ¡ch hÃ ng náº¿u tÃ¬m tháº¥y, null náº¿u khÃ´ng
+     * Tìm khách hàng theo họ tên và số điện thoại
+     * @param hoTen Họ tên khách hàng
+     * @param sdt Số điện thoại
+     * @return Khách hàng nếu tìm thấy, null nếu không
      */
     KhachHang findByHoTenAndSdt(String hoTen, String sdt);
 
-    // ================== CÃC PHÆ¯Æ NG THá»¨C TÃŒM KIáº¾M CÆ  Báº¢N ==================
+    // ================== CÁC PHƯƠNG THỨC TÌM KIẾM CƠ BẢN ==================
 
     /**
-     * TÃ¬m kiáº¿m khÃ¡ch hÃ ng theo tá»« khÃ³a
-     * TÃ¬m trong: há» tÃªn, email, sá»‘ Ä‘iá»‡n thoáº¡i, mÃ£ khÃ¡ch hÃ ng
-     * @param keyword Tá»« khÃ³a tÃ¬m kiáº¿m
-     * @return Danh sÃ¡ch khÃ¡ch hÃ ng khá»›p vá»›i tá»« khÃ³a
+     * Tìm kiếm khách hàng theo từ khóa
+     * Tìm trong: họ tên, email, số điện thoại, mã khách hàng
+     * @param keyword Từ khóa tìm kiếm
+     * @return Danh sách khách hàng khớp với từ khóa
      */
     List<KhachHang> searchByKeyword(String keyword);
 
     /**
-     * TÃ¬m kiáº¿m nÃ¢ng cao khÃ¡ch hÃ ng
-     * @param hoTen Há» tÃªn (tÃ¬m kiáº¿m gáº§n Ä‘Ãºng)
-     * @param email Email (tÃ¬m kiáº¿m gáº§n Ä‘Ãºng)
-     * @param sdt Sá»‘ Ä‘iá»‡n thoáº¡i (tÃ¬m kiáº¿m gáº§n Ä‘Ãºng)
-     * @param maKhachHang MÃ£ khÃ¡ch hÃ ng (tÃ¬m kiáº¿m gáº§n Ä‘Ãºng)
-     * @param trangThai Tráº¡ng thÃ¡i (tÃ¬m kiáº¿m chÃ­nh xÃ¡c)
-     * @param gioiTinh Giá»›i tÃ­nh (tÃ¬m kiáº¿m chÃ­nh xÃ¡c) - hiá»‡n táº¡i khÃ´ng sá»­ dá»¥ng
-     * @param startDate NgÃ y báº¯t Ä‘áº§u
-     * @param endDate NgÃ y káº¿t thÃºc
-     * @return Danh sÃ¡ch khÃ¡ch hÃ ng thá»a mÃ£n Ä‘iá»u kiá»‡n
+     * Tìm kiếm nâng cao khách hàng
+     * @param hoTen Họ tên (tìm kiếm gần đúng)
+     * @param email Email (tìm kiếm gần đúng)
+     * @param sdt Số điện thoại (tìm kiếm gần đúng)
+     * @param maKhachHang Mã khách hàng (tìm kiếm gần đúng)
+     * @param trangThai Trạng thái (tìm kiếm chính xác)
+     * @param gioiTinh Giới tính (tìm kiếm chính xác) - hiện tại không sử dụng
+     * @param startDate Ngày bắt đầu
+     * @param endDate Ngày kết thúc
+     * @return Danh sách khách hàng thỏa mãn điều kiện
      */
     List<KhachHang> searchAdvanced(String hoTen, String email, String sdt,
                                    String maKhachHang, Integer trangThai, String gioiTinh,
                                    Date startDate, Date endDate);
 
-    // ================== CÃC PHÆ¯Æ NG THá»¨C TÃŒM KIáº¾M NÃ‚NG CAO ==================
+    // ================== CÁC PHƯƠNG THỨC TÌM KIẾM NÂNG CAO ==================
 
     /**
-     * TÃ¬m kiáº¿m nÃ¢ng cao khÃ¡ch hÃ ng vá»›i táº¥t cáº£ tiÃªu chÃ­ bao gá»“m cáº£ khoáº£ng thá»i gian
-     * @param hoTen Há» tÃªn (tÃ¬m kiáº¿m gáº§n Ä‘Ãºng)
-     * @param email Email (tÃ¬m kiáº¿m gáº§n Ä‘Ãºng)
-     * @param sdt Sá»‘ Ä‘iá»‡n thoáº¡i (tÃ¬m kiáº¿m gáº§n Ä‘Ãºng)
-     * @param maKhachHang MÃ£ khÃ¡ch hÃ ng (tÃ¬m kiáº¿m gáº§n Ä‘Ãºng)
-     * @param diaChi Äá»‹a chá»‰ (tÃ¬m kiáº¿m gáº§n Ä‘Ãºng)
-     * @param trangThai Tráº¡ng thÃ¡i (tÃ¬m kiáº¿m chÃ­nh xÃ¡c)
-     * @param startDate NgÃ y báº¯t Ä‘áº§u (ngÃ y táº¡o >= startDate)
-     * @param endDate NgÃ y káº¿t thÃºc (ngÃ y táº¡o <= endDate)
-     * @return Danh sÃ¡ch khÃ¡ch hÃ ng thá»a mÃ£n táº¥t cáº£ tiÃªu chÃ­
+     * Tìm kiếm nâng cao khách hàng với tất cả tiêu chí bao gồm cả khoảng thời gian
+     * @param hoTen Họ tên (tìm kiếm gần đúng)
+     * @param email Email (tìm kiếm gần đúng)
+     * @param sdt Số điện thoại (tìm kiếm gần đúng)
+     * @param maKhachHang Mã khách hàng (tìm kiếm gần đúng)
+     * @param diaChi Địa chỉ (tìm kiếm gần đúng)
+     * @param trangThai Trạng thái (tìm kiếm chính xác)
+     * @param startDate Ngày bắt đầu (ngày tạo >= startDate)
+     * @param endDate Ngày kết thúc (ngày tạo <= endDate)
+     * @return Danh sách khách hàng thỏa mãn tất cả tiêu chí
      */
     List<KhachHang> searchAdvancedWithAllCriteria(
             String hoTen,
@@ -163,120 +163,120 @@ public interface KhachHangService {
     );
 
     /**
-     * TÃ¬m kiáº¿m khÃ¡ch hÃ ng theo chi tiáº¿t Ä‘á»‹a chá»‰ (2-level addressing)
-     * @param provinceCode MÃ£ tá»‰nh/thÃ nh phá»‘
-     * @param districtCode Deprecated - khÃ´ng sá»­ dá»¥ng (Ä‘á»ƒ compatibility)
-     * @param addressDetail Chi tiáº¿t Ä‘á»‹a chá»‰
-     * @return Danh sÃ¡ch khÃ¡ch hÃ ng cÃ³ Ä‘á»‹a chá»‰ khá»›p
+     * Tìm kiếm khách hàng theo chi tiết địa chỉ (2-level addressing)
+     * @param provinceCode Mã tỉnh/thành phố
+     * @param districtCode Deprecated - không sử dụng (để compatibility)
+     * @param addressDetail Chi tiết địa chỉ
+     * @return Danh sách khách hàng có địa chỉ khớp
      */
     List<KhachHang> searchByAddressDetails(String provinceCode, String districtCode, String addressDetail);
 
     /**
-     * TÃ¬m khÃ¡ch hÃ ng theo pattern sá»‘ Ä‘iá»‡n thoáº¡i
-     * @param phonePattern Pattern sá»‘ Ä‘iá»‡n thoáº¡i (vÃ­ dá»¥: "098", "0123")
-     * @return Danh sÃ¡ch khÃ¡ch hÃ ng cÃ³ sá»‘ Ä‘iá»‡n thoáº¡i khá»›p pattern
+     * Tìm khách hàng theo pattern số điện thoại
+     * @param phonePattern Pattern số điện thoại (ví dụ: "098", "0123")
+     * @return Danh sách khách hàng có số điện thoại khớp pattern
      */
     List<KhachHang> findByPhonePattern(String phonePattern);
 
     /**
-     * TÃ¬m khÃ¡ch hÃ ng cÃ³ email khá»›p pattern
-     * @param emailPattern Pattern email (vÃ­ dá»¥: "@gmail.com", "abc")
-     * @return Danh sÃ¡ch khÃ¡ch hÃ ng cÃ³ email khá»›p pattern
+     * Tìm khách hàng có email khớp pattern
+     * @param emailPattern Pattern email (ví dụ: "@gmail.com", "abc")
+     * @return Danh sách khách hàng có email khớp pattern
      */
     List<KhachHang> findByEmailPattern(String emailPattern);
 
-    // ================== CÃC PHÆ¯Æ NG THá»¨C VALIDATION ==================
+    // ================== CÁC PHƯƠNG THỨC VALIDATION ==================
 
     /**
-     * Kiá»ƒm tra tÃ­nh há»£p lá»‡ cá»§a cÃ¡c tham sá»‘ tÃ¬m kiáº¿m khÃ¡ch hÃ ng
-     * @param hoTen Há» tÃªn cáº§n kiá»ƒm tra
-     * @param email Email cáº§n kiá»ƒm tra
-     * @param sdt Sá»‘ Ä‘iá»‡n thoáº¡i cáº§n kiá»ƒm tra
-     * @return true náº¿u táº¥t cáº£ tham sá»‘ há»£p lá»‡
+     * Kiểm tra tính hợp lệ của các tham số tìm kiếm khách hàng
+     * @param hoTen Họ tên cần kiểm tra
+     * @param email Email cần kiểm tra
+     * @param sdt Số điện thoại cần kiểm tra
+     * @return true nếu tất cả tham số hợp lệ
      */
     boolean isValidKhachHangSearchParams(String hoTen, String email, String sdt);
 
     /**
-     * Kiá»ƒm tra sá»‘ Ä‘iá»‡n thoáº¡i cÃ³ Ä‘ang Ä‘Æ°á»£c sá»­ dá»¥ng bá»Ÿi khÃ¡ch hÃ ng khÃ¡c khÃ´ng
-     * @param sdt Sá»‘ Ä‘iá»‡n thoáº¡i cáº§n kiá»ƒm tra
-     * @param excludeId ID khÃ¡ch hÃ ng loáº¡i trá»« (cho trÆ°á»ng há»£p update)
-     * @return true náº¿u sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng
+     * Kiểm tra số điện thoại có đang được sử dụng bởi khách hàng khác không
+     * @param sdt Số điện thoại cần kiểm tra
+     * @param excludeId ID khách hàng loại trừ (cho trường hợp update)
+     * @return true nếu số điện thoại đã được sử dụng
      */
     boolean isPhoneNumberUsed(String sdt, Integer excludeId);
 
-    // ================== CÃC PHÆ¯Æ NG THá»¨C THá»NG KÃŠ ==================
+    // ================== CÁC PHƯƠNG THỨC THỐNG KÊ ==================
 
     /**
-     * Äáº¿m sá»‘ khÃ¡ch hÃ ng theo tráº¡ng thÃ¡i trong khoáº£ng thá»i gian
-     * @param trangThai Tráº¡ng thÃ¡i cáº§n Ä‘áº¿m (null Ä‘á»ƒ Ä‘áº¿m táº¥t cáº£)
-     * @param startDate NgÃ y báº¯t Ä‘áº§u (null Ä‘á»ƒ khÃ´ng giá»›i háº¡n)
-     * @param endDate NgÃ y káº¿t thÃºc (null Ä‘á»ƒ khÃ´ng giá»›i háº¡n)
-     * @return Sá»‘ lÆ°á»£ng khÃ¡ch hÃ ng thá»a mÃ£n Ä‘iá»u kiá»‡n
+     * Đếm số khách hàng theo trạng thái trong khoảng thời gian
+     * @param trangThai Trạng thái cần đếm (null để đếm tất cả)
+     * @param startDate Ngày bắt đầu (null để không giới hạn)
+     * @param endDate Ngày kết thúc (null để không giới hạn)
+     * @return Số lượng khách hàng thỏa mãn điều kiện
      */
     long countByStatusAndDateRange(Integer trangThai, Date startDate, Date endDate);
 
     /**
-     * Láº¥y thá»‘ng kÃª tá»•ng quan khÃ¡ch hÃ ng
-     * @return Map chá»©a cÃ¡c thá»‘ng kÃª: total, active, inactive, recent, profileCompleted, newToday
+     * Lấy thống kê tổng quan khách hàng
+     * @return Map chứa các thống kê: total, active, inactive, recent, profileCompleted, newToday
      */
     Map<String, Object> getStatistics();
 
-    // ================== CÃC PHÆ¯Æ NG THá»¨C NGHIá»†P Vá»¤ ==================
+    // ================== CÁC PHƯƠNG THỨC NGHIỆP VỤ ==================
 
     /**
-     * HoÃ n thiá»‡n thÃ´ng tin khÃ¡ch hÃ ng (profile completion)
-     * @param id ID khÃ¡ch hÃ ng
-     * @param profileData Dá»¯ liá»‡u profile cáº§n hoÃ n thiá»‡n
-     * @return KhÃ¡ch hÃ ng Ä‘Ã£ Ä‘Æ°á»£c cáº­p nháº­t
+     * Hoàn thiện thông tin khách hàng (profile completion)
+     * @param id ID khách hàng
+     * @param profileData Dữ liệu profile cần hoàn thiện
+     * @return Khách hàng đã được cập nhật
      */
     KhachHang completeProfile(Integer id, KhachHangDto profileData);
 
     /**
-     * Cáº­p nháº­t tráº¡ng thÃ¡i khÃ¡ch hÃ ng
-     * @param id ID khÃ¡ch hÃ ng
-     * @param trangThai Tráº¡ng thÃ¡i má»›i (0: vÃ´ hiá»‡u hÃ³a, 1: kÃ­ch hoáº¡t)
+     * Cập nhật trạng thái khách hàng
+     * @param id ID khách hàng
+     * @param trangThai Trạng thái mới (0: vô hiệu hóa, 1: kích hoạt)
      */
     void updateStatus(Integer id, Integer trangThai);
 
     /**
-     * Convert KhachHang entity sang DTO vá»›i thÃ´ng tin Ä‘á»‹a chá»‰ Ä‘áº§y Ä‘á»§
-     * @param khachHang Entity cáº§n convert
-     * @return DTO Ä‘Ã£ convert vá»›i danh sÃ¡ch Ä‘á»‹a chá»‰ 2-level
+     * Convert KhachHang entity sang DTO với thông tin địa chỉ đầy đủ
+     * @param khachHang Entity cần convert
+     * @return DTO đã convert với danh sách địa chỉ 2-level
      */
     KhachHangDto convertToDto(KhachHang khachHang);
 
-    // ================== CÃC PHÆ¯Æ NG THá»¨C Bá»” SUNG ==================
+    // ================== CÁC PHƯƠNG THỨC BỔ SUNG ==================
 
     /**
-     * Láº¥y danh sÃ¡ch khÃ¡ch hÃ ng hoáº¡t Ä‘á»™ng
-     * @return Danh sÃ¡ch khÃ¡ch hÃ ng cÃ³ tráº¡ng thÃ¡i = 1
+     * Lấy danh sách khách hàng hoạt động
+     * @return Danh sách khách hàng có trạng thái = 1
      */
     List<KhachHang> getActiveKhachHang();
 
     /**
-     * Láº¥y khÃ¡ch hÃ ng theo khoáº£ng thá»i gian táº¡o
-     * @param startDate NgÃ y báº¯t Ä‘áº§u
-     * @param endDate NgÃ y káº¿t thÃºc
-     * @return Danh sÃ¡ch khÃ¡ch hÃ ng Ä‘Æ°á»£c táº¡o trong khoáº£ng thá»i gian
+     * Lấy khách hàng theo khoảng thời gian tạo
+     * @param startDate Ngày bắt đầu
+     * @param endDate Ngày kết thúc
+     * @return Danh sách khách hàng được tạo trong khoảng thời gian
      */
     List<KhachHang> getKhachHangByDateRange(Date startDate, Date endDate);
 
     /**
-     * Láº¥y thá»‘ng kÃª chi tiáº¿t khÃ¡ch hÃ ng
-     * @return Map chá»©a thá»‘ng kÃª chi tiáº¿t: total, active, inactive, recent
+     * Lấy thống kê chi tiết khách hàng
+     * @return Map chứa thống kê chi tiết: total, active, inactive, recent
      */
     Map<String, Long> getKhachHangStatistics();
 
     /**
-     * Kiá»ƒm tra cÃ³ thá»ƒ xÃ³a khÃ¡ch hÃ ng khÃ´ng
-     * @param id ID khÃ¡ch hÃ ng
-     * @return true náº¿u cÃ³ thá»ƒ xÃ³a
+     * Kiểm tra có thể xóa khách hàng không
+     * @param id ID khách hàng
+     * @return true nếu có thể xóa
      */
     boolean canDeleteKhachHang(Integer id);
 
     /**
-     * Chuyá»ƒn Ä‘á»•i tráº¡ng thÃ¡i khÃ¡ch hÃ ng (active/inactive)
-     * @param id ID khÃ¡ch hÃ ng
+     * Chuyển đổi trạng thái khách hàng (active/inactive)
+     * @param id ID khách hàng
      */
     void toggleTrangThai(Integer id);
 }

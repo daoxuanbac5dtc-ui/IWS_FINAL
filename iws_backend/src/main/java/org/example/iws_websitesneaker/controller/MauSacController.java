@@ -21,44 +21,44 @@ public class MauSacController {
     @Autowired
     private MauSacService mauSacService;
 
-    //Láº¥y táº¥t cáº£ cÃ¡c dá»¯ liá»‡u cáº£u mÃ u sáº¯c
+    //Lấy tất cả các dữ liệu cảu màu sắc
     @GetMapping
     public List<MauSac> getAllMauSac() {
         return mauSacService.getAll();
     }
-    // Detail táº¥t car cÃ¡c dá»¯ liá»‡u mÃ u sáº¯c
+    // Detail tất car các dữ liệu màu sắc
     @GetMapping("/{id}")
     public MauSac getMauSacById(@PathVariable int id){
         return mauSacService.getById(id).orElse(null);
     }
-    //ThÃªm mÃ u sáº¯c - ngÃ y táº¡o
+    //Thêm màu sắc - ngày tạo
     @PostMapping
     public String addMauSac(@Valid @RequestBody MauSac mauSac) {
         mauSac.setNgayTao(new Date());
         mauSacService.add(mauSac);
-        return "ThÃªm thÃ nh cÃ´ng mÃ u sáº¯c !";
+        return "Thêm thành công màu sắc !";
     }
-    //Sá»­a mÃ u sáº¯c
+    //Sửa màu sắc
     @PutMapping("/{id}")
     public String update(@PathVariable int id ,@Valid @RequestBody MauSac mauSac){
         Optional<MauSac> optional = mauSacService.getById(id);
         if (optional.isEmpty()) {
-            return "KhÃ´ng tÃ¬m tháº¥y mÃ u sáº¯c vá»›i ID: " + id;
+            return "Không tìm thấy màu sắc với ID: " + id;
         }
         mauSac.setId(id);
         mauSac.setNgayCapNhat(new Date());
         mauSacService.update(mauSac);
-        return "Sá»­a thÃ nh cÃ´ng mÃ u sáº¯c vá»›i id : " + id;
+        return "Sửa thành công màu sắc với id : " + id;
     }
-    //XÃ³a mÃ u sáº¯c
+    //Xóa màu sắc
     @DeleteMapping("/{id}")
     public String delete(@PathVariable int id){
         Optional<MauSac> optional = mauSacService.getById(id);
         if (optional.isEmpty()) {
-            return "KhÃ´ng tÃ¬m tháº¥y mÃ u sáº¯c vá»›i ID: " + id;
+            return "Không tìm thấy màu sắc với ID: " + id;
         }
         mauSacService.delete(id);
-        return "ÄÃ£ xÃ³a thÃ nh cÃ´ng mÃ u sáº¯c vá»›i id :" + id ;
+        return "Đã xóa thành công màu sắc với id :" + id ;
     }
 
 

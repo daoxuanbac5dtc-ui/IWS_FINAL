@@ -21,7 +21,7 @@ public class DeGiayController {
     @Autowired
     private DeGiayService deGiayService;
 
-    // Láº¥y táº¥t ca cÃ¡c dá»¯ liá»‡u
+    // Lấy tất ca các dữ liệu
     @GetMapping
     public List<DeGiay> getAllDeGiay() {
         return deGiayService.getAllDeGiay();
@@ -31,34 +31,34 @@ public class DeGiayController {
     public DeGiay getDeGiayDto(@PathVariable int id) {
         return deGiayService.getDeGiayById(id).orElse(null);
     }
-    //ThÃªm Ä‘Ã© giÃ y
+    //Thêm đé giày
     @PostMapping
     public String addKichCo(@Valid @RequestBody DeGiay deGiay) {
         deGiay.setNgayTao(new Date());
         deGiayService.addDeGiay(deGiay);
-        return "ThÃªm kÃ­ch cá»¡ thÃ nh cÃ´ng !";
+        return "Thêm kích cỡ thành công !";
     }
-    //Sá»­a
+    //Sửa
     @PutMapping("/{id}")
     public String updateKichCo(@PathVariable int id , @Valid @RequestBody DeGiay deGiay) {
         Optional<DeGiay> optional = deGiayService.getDeGiayById(id);
         if (optional.isEmpty()) {
-            return "KhÃ´ng tÃ¬m tháº¥y Ä‘áº¿ giÃ y vá»›i ID: " + id;
+            return "Không tìm thấy đế giày với ID: " + id;
         }
         deGiay.setId(id);
         deGiay.setNgayCapNhat(new Date());
         deGiayService.updateDeGiay(deGiay);
-        return "ÄÃ£ sá»­a Ä‘áº¿ giÃ y thÃ nh cÃ´ng vá»›i id : " +id;
+        return "Đã sửa đế giày thành công với id : " +id;
     }
-    //XÃ³a Ä‘á» giÃ y
+    //Xóa đề giày
     @DeleteMapping("/{id}")
     public String deleteKichCo(@PathVariable int id) {
         Optional<DeGiay> optional = deGiayService.getDeGiayById(id);
         if (optional.isEmpty()) {
-            return "KhÃ´ng tÃ¬m tháº¥y Ä‘áº¿ giÃ y vá»›i ID: " + id;
+            return "Không tìm thấy đế giày với ID: " + id;
         }
         deGiayService.deleteDeGiay(id);
-        return "ÄÃ£ xÃ³a thÃ nh cÃ´ng Ä‘áº¿ giÃ y vá»›i id : "+ id;
+        return "Đã xóa thành công đế giày với id : "+ id;
     }
 }
 

@@ -1,9 +1,7 @@
 <template>
     <main class="relative">
         <Nav />
-        <section id="home" class="xl:padding-l wide:padding-r padding-b overflow-hidden">
-            <Hero />
-        </section>
+        <HeroSection />
         <section id="products" class="padding">
             <PopularProducts />
         </section>
@@ -31,7 +29,7 @@
 </template>
 
 <script setup>
-import Hero from '@/views/user/Hero.vue';
+import HeroSection from '@/views/user/HeroSection.vue';
 import Services from '@/views/user/Services.vue';
 //import SpecialOffers from '@/views/user/SpecialOffers.vue';
 import Nav from '@/components/user/Nav.vue';

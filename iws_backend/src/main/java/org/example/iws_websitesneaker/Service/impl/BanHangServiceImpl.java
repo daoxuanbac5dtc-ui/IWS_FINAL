@@ -8,6 +8,7 @@ import org.example.iws_websitesneaker.Service.ChiTietVoucherService;
 import org.example.iws_websitesneaker.entity.*;
 import org.example.iws_websitesneaker.repository.BanHang.*;
 import org.example.iws_websitesneaker.specification.ChiTietSanPhamSpecification;
+import org.example.iws_websitesneaker.util.TextEncodingGuard;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -52,22 +53,22 @@ public class BanHangServiceImpl implements BanHangService {
     @Autowired private SanPhamBHRepository sanPhamRepository;
     @Autowired private ChiTietVoucherService chiTietVoucherService;
 
-    // ===== QUáº¢N LÃ HÃ“A ÄÆ N CHá»œ =====
+    // ===== QUẢN LÝ HÓA ĐƠN CHỜ =====
 
     @Override
     public HoaDonChoResponse taoHoaDonCho(Integer nhanVienId) {
         try {
-            log.info("Táº¡o hÃ³a Ä‘Æ¡n chá» cho nhÃ¢n viÃªn ID: {}", nhanVienId);
+            log.info("Tạo hóa đơn chờ cho nhân viên ID: {}", nhanVienId);
 
-            // Kiá»ƒm tra nhÃ¢n viÃªn
+            // Kiểm tra nhân viên
             NhanVien nhanVien = nhanVienRepository.findById(nhanVienId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y nhÃ¢n viÃªn"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên"));
 
-            // Táº¡o hÃ³a Ä‘Æ¡n má»›i
+            // Tạo hóa đơn mới
             HoaDon hoaDon = new HoaDon();
             hoaDon.setMaHoaDon(generateMaHoaDon());
-            hoaDon.setNhanVien(nhanVien);  // Set object, khÃ´ng pháº£i ID
-            hoaDon.setKhachHang(null);     // ChÆ°a cÃ³ khÃ¡ch hÃ ng
+            hoaDon.setNhanVien(nhanVien);  // Set object, không phải ID
+            hoaDon.setKhachHang(null);     // Chưa có khách hàng
             hoaDon.setTrangThaiHoaDon("CHO");
             hoaDon.setLoaiHoaDon("OFFLINE");
             hoaDon.setNgayTao(new Date());
@@ -75,23 +76,23 @@ public class BanHangServiceImpl implements BanHangService {
             hoaDon.setTongTien(BigDecimal.ZERO);
             hoaDon.setTongThanhToan(BigDecimal.ZERO);
 
-            // Set cÃ¡c field báº¯t buá»™c vá»›i giÃ¡ trá»‹ máº·c Ä‘á»‹nh
+            // Set các field bắt buộc với giá trị mặc định
             hoaDon.setDiaChi("");
             hoaDon.setEmail("");
             hoaDon.setSdt("");
-            hoaDon.setTenNguoiDung("KhÃ¡ch láº»");
+            hoaDon.setTenNguoiDung("Khách lẻ");
             hoaDon.setPhiVanChuyen(BigDecimal.ZERO);
 
             HoaDon savedHoaDon = hoaDonRepository.save(hoaDon);
 
-            // Táº¡o lá»‹ch sá»­ hÃ³a Ä‘Æ¡n
-            taoLichSuHoaDon(savedHoaDon, "Táº¡o hÃ³a Ä‘Æ¡n chá»", nhanVien);
+            // Tạo lịch sử hóa đơn
+            taoLichSuHoaDon(savedHoaDon, "Tạo hóa đơn chờ", nhanVien);
 
             return mapToHoaDonChoResponse(savedHoaDon);
 
         } catch (Exception e) {
-            log.error("Lá»—i khi táº¡o hÃ³a Ä‘Æ¡n chá»: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ táº¡o hÃ³a Ä‘Æ¡n chá»: " + e.getMessage());
+            log.error("Lỗi khi tạo hóa đơn chờ: {}", e.getMessage());
+            throw new RuntimeException("Không thể tạo hóa đơn chờ: " + e.getMessage());
         }
     }
 
@@ -99,7 +100,7 @@ public class BanHangServiceImpl implements BanHangService {
     @Override
     public List<HoaDonChoResponse> layDanhSachHoaDonCho() {
         try {
-            logger.info("ðŸ” Láº¥y danh sÃ¡ch hÃ³a Ä‘Æ¡n chá»");
+            logger.info("🔍 Lấy danh sách hóa đơn chờ");
             List<HoaDon> hoaDons = hoaDonRepository.findByTrangThaiHoaDon("CHO");
 
             List<HoaDonChoResponse> responses = new ArrayList<>();
@@ -107,11 +108,11 @@ public class BanHangServiceImpl implements BanHangService {
                 responses.add(mapToHoaDonChoResponse(hoaDon));
             }
 
-            logger.info("âœ… Láº¥y {} hÃ³a Ä‘Æ¡n chá» thÃ nh cÃ´ng", responses.size());
+            logger.info("✅ Lấy {} hóa đơn chờ thành công", responses.size());
             return responses;
         } catch (Exception e) {
-            logger.error("âŒ Lá»—i láº¥y danh sÃ¡ch hÃ³a Ä‘Æ¡n chá»", e);
-            throw new RuntimeException("Lá»—i láº¥y danh sÃ¡ch hÃ³a Ä‘Æ¡n chá»: " + e.getMessage());
+            logger.error("❌ Lỗi lấy danh sách hóa đơn chờ", e);
+            throw new RuntimeException("Lỗi lấy danh sách hóa đơn chờ: " + e.getMessage());
         }
     }
 
@@ -119,111 +120,111 @@ public class BanHangServiceImpl implements BanHangService {
     public HoaDonChoDetailResponse layChiTietHoaDonCho(Integer hoaDonId) {
         try {
             HoaDon hoaDon = hoaDonRepository.findById(hoaDonId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
             List<HoaDonChiTiet> chiTiets = hoaDonChiTietRepository.findByHoaDonIdOrderByNgayTao(hoaDonId);
 
             return mapToHoaDonChoDetailResponse(hoaDon, chiTiets);
 
         } catch (Exception e) {
-            log.error("Lá»—i khi láº¥y chi tiáº¿t hÃ³a Ä‘Æ¡n chá»: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ láº¥y chi tiáº¿t hÃ³a Ä‘Æ¡n chá»");
+            log.error("Lỗi khi lấy chi tiết hóa đơn chờ: {}", e.getMessage());
+            throw new RuntimeException("Không thể lấy chi tiết hóa đơn chờ");
         }
     }
 
     @Override
     public HoaDonChoTongQuanResponse layTongQuanHoaDonCho(Integer hoaDonId) {
         if (hoaDonId == null) {
-            log.error("ID hÃ³a Ä‘Æ¡n khÃ´ng Ä‘Æ°á»£c null");
-            throw new RuntimeException("ID hÃ³a Ä‘Æ¡n khÃ´ng há»£p lá»‡");
+            log.error("ID hóa đơn không được null");
+            throw new RuntimeException("ID hóa đơn không hợp lệ");
         }
 
         try {
-            // Debug: Log ID Ä‘ang tÃ¬m kiáº¿m
-            log.info("Äang tÃ¬m hÃ³a Ä‘Æ¡n vá»›i ID: {}", hoaDonId);
+            // Debug: Log ID đang tìm kiếm
+            log.info("Đang tìm hóa đơn với ID: {}", hoaDonId);
 
-            // Debug: Kiá»ƒm tra exists trÆ°á»›c
+            // Debug: Kiểm tra exists trước
             boolean exists = hoaDonRepository.existsById(hoaDonId);
-            log.info("HÃ³a Ä‘Æ¡n ID {} tá»“n táº¡i: {}", hoaDonId, exists);
+            log.info("Hóa đơn ID {} tồn tại: {}", hoaDonId, exists);
 
             Optional<HoaDon> hoaDonOpt = hoaDonRepository.findById(hoaDonId);
-            log.info("Káº¿t quáº£ findById: {}", hoaDonOpt.isPresent() ? "TÃ¬m tháº¥y" : "KhÃ´ng tÃ¬m tháº¥y");
+            log.info("Kết quả findById: {}", hoaDonOpt.isPresent() ? "Tìm thấy" : "Không tìm thấy");
 
             if (!hoaDonOpt.isPresent()) {
-                // Debug: Thá»­ query trá»±c tiáº¿p
+                // Debug: Thử query trực tiếp
                 List<HoaDon> allHoaDon = hoaDonRepository.findAll();
-                log.info("Tá»•ng sá»‘ hÃ³a Ä‘Æ¡n trong DB: {}", allHoaDon.size());
+                log.info("Tổng số hóa đơn trong DB: {}", allHoaDon.size());
 
-                // Debug: Kiá»ƒm tra ID cÃ³ Ä‘Ãºng type khÃ´ng
-                log.info("Kiá»ƒu dá»¯ liá»‡u cá»§a hoaDonId: {}", hoaDonId.getClass().getSimpleName());
+                // Debug: Kiểm tra ID có đúng type không
+                log.info("Kiểu dữ liệu của hoaDonId: {}", hoaDonId.getClass().getSimpleName());
 
-                log.warn("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n vá»›i ID: {}", hoaDonId);
-                throw new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n vá»›i ID: " + hoaDonId);
+                log.warn("Không tìm thấy hóa đơn với ID: {}", hoaDonId);
+                throw new RuntimeException("Không tìm thấy hóa đơn với ID: " + hoaDonId);
             }
 
             HoaDon hoaDon = hoaDonOpt.get();
-            log.info("TÃ¬m tháº¥y hÃ³a Ä‘Æ¡n: ID={}, Status={}", hoaDon.getId(), hoaDon.getTrangThaiHoaDon());
+            log.info("Tìm thấy hóa đơn: ID={}, Status={}", hoaDon.getId(), hoaDon.getTrangThaiHoaDon());
 
             List<HoaDonChiTiet> chiTiets = hoaDonChiTietRepository.findByHoaDonIdOrderByNgayTao(hoaDonId);
-            log.info("Sá»‘ lÆ°á»£ng chi tiáº¿t hÃ³a Ä‘Æ¡n: {}", chiTiets.size());
+            log.info("Số lượng chi tiết hóa đơn: {}", chiTiets.size());
 
             return mapToHoaDonChoTongQuanResponse(hoaDon, chiTiets);
 
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            log.error("Lá»—i khÃ´ng xÃ¡c Ä‘á»‹nh khi láº¥y tá»•ng quan hÃ³a Ä‘Æ¡n chá» vá»›i ID {}: {}", hoaDonId, e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ láº¥y tá»•ng quan hÃ³a Ä‘Æ¡n chá»: " + e.getMessage());
+            log.error("Lỗi không xác định khi lấy tổng quan hóa đơn chờ với ID {}: {}", hoaDonId, e.getMessage());
+            throw new RuntimeException("Không thể lấy tổng quan hóa đơn chờ: " + e.getMessage());
         }
     }
 
     @Override
     @Transactional
     public void xoaHoaDonCho(Integer id) {
-        // Kiá»ƒm tra hÃ³a Ä‘Æ¡n cÃ³ tá»“n táº¡i khÃ´ng
+        // Kiểm tra hóa đơn có tồn tại không
         HoaDon hoaDon = hoaDonRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n vá»›i ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn với ID: " + id));
 
-        // Kiá»ƒm tra hÃ³a Ä‘Æ¡n cÃ³ sáº£n pháº©m khÃ´ng
+        // Kiểm tra hóa đơn có sản phẩm không
         List<HoaDonChiTiet> chiTietList = hoaDonChiTietRepository.findByHoaDonId(id);
         if (!chiTietList.isEmpty()) {
-            throw new RuntimeException("KhÃ´ng thá»ƒ xÃ³a hÃ³a Ä‘Æ¡n Ä‘Ã£ cÃ³ sáº£n pháº©m");
+            throw new RuntimeException("Không thể xóa hóa đơn đã có sản phẩm");
         }
 
         try {
-            // XÃ“A CÃC RECORD LIÃŠN QUAN TRÆ¯á»šC KHI XÃ“A HÃ“A ÄÆ N
+            // XÓA CÁC RECORD LIÊN QUAN TRƯỚC KHI XÓA HÓA ĐƠN
 
-            // 1. XÃ³a lá»‹ch sá»­ hÃ³a Ä‘Æ¡n
+            // 1. Xóa lịch sử hóa đơn
             lichSuHoaDonRepository.deleteByHoaDonId(id);
 
-            // 2. XÃ³a cÃ¡c báº£ng liÃªn quan khÃ¡c (náº¿u cÃ³)
+            // 2. Xóa các bảng liên quan khác (nếu có)
             // voucherSuDungRepository.deleteByHoaDonId(id);
             // diemTichLuyRepository.deleteByHoaDonId(id);
 
-            // 3. Cuá»‘i cÃ¹ng má»›i xÃ³a hÃ³a Ä‘Æ¡n
+            // 3. Cuối cùng mới xóa hóa đơn
             hoaDonRepository.deleteById(id);
 
-            logger.info("ÄÃ£ xÃ³a hÃ³a Ä‘Æ¡n vÃ  cÃ¡c record liÃªn quan ID: {}", id);
+            logger.info("Đã xóa hóa đơn và các record liên quan ID: {}", id);
 
         } catch (Exception e) {
-            logger.error("Lá»—i xÃ³a hÃ³a Ä‘Æ¡n ID {}: {}", id, e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ xÃ³a hÃ³a Ä‘Æ¡n: " + e.getMessage());
+            logger.error("Lỗi xóa hóa đơn ID {}: {}", id, e.getMessage());
+            throw new RuntimeException("Không thể xóa hóa đơn: " + e.getMessage());
         }
     }
 
-    // ===== QUáº¢N LÃ Sáº¢N PHáº¨M =====
+    // ===== QUẢN LÝ SẢN PHẨM =====
 
     @Override
     public Page<SanPhamChiTietBanHangResponse> timKiemSanPham(SanPhamChiTietFilterRequest filter, Pageable pageable) {
         try {
-            // Sá»¬A: Sá»­ dá»¥ng repository gá»‘c vá»›i specification
+            // SỬA: Sử dụng repository gốc với specification
             Specification<ChiTietSanPham> spec = ChiTietSanPhamSpecification.withFilter(filter);
             Page<ChiTietSanPham> sanPhamPage = chiTietSanPhamRepository.findAll(spec, pageable);
 
             return sanPhamPage.map(this::mapToSanPhamChiTietBanHangResponse);
         } catch (Exception e) {
-            logger.error("âŒ Lá»—i tÃ¬m kiáº¿m sáº£n pháº©m", e);
-            throw new RuntimeException("Lá»—i tÃ¬m kiáº¿m sáº£n pháº©m: " + e.getMessage());
+            logger.error("❌ Lỗi tìm kiếm sản phẩm", e);
+            throw new RuntimeException("Lỗi tìm kiếm sản phẩm: " + e.getMessage());
         }
     }
 
@@ -231,13 +232,13 @@ public class BanHangServiceImpl implements BanHangService {
     public SanPhamChiTietBanHangResponse layChiTietSanPham(Integer chiTietSanPhamId) {
         try {
             ChiTietSanPham sanPham = chiTietSanPhamRepository.findById(chiTietSanPhamId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y sáº£n pháº©m"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
 
             return mapToSanPhamChiTietBanHangResponse(sanPham);
 
         } catch (Exception e) {
-            log.error("Lá»—i khi láº¥y chi tiáº¿t sáº£n pháº©m: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ láº¥y chi tiáº¿t sáº£n pháº©m");
+            log.error("Lỗi khi lấy chi tiết sản phẩm: {}", e.getMessage());
+            throw new RuntimeException("Không thể lấy chi tiết sản phẩm");
         }
     }
 
@@ -246,17 +247,17 @@ public class BanHangServiceImpl implements BanHangService {
     public ScanQRResponse scanQRSanPham(String qrCode) {
         try {
             ChiTietSanPham sanPham = chiTietSanPhamRepository.findByMaQR(qrCode)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y sáº£n pháº©m vá»›i mÃ£ QR: " + qrCode));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với mã QR: " + qrCode));
 
             if (sanPham.getTrangThai() != 1) {
-                throw new RuntimeException("Sáº£n pháº©m khÃ´ng cÃ²n hoáº¡t Ä‘á»™ng");
+                throw new RuntimeException("Sản phẩm không còn hoạt động");
             }
 
             return mapToScanQRResponse(sanPham);
 
         } catch (Exception e) {
-            log.error("Lá»—i khi quÃ©t QR: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ quÃ©t mÃ£ QR: " + e.getMessage());
+            log.error("Lỗi khi quét QR: {}", e.getMessage());
+            throw new RuntimeException("Không thể quét mã QR: " + e.getMessage());
         }
     }
 
@@ -265,15 +266,15 @@ public class BanHangServiceImpl implements BanHangService {
     public List<SanPhamChiTietBanHangResponse> laySanPhamTuongTu(Integer chiTietSanPhamId) {
         try {
             ChiTietSanPham sanPham = chiTietSanPhamRepository.findById(chiTietSanPhamId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y sáº£n pháº©m"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
 
-            // Láº¥y thÃ´ng tin sáº£n pháº©m gá»‘c - Sá»¬ Dá»¤NG RELATIONSHIP
+            // Lấy thông tin sản phẩm gốc - SỬ DỤNG RELATIONSHIP
             SanPham sanPhamGoc = sanPham.getSanPham();
             if (sanPhamGoc == null) {
                 return new ArrayList<>();
             }
 
-            // Láº¥y ID danh má»¥c vÃ  thÆ°Æ¡ng hiá»‡u tá»« relationship
+            // Lấy ID danh mục và thương hiệu từ relationship
             Integer danhMucId = null;
             Integer thuongHieuId = null;
 
@@ -296,56 +297,56 @@ public class BanHangServiceImpl implements BanHangService {
                     .collect(Collectors.toList());
 
         } catch (Exception e) {
-            log.error("Lá»—i khi láº¥y sáº£n pháº©m tÆ°Æ¡ng tá»±: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ láº¥y sáº£n pháº©m tÆ°Æ¡ng tá»±");
+            log.error("Lỗi khi lấy sản phẩm tương tự: {}", e.getMessage());
+            throw new RuntimeException("Không thể lấy sản phẩm tương tự");
         }
     }
 
-    // ===== QUáº¢N LÃ Sáº¢N PHáº¨M TRONG HÃ“A ÄÆ N =====
+    // ===== QUẢN LÝ SẢN PHẨM TRONG HÓA ĐƠN =====
 
     @Override
     public HoaDonChoTongQuanResponse themSanPhamVaoHoaDon(Integer hoaDonId, ThemSanPhamRequest request) {
         try {
-            log.info("ThÃªm sáº£n pháº©m vÃ o hÃ³a Ä‘Æ¡n ID: {}, Sáº£n pháº©m ID: {}", hoaDonId, request.getChiTietSanPhamId());
+            log.info("Thêm sản phẩm vào hóa đơn ID: {}, Sản phẩm ID: {}", hoaDonId, request.getChiTietSanPhamId());
 
             // Validate request
             validateThemSanPhamRequest(request);
 
-            // Kiá»ƒm tra hÃ³a Ä‘Æ¡n
+            // Kiểm tra hóa đơn
             HoaDon hoaDon = hoaDonRepository.findById(hoaDonId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
             if (!"CHO".equals(hoaDon.getTrangThaiHoaDon())) {
-                throw new RuntimeException("Chá»‰ cÃ³ thá»ƒ thÃªm sáº£n pháº©m vÃ o hÃ³a Ä‘Æ¡n Ä‘ang chá» thanh toÃ¡n");
+                throw new RuntimeException("Chỉ có thể thêm sản phẩm vào hóa đơn đang chờ thanh toán");
             }
 
-            // Kiá»ƒm tra sáº£n pháº©m
+            // Kiểm tra sản phẩm
             ChiTietSanPham sanPham = chiTietSanPhamRepository.findById(request.getChiTietSanPhamId())
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y sáº£n pháº©m"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
 
             kiemTraSanPhamCoTheBan(sanPham, request.getSoLuong());
 
-            // Kiá»ƒm tra sáº£n pháº©m Ä‘Ã£ cÃ³ trong hÃ³a Ä‘Æ¡n chÆ°a
+            // Kiểm tra sản phẩm đã có trong hóa đơn chưa
             Optional<HoaDonChiTiet> existingItem = hoaDonChiTietRepository
                     .findByHoaDonIdAndChiTietSanPham_Id(hoaDonId, request.getChiTietSanPhamId());
 
             if (existingItem.isPresent()) {
-                // Cáº­p nháº­t sá»‘ lÆ°á»£ng náº¿u sáº£n pháº©m Ä‘Ã£ cÃ³
+                // Cập nhật số lượng nếu sản phẩm đã có
                 HoaDonChiTiet chiTiet = existingItem.get();
                 int soLuongMoi = chiTiet.getSoLuong() + request.getSoLuong();
 
                 if (sanPham.getSoLuong() < request.getSoLuong()) {
-                    throw new RuntimeException("KhÃ´ng Ä‘á»§ sá»‘ lÆ°á»£ng tá»“n kho. CÃ²n láº¡i: " + sanPham.getSoLuong());
+                    throw new RuntimeException("Không đủ số lượng tồn kho. Còn lại: " + sanPham.getSoLuong());
                 }
 
                 chiTiet.setSoLuong(soLuongMoi);
                 chiTiet.setNgayCapNhat(new Date());
                 hoaDonChiTietRepository.save(chiTiet);
             } else {
-                // ThÃªm sáº£n pháº©m má»›i - Sá»¬ Dá»¤NG RELATIONSHIP
+                // Thêm sản phẩm mới - SỬ DỤNG RELATIONSHIP
                 HoaDonChiTiet chiTiet = new HoaDonChiTiet();
-                chiTiet.setHoaDon(hoaDon); // Set object, khÃ´ng pháº£i ID
-                chiTiet.setChiTietSanPham(sanPham); // Set object, khÃ´ng pháº£i ID
+                chiTiet.setHoaDon(hoaDon); // Set object, không phải ID
+                chiTiet.setChiTietSanPham(sanPham); // Set object, không phải ID
                 chiTiet.setSoLuong(request.getSoLuong());
                 chiTiet.setGia(request.getDonGia() != null ?
                         convertToBigDecimal(request.getDonGia()).doubleValue() :
@@ -356,20 +357,20 @@ public class BanHangServiceImpl implements BanHangService {
                 hoaDonChiTietRepository.save(chiTiet);
             }
 
-            // Trá»« sá»‘ lÆ°á»£ng tá»“n kho
+            // Trừ số lượng tồn kho
             sanPham.setSoLuong(sanPham.getSoLuong() - request.getSoLuong());
             chiTietSanPhamRepository.save(sanPham);
 
-            // Cáº­p nháº­t tá»•ng tiá»n hÃ³a Ä‘Æ¡n
+            // Cập nhật tổng tiền hóa đơn
             capNhatTongTienHoaDon(hoaDonId);
 
-            log.info("ÄÃ£ thÃªm sáº£n pháº©m vÃ o hÃ³a Ä‘Æ¡n thÃ nh cÃ´ng");
+            log.info("Đã thêm sản phẩm vào hóa đơn thành công");
 
             return layTongQuanHoaDonCho(hoaDonId);
 
         } catch (Exception e) {
-            log.error("Lá»—i khi thÃªm sáº£n pháº©m vÃ o hÃ³a Ä‘Æ¡n: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ thÃªm sáº£n pháº©m vÃ o hÃ³a Ä‘Æ¡n: " + e.getMessage());
+            log.error("Lỗi khi thêm sản phẩm vào hóa đơn: {}", e.getMessage());
+            throw new RuntimeException("Không thể thêm sản phẩm vào hóa đơn: " + e.getMessage());
         }
     }
 
@@ -377,29 +378,29 @@ public class BanHangServiceImpl implements BanHangService {
     public HoaDonChoTongQuanResponse capNhatSanPhamTrongHoaDon(
             Integer hoaDonId, Integer hoaDonChiTietId, CapNhatSanPhamRequest request) {
         try {
-            log.info("Cáº­p nháº­t sáº£n pháº©m trong hÃ³a Ä‘Æ¡n ID: {}, Chi tiáº¿t ID: {}", hoaDonId, hoaDonChiTietId);
+            log.info("Cập nhật sản phẩm trong hóa đơn ID: {}, Chi tiết ID: {}", hoaDonId, hoaDonChiTietId);
 
             validateCapNhatSanPhamRequest(request);
 
-            // Kiá»ƒm tra hÃ³a Ä‘Æ¡n chi tiáº¿t
+            // Kiểm tra hóa đơn chi tiết
             HoaDonChiTiet chiTiet = hoaDonChiTietRepository.findById(hoaDonChiTietId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t hÃ³a Ä‘Æ¡n"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết hóa đơn"));
 
             if (!chiTiet.getHoaDon().getId().equals(hoaDonId)) {
-                throw new RuntimeException("Chi tiáº¿t hÃ³a Ä‘Æ¡n khÃ´ng thuá»™c vá» hÃ³a Ä‘Æ¡n nÃ y");
+                throw new RuntimeException("Chi tiết hóa đơn không thuộc về hóa đơn này");
             }
 
-            ChiTietSanPham sanPham = chiTiet.getChiTietSanPham(); // Sá»­ dá»¥ng relationship
+            ChiTietSanPham sanPham = chiTiet.getChiTietSanPham(); // Sử dụng relationship
             int soLuongCu = chiTiet.getSoLuong();
             int soLuongMoi = request.getSoLuong();
             int chenhLech = soLuongMoi - soLuongCu;
 
-            // Kiá»ƒm tra tá»“n kho
+            // Kiểm tra tồn kho
             if (chenhLech > 0 && sanPham.getSoLuong() < chenhLech) {
-                throw new RuntimeException("KhÃ´ng Ä‘á»§ sá»‘ lÆ°á»£ng tá»“n kho. CÃ²n láº¡i: " + sanPham.getSoLuong());
+                throw new RuntimeException("Không đủ số lượng tồn kho. Còn lại: " + sanPham.getSoLuong());
             }
 
-            // Cáº­p nháº­t chi tiáº¿t hÃ³a Ä‘Æ¡n
+            // Cập nhật chi tiết hóa đơn
             chiTiet.setSoLuong(soLuongMoi);
             if (request.getDonGia() != null) {
                 chiTiet.setGia(convertToBigDecimal(request.getDonGia()).doubleValue());
@@ -407,54 +408,54 @@ public class BanHangServiceImpl implements BanHangService {
             chiTiet.setNgayCapNhat(new Date());
             hoaDonChiTietRepository.save(chiTiet);
 
-            // Cáº­p nháº­t tá»“n kho
+            // Cập nhật tồn kho
             sanPham.setSoLuong(sanPham.getSoLuong() - chenhLech);
             chiTietSanPhamRepository.save(sanPham);
 
-            // Cáº­p nháº­t tá»•ng tiá»n hÃ³a Ä‘Æ¡n
+            // Cập nhật tổng tiền hóa đơn
             capNhatTongTienHoaDon(hoaDonId);
 
-            log.info("ÄÃ£ cáº­p nháº­t sáº£n pháº©m trong hÃ³a Ä‘Æ¡n thÃ nh cÃ´ng");
+            log.info("Đã cập nhật sản phẩm trong hóa đơn thành công");
 
             return layTongQuanHoaDonCho(hoaDonId);
 
         } catch (Exception e) {
-            log.error("Lá»—i khi cáº­p nháº­t sáº£n pháº©m trong hÃ³a Ä‘Æ¡n: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ cáº­p nháº­t sáº£n pháº©m trong hÃ³a Ä‘Æ¡n: " + e.getMessage());
+            log.error("Lỗi khi cập nhật sản phẩm trong hóa đơn: {}", e.getMessage());
+            throw new RuntimeException("Không thể cập nhật sản phẩm trong hóa đơn: " + e.getMessage());
         }
     }
 
     @Override
     public HoaDonChoTongQuanResponse xoaSanPhamKhoiHoaDon(Integer hoaDonId, Integer hoaDonChiTietId) {
         try {
-            log.info("XÃ³a sáº£n pháº©m khá»i hÃ³a Ä‘Æ¡n ID: {}, Chi tiáº¿t ID: {}", hoaDonId, hoaDonChiTietId);
+            log.info("Xóa sản phẩm khỏi hóa đơn ID: {}, Chi tiết ID: {}", hoaDonId, hoaDonChiTietId);
 
-            // Kiá»ƒm tra hÃ³a Ä‘Æ¡n chi tiáº¿t
+            // Kiểm tra hóa đơn chi tiết
             HoaDonChiTiet chiTiet = hoaDonChiTietRepository.findById(hoaDonChiTietId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t hÃ³a Ä‘Æ¡n"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết hóa đơn"));
 
             if (!chiTiet.getHoaDon().getId().equals(hoaDonId)) {
-                throw new RuntimeException("Chi tiáº¿t hÃ³a Ä‘Æ¡n khÃ´ng thuá»™c vá» hÃ³a Ä‘Æ¡n nÃ y");
+                throw new RuntimeException("Chi tiết hóa đơn không thuộc về hóa đơn này");
             }
 
-            // HoÃ n tráº£ sá»‘ lÆ°á»£ng tá»“n kho
-            ChiTietSanPham sanPham = chiTiet.getChiTietSanPham(); // Sá»­ dá»¥ng relationship
+            // Hoàn trả số lượng tồn kho
+            ChiTietSanPham sanPham = chiTiet.getChiTietSanPham(); // Sử dụng relationship
             sanPham.setSoLuong(sanPham.getSoLuong() + chiTiet.getSoLuong());
             chiTietSanPhamRepository.save(sanPham);
 
-            // XÃ³a chi tiáº¿t hÃ³a Ä‘Æ¡n
+            // Xóa chi tiết hóa đơn
             hoaDonChiTietRepository.deleteById(hoaDonChiTietId);
 
-            // Cáº­p nháº­t tá»•ng tiá»n hÃ³a Ä‘Æ¡n
+            // Cập nhật tổng tiền hóa đơn
             capNhatTongTienHoaDon(hoaDonId);
 
-            log.info("ÄÃ£ xÃ³a sáº£n pháº©m khá»i hÃ³a Ä‘Æ¡n thÃ nh cÃ´ng");
+            log.info("Đã xóa sản phẩm khỏi hóa đơn thành công");
 
             return layTongQuanHoaDonCho(hoaDonId);
 
         } catch (Exception e) {
-            log.error("Lá»—i khi xÃ³a sáº£n pháº©m khá»i hÃ³a Ä‘Æ¡n: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ xÃ³a sáº£n pháº©m khá»i hÃ³a Ä‘Æ¡n: " + e.getMessage());
+            log.error("Lỗi khi xóa sản phẩm khỏi hóa đơn: {}", e.getMessage());
+            throw new RuntimeException("Không thể xóa sản phẩm khỏi hóa đơn: " + e.getMessage());
         }
     }
 
@@ -462,22 +463,22 @@ public class BanHangServiceImpl implements BanHangService {
     public TinhGiaResponse tinhGiaSanPham(TinhGiaRequest request) {
         try {
             ChiTietSanPham sanPham = chiTietSanPhamRepository.findById(request.getChiTietSanPhamId())
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y sáº£n pháº©m"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
 
-            // Sá»¬A: Convert tá»« Double sang BigDecimal
+            // SỬA: Convert từ Double sang BigDecimal
             BigDecimal giaGoc = sanPham.getGiaGoc() != null ?
                     BigDecimal.valueOf(sanPham.getGiaGoc()) : BigDecimal.ZERO;
             BigDecimal giaBan = sanPham.getGiaBan() != null ?
                     BigDecimal.valueOf(sanPham.getGiaBan()) : BigDecimal.ZERO;
             int soLuong = request.getSoLuong();
 
-            // TÃ­nh khuyáº¿n mÃ£i
+            // Tính khuyến mãi
             List<KhuyenMaiSanPhamResponse> khuyenMais = layKhuyenMaiSanPham(request.getChiTietSanPhamId());
 
             BigDecimal tongTienGoc = giaGoc.multiply(BigDecimal.valueOf(soLuong));
             BigDecimal tongTienSauGiam = giaBan.multiply(BigDecimal.valueOf(soLuong));
 
-            // Ãp dá»¥ng khuyáº¿n mÃ£i
+            // Áp dụng khuyến mãi
             for (KhuyenMaiSanPhamResponse km : khuyenMais) {
                 if (Boolean.TRUE.equals(km.getDangApDung())) {
                     if ("PHAN_TRAM".equals(km.getLoaiKhuyenMai())) {
@@ -508,21 +509,21 @@ public class BanHangServiceImpl implements BanHangService {
                     .build();
 
         } catch (Exception e) {
-            log.error("Lá»—i khi tÃ­nh giÃ¡ sáº£n pháº©m: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ tÃ­nh giÃ¡ sáº£n pháº©m: " + e.getMessage());
+            log.error("Lỗi khi tính giá sản phẩm: {}", e.getMessage());
+            throw new RuntimeException("Không thể tính giá sản phẩm: " + e.getMessage());
         }
     }
     private KhachHangResponse mapToKhachHangResponseSafe(KhachHang khachHang) {
         if (khachHang == null) return null;
 
         try {
-            // Basic info - luÃ´n cÃ³
+            // Basic info - luôn có
             String maKhachHang = khachHang.getMaKhachHang() != null ? khachHang.getMaKhachHang() : "";
             String hoTen = khachHang.getHoTen() != null ? khachHang.getHoTen() : "";
             String sdt = khachHang.getSdt() != null ? khachHang.getSdt() : "";
             Integer trangThai = khachHang.getTrangThai() != null ? khachHang.getTrangThai() : 0;
 
-            // âœ… Safe email loading
+            // ✅ Safe email loading
             String email = "";
             try {
                 if (khachHang.getTaiKhoan() != null &&
@@ -534,7 +535,7 @@ public class BanHangServiceImpl implements BanHangService {
                 email = "";
             }
 
-            // âœ… Safe points calculation
+            // ✅ Safe points calculation
             Double diemTichLuy = 0.0;
             try {
                 if (khachHang.getViDiem() != null) {
@@ -560,13 +561,13 @@ public class BanHangServiceImpl implements BanHangService {
                     .build();
 
         } catch (Exception e) {
-            log.warn("âŒ Error mapping customer {}: {}", khachHang.getId(), e.getMessage());
+            log.warn("❌ Error mapping customer {}: {}", khachHang.getId(), e.getMessage());
 
             // Return minimal safe object
             return KhachHangResponse.builder()
                     .id(khachHang.getId())
                     .maKhachHang(khachHang.getMaKhachHang() != null ? khachHang.getMaKhachHang() : "")
-                    .hoTen(khachHang.getHoTen() != null ? khachHang.getHoTen() : "KhÃ¡ch hÃ ng")
+                    .hoTen(khachHang.getHoTen() != null ? khachHang.getHoTen() : "Khách hàng")
                     .sdt(khachHang.getSdt() != null ? khachHang.getSdt() : "")
                     .email("")
                     .trangThai(0)
@@ -579,59 +580,59 @@ public class BanHangServiceImpl implements BanHangService {
     @Override
     public Page<KhachHangResponse> timKiemKhachHang(String keyword, Pageable pageable) {
         try {
-            log.info("ðŸ” TÃ¬m kiáº¿m khÃ¡ch hÃ ng vá»›i keyword: '{}'", keyword);
+            log.info("🔍 Tìm kiếm khách hàng với keyword: '{}'", keyword);
 
             Page<KhachHang> khachHangs = null;
 
             if (StringUtils.hasText(keyword)) {
                 String keywordTrimmed = keyword.trim();
-                log.info("ðŸ”„ Searching with keyword: '{}'", keywordTrimmed);
+                log.info("🔄 Searching with keyword: '{}'", keywordTrimmed);
 
                 try {
-                    // Thá»­ query vá»›i keyword
+                    // Thử query với keyword
                     khachHangs = khachHangRepository.searchByKeyword(keywordTrimmed, pageable);
-                    log.info("âœ… Found {} customers with search query", khachHangs.getTotalElements());
+                    log.info("✅ Found {} customers with search query", khachHangs.getTotalElements());
                 } catch (Exception e) {
-                    log.warn("âš ï¸ Search query failed: {}", e.getMessage());
-                    // Fallback vá» query Ä‘Æ¡n giáº£n
+                    log.warn("⚠️ Search query failed: {}", e.getMessage());
+                    // Fallback về query đơn giản
                     try {
                         khachHangs = khachHangRepository.searchByKeywordSimple(keywordTrimmed, pageable);
-                        log.info("âœ… Found {} customers with simple query", khachHangs.getTotalElements());
+                        log.info("✅ Found {} customers with simple query", khachHangs.getTotalElements());
                     } catch (Exception e2) {
-                        log.warn("âš ï¸ Simple query also failed: {}", e2.getMessage());
+                        log.warn("⚠️ Simple query also failed: {}", e2.getMessage());
                         // Manual search
                         khachHangs = searchCustomersManually(keywordTrimmed, pageable);
                     }
                 }
             } else {
-                log.info("ðŸ“‹ Loading all active customers");
+                log.info("📋 Loading all active customers");
                 try {
                     khachHangs = khachHangRepository.findAllActive(pageable);
-                    log.info("âœ… Found {} total active customers", khachHangs.getTotalElements());
+                    log.info("✅ Found {} total active customers", khachHangs.getTotalElements());
                 } catch (Exception e) {
-                    log.warn("âš ï¸ findAllActive failed: {}", e.getMessage());
+                    log.warn("⚠️ findAllActive failed: {}", e.getMessage());
                     // Manual search without keyword
                     khachHangs = searchCustomersManually("", pageable);
                 }
             }
 
-            // Äáº£m báº£o khachHangs khÃ´ng bao giá» null
+            // Đảm bảo khachHangs không bao giờ null
             if (khachHangs == null) {
                 khachHangs = new PageImpl<>(new ArrayList<>(), pageable, 0);
             }
 
-            // Map to DTO vá»›i safe approach
+            // Map to DTO với safe approach
             List<KhachHangResponse> responses = khachHangs.getContent().stream()
                     .map(this::mapKhachHangSafe)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
-            log.info("âœ… Successfully mapped {} customer responses", responses.size());
+            log.info("✅ Successfully mapped {} customer responses", responses.size());
             return new PageImpl<>(responses, pageable, khachHangs.getTotalElements());
 
         } catch (Exception e) {
-            log.error("âŒ Critical error in timKiemKhachHang: {}", e.getMessage());
-            // KHÃ”NG THROW EXCEPTION - tráº£ vá» empty page
+            log.error("❌ Critical error in timKiemKhachHang: {}", e.getMessage());
+            // KHÔNG THROW EXCEPTION - trả về empty page
             return new PageImpl<>(new ArrayList<>(), pageable, 0);
         }
     }
@@ -651,13 +652,13 @@ public class BanHangServiceImpl implements BanHangService {
                     .ngayTao(kh.getNgayTao())
                     .build();
         } catch (Exception e) {
-            log.warn("âŒ Error mapping customer {}: {}", kh.getId(), e.getMessage());
+            log.warn("❌ Error mapping customer {}: {}", kh.getId(), e.getMessage());
 
             // Return minimal safe version
             return KhachHangResponse.builder()
                     .id(kh.getId())
                     .maKhachHang(kh.getMaKhachHang() != null ? kh.getMaKhachHang() : "")
-                    .hoTen(kh.getHoTen() != null ? kh.getHoTen() : "KhÃ¡ch hÃ ng")
+                    .hoTen(kh.getHoTen() != null ? kh.getHoTen() : "Khách hàng")
                     .sdt(kh.getSdt() != null ? kh.getSdt() : "")
                     .email("")
                     .trangThai(0)
@@ -676,7 +677,7 @@ public class BanHangServiceImpl implements BanHangService {
         }
     }
 
-    // âœ… 6. SAFE POINTS GETTER
+    // ✅ 6. SAFE POINTS GETTER
     private Double getDiemTichLuySafe(KhachHang kh) {
         try {
             if (kh.getViDiem() != null) {
@@ -693,9 +694,9 @@ public class BanHangServiceImpl implements BanHangService {
 
     private Page<KhachHang> searchCustomersManually(String keyword, Pageable pageable) {
         try {
-            log.info("ðŸ”§ Manual search for keyword: '{}'", keyword);
+            log.info("🔧 Manual search for keyword: '{}'", keyword);
 
-            // Láº¥y táº¥t cáº£ khÃ¡ch hÃ ng
+            // Lấy tất cả khách hàng
             List<KhachHang> allCustomers = khachHangRepository.findAll();
 
             // Filter
@@ -730,23 +731,23 @@ public class BanHangServiceImpl implements BanHangService {
             List<KhachHang> pageContent = start >= total ?
                     new ArrayList<>() : filtered.subList(start, end);
 
-            log.info("ðŸ”§ Manual search found {} customers", total);
+            log.info("🔧 Manual search found {} customers", total);
             return new PageImpl<>(pageContent, pageable, total);
 
         } catch (Exception e) {
-            log.error("âŒ Manual search failed: {}", e.getMessage());
+            log.error("❌ Manual search failed: {}", e.getMessage());
             return new PageImpl<>(new ArrayList<>(), pageable, 0);
         }
     }
 
 
 
-    // âœ… THÃŠM: Helper method Ä‘á»ƒ tÃ¬m khÃ¡ch hÃ ng manually khi query fail
+    // ✅ THÊM: Helper method để tìm khách hàng manually khi query fail
     private Page<KhachHang> findActiveCustomersManually(Pageable pageable, String keyword) {
         try {
             List<KhachHang> allCustomers = khachHangRepository.findAll();
 
-            // Filter theo Ä‘iá»u kiá»‡n
+            // Filter theo điều kiện
             List<KhachHang> filteredCustomers = allCustomers.stream()
                     .filter(kh -> kh.getTrangThai() != null && kh.getTrangThai() == 1)
                     .filter(kh -> {
@@ -768,7 +769,7 @@ public class BanHangServiceImpl implements BanHangService {
                     })
                     .collect(Collectors.toList());
 
-            // PhÃ¢n trang manual
+            // Phân trang manual
             int start = (int) pageable.getOffset();
             int end = Math.min(start + pageable.getPageSize(), filteredCustomers.size());
 
@@ -780,18 +781,18 @@ public class BanHangServiceImpl implements BanHangService {
             return new PageImpl<>(pageContent, pageable, filteredCustomers.size());
 
         } catch (Exception e) {
-            log.error("âŒ Manual filtering failed: {}", e.getMessage());
+            log.error("❌ Manual filtering failed: {}", e.getMessage());
             return new PageImpl<>(new ArrayList<>(), pageable, 0);
         }
     }
 
 
-    // âœ… Sá»¬A: Version má»›i cá»§a mapping method khÃ´ng gÃ¢y transaction rollback
+    // ✅ SỬA: Version mới của mapping method không gây transaction rollback
     private KhachHangResponse mapToKhachHangResponseSafeV2(KhachHang khachHang) {
         if (khachHang == null) return null;
 
         try {
-            // âœ… Sá»¬A: TÃ­nh Ä‘iá»ƒm tÃ­ch lÅ©y an toÃ n hÆ¡n
+            // ✅ SỬA: Tính điểm tích lũy an toàn hơn
             Double diemTichLuy = 0.0;
             try {
                 if (khachHang.getViDiem() != null) {
@@ -805,7 +806,7 @@ public class BanHangServiceImpl implements BanHangService {
                 diemTichLuy = 0.0;
             }
 
-            // âœ… Sá»¬A: Láº¥y email an toÃ n hÆ¡n
+            // ✅ SỬA: Lấy email an toàn hơn
             String email = "";
             try {
                 if (khachHang.getTaiKhoan() != null &&
@@ -830,14 +831,14 @@ public class BanHangServiceImpl implements BanHangService {
                     .build();
 
         } catch (Exception e) {
-            log.error("âŒ Critical error mapping customer {}: {}",
+            log.error("❌ Critical error mapping customer {}: {}",
                     khachHang.getId(), e.getMessage());
 
-            // âœ… Sá»¬A: Tráº£ vá» object tá»‘i thiá»ƒu thay vÃ¬ null Ä‘á»ƒ trÃ¡nh NPE
+            // ✅ SỬA: Trả về object tối thiểu thay vì null để tránh NPE
             return KhachHangResponse.builder()
                     .id(khachHang.getId())
                     .maKhachHang(khachHang.getMaKhachHang() != null ? khachHang.getMaKhachHang() : "")
-                    .hoTen(khachHang.getHoTen() != null ? khachHang.getHoTen() : "KhÃ¡ch hÃ ng")
+                    .hoTen(khachHang.getHoTen() != null ? khachHang.getHoTen() : "Khách hàng")
                     .sdt(khachHang.getSdt() != null ? khachHang.getSdt() : "")
                     .email("")
                     .trangThai(khachHang.getTrangThai() != null ? khachHang.getTrangThai() : 0)
@@ -848,42 +849,45 @@ public class BanHangServiceImpl implements BanHangService {
     }
 
 
-    // ===== Cáº¬P NHáº¬T PHÆ¯Æ NG THá»¨C taoKhachHangNhanh TRONG BanHangServiceImpl =====
+    // ===== CẬP NHẬT PHƯƠNG THỨC taoKhachHangNhanh TRONG BanHangServiceImpl =====
 
     @Override
+    @Transactional
     public KhachHangResponse taoKhachHangNhanh(TaoKhachHangNhanhRequest request) {
         try {
-            log.info("Táº¡o khÃ¡ch hÃ ng nhanh: {}", request.getSdt());
+            log.info("Tạo khách hàng nhanh: {}", request.getSdt());
+            request.setHoTen(TextEncodingGuard.normalizeAndRejectCorrupted("Họ tên khách hàng", request.getHoTen()));
+            request.setDiaChi(TextEncodingGuard.normalizeAndRejectCorrupted("Địa chỉ khách hàng", request.getDiaChi()));
 
-            // Kiá»ƒm tra sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ tá»“n táº¡i
+            // Kiểm tra số điện thoại đã tồn tại
             if (khachHangRepository.existsBySdt(request.getSdt())) {
-                throw new RuntimeException("Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng");
+                throw new RuntimeException("Số điện thoại đã được sử dụng");
             }
 
-            // âœ… Sá»¬A: Kiá»ƒm tra email qua TaiKhoan thay vÃ¬ KhachHang
+            // ✅ SỬA: Kiểm tra email qua TaiKhoan thay vì KhachHang
             if (StringUtils.hasText(request.getEmail())) {
-                // Kiá»ƒm tra trong TaiKhoan trá»±c tiáº¿p
+                // Kiểm tra trong TaiKhoan trực tiếp
                 if (taiKhoanRepository.existsByEmail(request.getEmail())) {
-                    throw new RuntimeException("Email Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng");
+                    throw new RuntimeException("Email đã được sử dụng");
                 }
-                // Kiá»ƒm tra thÃªm qua KhachHang (backup)
+                // Kiểm tra thêm qua KhachHang (backup)
                 if (khachHangRepository.existsByTaiKhoanEmail(request.getEmail())) {
-                    throw new RuntimeException("Email Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng bá»Ÿi khÃ¡ch hÃ ng khÃ¡c");
+                    throw new RuntimeException("Email đã được sử dụng bởi khách hàng khác");
                 }
             }
 
-            // 1. Táº¡o TaiKhoan trÆ°á»›c
+            // 1. Tạo TaiKhoan trước
             TaiKhoan taiKhoan = new TaiKhoan();
             taiKhoan.setMaTaiKhoan("TK" + System.currentTimeMillis());
             taiKhoan.setEmail(request.getEmail() != null ? request.getEmail() : "");
-            taiKhoan.setMatKhau("default123"); // Máº­t kháº©u máº·c Ä‘á»‹nh
-            taiKhoan.setVaiTro(TaiKhoan.VaiTro.USER); // 0 = khÃ¡ch hÃ ng
+            taiKhoan.setMatKhau("default123"); // Mật khẩu mặc định
+            taiKhoan.setVaiTro(TaiKhoan.VaiTro.USER); // 0 = khách hàng
             taiKhoan.setTrangThai(1);
             taiKhoan.setNgayTao(new Date());
             taiKhoan.setNgayCapNhat(new Date());
             TaiKhoan savedTaiKhoan = taiKhoanRepository.save(taiKhoan);
 
-            // 2. Táº¡o ViDiem
+            // 2. Tạo ViDiem
             ViDiem viDiem = new ViDiem();
             viDiem.setTongDiem(0.0);
             viDiem.setSoDiemDaDung(0.0);
@@ -893,7 +897,7 @@ public class BanHangServiceImpl implements BanHangService {
             viDiem.setNgayCapNhat(new Date());
             ViDiem savedViDiem = viDiemRepository.save(viDiem);
 
-            // 3. Táº¡o KhachHang
+            // 3. Tạo KhachHang
             KhachHang khachHang = new KhachHang();
             khachHang.setMaKhachHang(generateMaKhachHang());
             khachHang.setHoTen(request.getHoTen());
@@ -906,14 +910,14 @@ public class BanHangServiceImpl implements BanHangService {
 
             KhachHang savedKhachHang = khachHangRepository.save(khachHang);
 
-            // 4. Táº¡o DiaChi riÃªng biá»‡t cho TaiKhoan (náº¿u cáº§n)
+            // 4. Tạo DiaChi riêng biệt cho TaiKhoan (nếu cần)
             if (StringUtils.hasText(request.getDiaChi())) {
                 DiaChi diaChi = new DiaChi();
                 diaChi.setTaiKhoan(savedTaiKhoan);
                 diaChi.setMaTinh("01");
                 diaChi.setMaPhuong("00001");
-                diaChi.setTenTinh("HÃ  Ná»™i");
-                diaChi.setTenPhuong("PhÃºc XÃ¡");
+                diaChi.setTenTinh("Hà Nội");
+                diaChi.setTenPhuong("Phúc Xá");
                 diaChi.setDiaChiChiTiet(request.getDiaChi());
                 diaChi.setIsDefault(true);
                 diaChi.setTrangThai(1);
@@ -922,13 +926,13 @@ public class BanHangServiceImpl implements BanHangService {
                 diaChiRepository.save(diaChi);
             }
 
-            log.info("ÄÃ£ táº¡o khÃ¡ch hÃ ng nhanh thÃ nh cÃ´ng ID: {}", savedKhachHang.getId());
+            log.info("Đã tạo khách hàng nhanh thành công ID: {}", savedKhachHang.getId());
 
             return mapToKhachHangResponse(savedKhachHang);
 
         } catch (Exception e) {
-            log.error("Lá»—i khi táº¡o khÃ¡ch hÃ ng nhanh: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ táº¡o khÃ¡ch hÃ ng: " + e.getMessage());
+            log.error("Lỗi khi tạo khách hàng nhanh: {}", e.getMessage());
+            throw new RuntimeException("Không thể tạo khách hàng: " + e.getMessage());
         }
     }
 
@@ -936,31 +940,31 @@ public class BanHangServiceImpl implements BanHangService {
     public KhachHangDetailResponse layThongTinKhachHang(Integer khachHangId) {
         try {
             KhachHang khachHang = khachHangRepository.findById(khachHangId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y khÃ¡ch hÃ ng"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
 
             return mapToKhachHangDetailResponse(khachHang);
 
         } catch (Exception e) {
-            log.error("Lá»—i khi láº¥y thÃ´ng tin khÃ¡ch hÃ ng: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ láº¥y thÃ´ng tin khÃ¡ch hÃ ng");
+            log.error("Lỗi khi lấy thông tin khách hàng: {}", e.getMessage());
+            throw new RuntimeException("Không thể lấy thông tin khách hàng");
         }
     }
 
     @Override
     public HoaDonChoTongQuanResponse apDungKhachHang(Integer hoaDonId, Integer khachHangId) {
         try {
-            log.info("Ãp dá»¥ng khÃ¡ch hÃ ng ID: {} cho hÃ³a Ä‘Æ¡n ID: {}", khachHangId, hoaDonId);
+            log.info("Áp dụng khách hàng ID: {} cho hóa đơn ID: {}", khachHangId, hoaDonId);
 
             HoaDon hoaDon = hoaDonRepository.findById(hoaDonId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
             KhachHang khachHang = khachHangRepository.findById(khachHangId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y khÃ¡ch hÃ ng"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
 
-            // Sá»¬A: Set object thay vÃ¬ ID
+            // SỬA: Set object thay vì ID
             hoaDon.setKhachHang(khachHang);
 
-            // Sá»¬A: Láº¥y email tá»« TaiKhoan thay vÃ¬ tá»« KhachHang
+            // SỬA: Lấy email từ TaiKhoan thay vì từ KhachHang
             if (khachHang.getTaiKhoan() != null && StringUtils.hasText(khachHang.getTaiKhoan().getEmail())) {
                 hoaDon.setEmail(khachHang.getTaiKhoan().getEmail());
             } else {
@@ -970,7 +974,7 @@ public class BanHangServiceImpl implements BanHangService {
             hoaDon.setSdt(khachHang.getSdt());
             hoaDon.setTenNguoiDung(khachHang.getHoTen());
 
-            // Sá»¬A: Láº¥y Ä‘á»‹a chá»‰ tá»« TaiKhoan -> DiaChi
+            // SỬA: Lấy địa chỉ từ TaiKhoan -> DiaChi
             if (khachHang.getTaiKhoan() != null) {
                 Optional<DiaChi> diaChiOpt = diaChiRepository.findByTaiKhoanIdAndIsDefaultTrue(khachHang.getTaiKhoan().getId());
                 if (diaChiOpt.isPresent()) {
@@ -988,8 +992,8 @@ public class BanHangServiceImpl implements BanHangService {
             return layTongQuanHoaDonCho(hoaDonId);
 
         } catch (Exception e) {
-            log.error("Lá»—i khi Ã¡p dá»¥ng khÃ¡ch hÃ ng: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ Ã¡p dá»¥ng khÃ¡ch hÃ ng: " + e.getMessage());
+            log.error("Lỗi khi áp dụng khách hàng: {}", e.getMessage());
+            throw new RuntimeException("Không thể áp dụng khách hàng: " + e.getMessage());
         }
     }
 
@@ -997,12 +1001,12 @@ public class BanHangServiceImpl implements BanHangService {
     public HoaDonChoTongQuanResponse boKhachHang(Integer hoaDonId) {
         try {
             HoaDon hoaDon = hoaDonRepository.findById(hoaDonId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
-            hoaDon.setKhachHang(null);  // Set null thay vÃ¬ setIdKhachHang(null)
+            hoaDon.setKhachHang(null);  // Set null thay vì setIdKhachHang(null)
             hoaDon.setEmail("");
             hoaDon.setSdt("");
-            hoaDon.setTenNguoiDung("KhÃ¡ch láº»");
+            hoaDon.setTenNguoiDung("Khách lẻ");
             hoaDon.setDiaChi("");
             hoaDon.setNgayCapNhat(new Date());
             hoaDonRepository.save(hoaDon);
@@ -1010,12 +1014,12 @@ public class BanHangServiceImpl implements BanHangService {
             return layTongQuanHoaDonCho(hoaDonId);
 
         } catch (Exception e) {
-            log.error("Lá»—i khi bá» khÃ¡ch hÃ ng: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ bá» khÃ¡ch hÃ ng: " + e.getMessage());
+            log.error("Lỗi khi bỏ khách hàng: {}", e.getMessage());
+            throw new RuntimeException("Không thể bỏ khách hàng: " + e.getMessage());
         }
     }
 
-    // ===== QUáº¢N LÃ VOUCHER =====
+    // ===== QUẢN LÝ VOUCHER =====
 
     private VoucherResponse mapToVoucherResponseSafe(Voucher voucher) {
         if (voucher == null) return null;
@@ -1025,10 +1029,10 @@ public class BanHangServiceImpl implements BanHangService {
             boolean daHetHan = voucher.getNgayKetThuc() != null && currentDate.after(voucher.getNgayKetThuc());
             boolean daHetSoLuong = voucher.getSoLuong() != null && voucher.getSoLuong() <= 0;
 
-            // âœ… Sá»¬A: Äáº£m báº£o loaiGiamGia Ä‘Æ°á»£c set Ä‘Ãºng
+            // ✅ SỬA: Đảm bảo loaiGiamGia được set đúng
             String loaiGiamGia = voucher.getLoaiGiamGia();
             if (loaiGiamGia == null || loaiGiamGia.isEmpty()) {
-                // Fallback dá»±a trÃªn pattern cá»§a tÃªn
+                // Fallback dựa trên pattern của tên
                 loaiGiamGia = "PHAN_TRAM"; // Default
             }
 
@@ -1055,7 +1059,7 @@ public class BanHangServiceImpl implements BanHangService {
                     .build();
 
         } catch (Exception e) {
-            log.error("âŒ Error mapping voucher {}: {}", voucher.getId(), e.getMessage());
+            log.error("❌ Error mapping voucher {}: {}", voucher.getId(), e.getMessage());
             return null;
         }
     }
@@ -1063,38 +1067,38 @@ public class BanHangServiceImpl implements BanHangService {
     @Override
     public List<VoucherResponse> layDanhSachVoucherKhaDung(Integer khachHangId, Double tongTien) {
         try {
-            log.info("ðŸŽ« Láº¥y voucher kháº£ dá»¥ng: khachHangId={}, tongTien={}", khachHangId, tongTien);
+            log.info("🎫 Lấy voucher khả dụng: khachHangId={}, tongTien={}", khachHangId, tongTien);
 
             Date currentDate = new Date();
             List<Voucher> vouchers = null;
 
-            // âœ… Sá»¬A: Xá»­ lÃ½ case tongTien = null
+            // ✅ SỬA: Xử lý case tongTien = null
             if (tongTien == null || tongTien <= 0) {
-                log.info("ðŸ“‹ Láº¥y táº¥t cáº£ voucher kháº£ dá»¥ng (khÃ´ng filter theo tá»•ng tiá»n)");
+                log.info("📋 Lấy tất cả voucher khả dụng (không filter theo tổng tiền)");
                 vouchers = voucherRepository.findAllAvailableVouchers(currentDate);
             } else {
-                log.info("ðŸ“‹ Láº¥y voucher kháº£ dá»¥ng cho tá»•ng tiá»n: {}", tongTien);
+                log.info("📋 Lấy voucher khả dụng cho tổng tiền: {}", tongTien);
                 vouchers = voucherRepository.findAvailableVouchers(currentDate, tongTien);
             }
 
-            log.info("ðŸ“‹ Found {} vouchers from database", vouchers.size());
+            log.info("📋 Found {} vouchers from database", vouchers.size());
 
-            // âœ… Debug log chi tiáº¿t
+            // ✅ Debug log chi tiết
             for (Voucher v : vouchers) {
-                log.debug("Voucher: {} - Giáº£m: {} - Tá»‘i thiá»ƒu: {} - HSD: {}",
+                log.debug("Voucher: {} - Giảm: {} - Tối thiểu: {} - HSD: {}",
                         v.getTenVoucher(), v.getGiaTriGiam(), v.getGiaTriGiamToiThieu(), v.getNgayKetThuc());
             }
 
             List<VoucherResponse> responses = vouchers.stream()
                     .filter(voucher -> {
-                        // âœ… Sá»¬A: Lá»c thÃªm theo logic business
+                        // ✅ SỬA: Lọc thêm theo logic business
                         if (voucher == null || !voucher.isValid()) {
                             return false;
                         }
 
-                        // âœ… Sá»¬A: Kiá»ƒm tra giÃ¡ trá»‹ Ä‘Æ¡n hÃ ng tá»‘i thiá»ƒu náº¿u cÃ³ tongTien
+                        // ✅ SỬA: Kiểm tra giá trị đơn hàng tối thiểu nếu có tongTien
                         if (tongTien != null && tongTien > 0 && tongTien < voucher.getGiaTriGiamToiThieu()) {
-                            log.debug("Voucher {} bá»‹ loáº¡i: tongTien {} < minimum {}",
+                            log.debug("Voucher {} bị loại: tongTien {} < minimum {}",
                                     voucher.getTenVoucher(), tongTien, voucher.getGiaTriGiamToiThieu());
                             return false;
                         }
@@ -1105,11 +1109,11 @@ public class BanHangServiceImpl implements BanHangService {
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
-            log.info("âœ… Returning {} applicable vouchers", responses.size());
+            log.info("✅ Returning {} applicable vouchers", responses.size());
             return responses;
 
         } catch (Exception e) {
-            log.error("âŒ Error loading vouchers: {}", e.getMessage(), e);
+            log.error("❌ Error loading vouchers: {}", e.getMessage(), e);
             return new ArrayList<>(); // Return empty list instead of throwing
         }
     }
@@ -1117,43 +1121,43 @@ public class BanHangServiceImpl implements BanHangService {
     @Override
     public VoucherValidationResponse kiemTraVoucher(ValidateVoucherRequest request) {
         try {
-            log.info("âœ… Kiá»ƒm tra voucher: {}", request.getMaVoucher());
+            log.info("✅ Kiểm tra voucher: {}", request.getMaVoucher());
 
             Optional<Voucher> voucherOpt = voucherRepository.findByMaVoucher(request.getMaVoucher());
 
             if (!voucherOpt.isPresent()) {
                 return VoucherValidationResponse.builder()
                         .valid(false)
-                        .message("Voucher khÃ´ng tá»“n táº¡i")
-                        .lyDoKhongHopLe("MÃ£ voucher khÃ´ng há»£p lá»‡")
+                        .message("Voucher không tồn tại")
+                        .lyDoKhongHopLe("Mã voucher không hợp lệ")
                         .build();
             }
 
             Voucher voucher = voucherOpt.get();
             Date currentDate = new Date();
 
-            // Kiá»ƒm tra cÃ¡c Ä‘iá»u kiá»‡n
+            // Kiểm tra các điều kiện
             if (!voucher.isActive()) {
                 return VoucherValidationResponse.builder()
                         .valid(false)
-                        .message("Voucher khÃ´ng hoáº¡t Ä‘á»™ng")
-                        .lyDoKhongHopLe("Voucher Ä‘Ã£ bá»‹ vÃ´ hiá»‡u hÃ³a")
+                        .message("Voucher không hoạt động")
+                        .lyDoKhongHopLe("Voucher đã bị vô hiệu hóa")
                         .build();
             }
 
             if (voucher.getSoLuong() <= 0) {
                 return VoucherValidationResponse.builder()
                         .valid(false)
-                        .message("Voucher Ä‘Ã£ háº¿t lÆ°á»£t sá»­ dá»¥ng")
-                        .lyDoKhongHopLe("Voucher Ä‘Ã£ háº¿t sá»‘ lÆ°á»£ng")
+                        .message("Voucher đã hết lượt sử dụng")
+                        .lyDoKhongHopLe("Voucher đã hết số lượng")
                         .build();
             }
 
             if (currentDate.before(voucher.getNgayBatDau()) || currentDate.after(voucher.getNgayKetThuc())) {
                 return VoucherValidationResponse.builder()
                         .valid(false)
-                        .message("Voucher khÃ´ng trong thá»i gian sá»­ dá»¥ng")
-                        .lyDoKhongHopLe("Voucher ngoÃ i thá»i gian hiá»‡u lá»±c")
+                        .message("Voucher không trong thời gian sử dụng")
+                        .lyDoKhongHopLe("Voucher ngoài thời gian hiệu lực")
                         .build();
             }
 
@@ -1161,62 +1165,62 @@ public class BanHangServiceImpl implements BanHangService {
             if (tongTien < voucher.getGiaTriGiamToiThieu()) {
                 return VoucherValidationResponse.builder()
                         .valid(false)
-                        .message("ÄÆ¡n hÃ ng chÆ°a Ä‘á»§ giÃ¡ trá»‹ tá»‘i thiá»ƒu")
-                        .lyDoKhongHopLe("Cáº§n tá»‘i thiá»ƒu " + formatPrice(voucher.getGiaTriGiamToiThieu()))
+                        .message("Đơn hàng chưa đủ giá trị tối thiểu")
+                        .lyDoKhongHopLe("Cần tối thiểu " + formatPrice(voucher.getGiaTriGiamToiThieu()))
                         .build();
             }
 
-            // TÃ­nh giÃ¡ trá»‹ giáº£m
+            // Tính giá trị giảm
             Double giaTriGiam = voucher.tinhGiaTriGiam(tongTien);
 
             return VoucherValidationResponse.builder()
                     .valid(true)
-                    .message("Voucher há»£p lá»‡")
+                    .message("Voucher hợp lệ")
                     .voucher(mapToVoucherResponseSafe(voucher))
                     .giaTriGiam(giaTriGiam)
                     .build();
 
         } catch (Exception e) {
-            log.error("âŒ Error validating voucher: {}", e.getMessage(), e);
+            log.error("❌ Error validating voucher: {}", e.getMessage(), e);
             return VoucherValidationResponse.builder()
                     .valid(false)
-                    .message("Lá»—i há»‡ thá»‘ng")
-                    .lyDoKhongHopLe("KhÃ´ng thá»ƒ kiá»ƒm tra voucher: " + e.getMessage())
+                    .message("Lỗi hệ thống")
+                    .lyDoKhongHopLe("Không thể kiểm tra voucher: " + e.getMessage())
                     .build();
         }
     }
 
     // Helper method
     private String formatPrice(Double price) {
-        if (price == null) return "0â‚«";
-        return String.format("%,.0fâ‚«", price);
+        if (price == null) return "0₫";
+        return String.format("%,.0f₫", price);
     }
 
     @Override
     @Transactional
     public HoaDonChoTongQuanResponse apDungVoucher(Integer hoaDonId, Integer voucherId) {
         try {
-            log.info("Ãp dá»¥ng voucher ID: {} cho hÃ³a Ä‘Æ¡n ID: {}", voucherId, hoaDonId);
+            log.info("Áp dụng voucher ID: {} cho hóa đơn ID: {}", voucherId, hoaDonId);
 
             HoaDon hoaDon = hoaDonRepository.findById(hoaDonId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
             Voucher voucher = voucherRepository.findById(voucherId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y voucher"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy voucher"));
 
-            // Validate voucher nhÆ° cÅ©...
+            // Validate voucher như cũ...
             Date currentDate = new Date();
-            if (!voucher.isValid()) throw new RuntimeException("Voucher khÃ´ng há»£p lá»‡");
-            if (voucher.getSoLuong() <= 0) throw new RuntimeException("Voucher Ä‘Ã£ háº¿t lÆ°á»£t sá»­ dá»¥ng");
+            if (!voucher.isValid()) throw new RuntimeException("Voucher không hợp lệ");
+            if (voucher.getSoLuong() <= 0) throw new RuntimeException("Voucher đã hết lượt sử dụng");
 
             BigDecimal tongTienHoaDon = hoaDonChiTietRepository.calculateTotalAmountByHoaDonId(hoaDonId);
             if (tongTienHoaDon.doubleValue() < voucher.getGiaTriGiamToiThieu()) {
-                throw new RuntimeException("ÄÆ¡n hÃ ng chÆ°a Ä‘á»§ giÃ¡ trá»‹ tá»‘i thiá»ƒu: " +
+                throw new RuntimeException("Đơn hàng chưa đủ giá trị tối thiểu: " +
                         formatMoney(BigDecimal.valueOf(voucher.getGiaTriGiamToiThieu())));
             }
 
-            // KHÃ”NG táº¡o chi_tiet_voucher á»Ÿ Ä‘Ã¢y ná»¯a.
-            // Chá»‰ cáº­p nháº­t ngÃ y vÃ  return tá»•ng quan.
+            // KHÔNG tạo chi_tiet_voucher ở đây nữa.
+            // Chỉ cập nhật ngày và return tổng quan.
             hoaDon.setNgayCapNhat(new Date());
             hoaDonRepository.save(hoaDon);
 
@@ -1224,8 +1228,8 @@ public class BanHangServiceImpl implements BanHangService {
             return layTongQuanHoaDonCho(hoaDonId);
 
         } catch (Exception e) {
-            log.error("Lá»—i khi Ã¡p dá»¥ng voucher: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ Ã¡p dá»¥ng voucher: " + e.getMessage());
+            log.error("Lỗi khi áp dụng voucher: {}", e.getMessage());
+            throw new RuntimeException("Không thể áp dụng voucher: " + e.getMessage());
         }
     }
 
@@ -1233,49 +1237,49 @@ public class BanHangServiceImpl implements BanHangService {
     public HoaDonChoTongQuanResponse boVoucher(Integer hoaDonId) {
         try {
             HoaDon hoaDon = hoaDonRepository.findById(hoaDonId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
             // hoaDon.setVoucherId(null);
             hoaDon.setNgayCapNhat(new Date());
             hoaDonRepository.save(hoaDon);
 
-            // Cáº­p nháº­t tá»•ng tiá»n
+            // Cập nhật tổng tiền
             capNhatTongTienHoaDon(hoaDonId);
 
             return layTongQuanHoaDonCho(hoaDonId);
 
         } catch (Exception e) {
-            log.error("Lá»—i khi bá» voucher: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ bá» voucher: " + e.getMessage());
+            log.error("Lỗi khi bỏ voucher: {}", e.getMessage());
+            throw new RuntimeException("Không thể bỏ voucher: " + e.getMessage());
         }
     }
 
-    // ===== THANH TOÃN =====
+    // ===== THANH TOÁN =====
 
     @Override
     @Transactional
     public HoaDonResponse thanhToanHoaDon(Integer hoaDonId, ThanhToanRequest request) {
         try {
-            log.info("ðŸ’° Thanh toÃ¡n hÃ³a Ä‘Æ¡n ID: {} vá»›i phÆ°Æ¡ng thá»©c: {}", hoaDonId, request.getPhuongThucThanhToan());
+            log.info("💰 Thanh toán hóa đơn ID: {} với phương thức: {}", hoaDonId, request.getPhuongThucThanhToan());
 
             HoaDon hoaDon = hoaDonRepository.findById(hoaDonId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
             if (!"CHO".equals(hoaDon.getTrangThaiHoaDon())) {
-                throw new RuntimeException("HÃ³a Ä‘Æ¡n khÃ´ng á»Ÿ tráº¡ng thÃ¡i chá» thanh toÃ¡n");
+                throw new RuntimeException("Hóa đơn không ở trạng thái chờ thanh toán");
             }
 
-            // Kiá»ƒm tra tá»“n kho trÆ°á»›c khi thanh toÃ¡n
+            // Kiểm tra tồn kho trước khi thanh toán
             List<InventoryCheckResponse> inventoryChecks = kiemTraTonKho(hoaDonId);
             boolean hasError = inventoryChecks.stream().anyMatch(check -> !check.getCoTheban());
             if (hasError) {
-                throw new RuntimeException("CÃ³ sáº£n pháº©m khÃ´ng Ä‘á»§ tá»“n kho Ä‘á»ƒ thanh toÃ¡n");
+                throw new RuntimeException("Có sản phẩm không đủ tồn kho để thanh toán");
             }
 
-            // ===== Xá»¬ LÃ PHÆ¯Æ NG THá»¨C THANH TOÃN =====
+            // ===== XỬ LÝ PHƯƠNG THỨC THANH TOÁN =====
             BigDecimal tongTienCanThanhToan = hoaDon.getTongThanhToan();
 
-            // Kiá»ƒm tra vÃ  xá»­ lÃ½ tá»«ng phÆ°Æ¡ng thá»©c thanh toÃ¡n
+            // Kiểm tra và xử lý từng phương thức thanh toán
             if ("TIEN_MAT".equals(request.getPhuongThucThanhToan())) {
                 xuLyThanhToanTienMat(request, tongTienCanThanhToan);
 
@@ -1286,16 +1290,16 @@ public class BanHangServiceImpl implements BanHangService {
                 xuLyThanhToanKetHop(request, tongTienCanThanhToan);
 
             } else {
-                throw new RuntimeException("PhÆ°Æ¡ng thá»©c thanh toÃ¡n khÃ´ng há»£p lá»‡: " + request.getPhuongThucThanhToan());
+                throw new RuntimeException("Phương thức thanh toán không hợp lệ: " + request.getPhuongThucThanhToan());
             }
 
-            // Cáº­p nháº­t thÃ´ng tin khÃ¡ch hÃ ng náº¿u cÃ³
+            // Cập nhật thông tin khách hàng nếu có
             if (request.getKhachHangId() != null) {
                 KhachHang khachHang = khachHangRepository.findById(request.getKhachHangId()).orElse(null);
                 if (khachHang != null) {
                     hoaDon.setKhachHang(khachHang);
 
-                    // Láº¥y email tá»« TaiKhoan
+                    // Lấy email từ TaiKhoan
                     if (khachHang.getTaiKhoan() != null && StringUtils.hasText(khachHang.getTaiKhoan().getEmail())) {
                         hoaDon.setEmail(khachHang.getTaiKhoan().getEmail());
                     } else {
@@ -1305,7 +1309,7 @@ public class BanHangServiceImpl implements BanHangService {
                     hoaDon.setSdt(khachHang.getSdt());
                     hoaDon.setTenNguoiDung(khachHang.getHoTen());
 
-                    // Láº¥y Ä‘á»‹a chá»‰ tá»« TaiKhoan -> DiaChi
+                    // Lấy địa chỉ từ TaiKhoan -> DiaChi
                     if (khachHang.getTaiKhoan() != null) {
                         Optional<DiaChi> diaChiOpt = diaChiRepository.findByTaiKhoanIdAndIsDefaultTrue(khachHang.getTaiKhoan().getId());
                         if (diaChiOpt.isPresent()) {
@@ -1319,86 +1323,86 @@ public class BanHangServiceImpl implements BanHangService {
                 }
             }
 
-            // Cáº­p nháº­t thÃ´ng tin thanh toÃ¡n
-            hoaDon.setTrangThaiHoaDon("DA_THANH_TOAN");
+            // Cập nhật thông tin thanh toán
+            hoaDon.setTrangThaiHoaDon("COMPLETED");
             hoaDon.setLoaiHoaDon(request.getLoaiHoaDon());
-            hoaDon.setPhuongThucThanhToan(request.getPhuongThucThanhToan()); // LÆ°u phÆ°Æ¡ng thá»©c thanh toÃ¡n
+            hoaDon.setPhuongThucThanhToan(request.getPhuongThucThanhToan()); // Lưu phương thức thanh toán
             hoaDon.setNgayHoanThanh(new Date());
             hoaDon.setNgayCapNhat(new Date());
             hoaDon.setGhiChu(request.getGhiChu());
             hoaDon.setDiemSuDung(request.getDiemSuDung());
 
-            // Ãp dá»¥ng Ä‘iá»ƒm tÃ­ch lÅ©y náº¿u cÃ³
+            // Áp dụng điểm tích lũy nếu có
             if (request.getDiemSuDung() != null && request.getDiemSuDung() > 0) {
                 xuLyDiemTichLuy(hoaDon.getKhachHang(), request.getDiemSuDung());
             }
 
-            // Cáº­p nháº­t tá»•ng tiá»n
+            // Cập nhật tổng tiền
             capNhatTongTienHoaDon(hoaDonId);
 
-            // Cáº­p nháº­t tráº¡ng thÃ¡i chi tiáº¿t hÃ³a Ä‘Æ¡n
+            // Cập nhật trạng thái chi tiết hóa đơn
             List<HoaDonChiTiet> chiTiets = hoaDonChiTietRepository.findByHoaDonId(hoaDonId);
             for (HoaDonChiTiet chiTiet : chiTiets) {
-                chiTiet.setTrangThaiHoaDon("DA_THANH_TOAN");
+                chiTiet.setTrangThaiHoaDon("COMPLETED");
                 hoaDonChiTietRepository.save(chiTiet);
             }
 
             HoaDon savedHoaDon = hoaDonRepository.save(hoaDon);
 
-            // SAU khi thanh toÃ¡n thÃ nh cÃ´ng vÃ  set tráº¡ng thÃ¡i "ÄÃƒ THANH TOÃN", má»›i táº¡o chi_tiet_voucher
+            // SAU khi thanh toán thành công và set trạng thái "ĐÃ THANH TOÁN", mới tạo chi_tiet_voucher
             if (request.getVoucherId() != null) {
                 Voucher voucher = voucherRepository.findById(request.getVoucherId()).orElse(null);
                 if (voucher != null) {
-                    // TÃ­nh láº¡i tá»•ng gá»‘c táº¡i thá»i Ä‘iá»ƒm thanh toÃ¡n
+                    // Tính lại tổng gốc tại thời điểm thanh toán
                     BigDecimal tongTienHoaDon = hoaDonChiTietRepository.calculateTotalAmountByHoaDonId(hoaDonId);
 
-                    // TÃ­nh sá»‘ tiá»n giáº£m (dÃ¹ng hÃ m cá»§a entity Voucher)
+                    // Tính số tiền giảm (dùng hàm của entity Voucher)
                     Double giaTriGiam = voucher.tinhGiaTriGiam(tongTienHoaDon.doubleValue());
                     BigDecimal soTienGiam = BigDecimal.valueOf(giaTriGiam);
                     BigDecimal thanhTienSauGiam = tongTienHoaDon.subtract(soTienGiam);
                     if (thanhTienSauGiam.compareTo(BigDecimal.ZERO) < 0) thanhTienSauGiam = BigDecimal.ZERO;
 
-                    // Táº¡o chi tiáº¿t voucher
+                    // Tạo chi tiết voucher
                     taoChiTietVoucherNeuChuaCo(savedHoaDon, voucher, tongTienHoaDon, soTienGiam, thanhTienSauGiam);
 
-                    // Giáº£m sá»‘ lÆ°á»£ng voucher
+                    // Giảm số lượng voucher
                     voucher.setSoLuong(voucher.getSoLuong() - 1);
                     voucherRepository.save(voucher);
                 }
             }
 
-            // Táº¡o lá»‹ch sá»­ hÃ³a Ä‘Æ¡n
+            // Tạo lịch sử hóa đơn
             String moTaThanhToan = taoMoTaThanhToan(request);
             taoLichSuHoaDon(savedHoaDon, moTaThanhToan, savedHoaDon.getNhanVien());
 
-            // Cá»™ng Ä‘iá»ƒm cho khÃ¡ch hÃ ng náº¿u cÃ³
+            // Cộng điểm cho khách hàng nếu có
             if (savedHoaDon.getKhachHang() != null) {
                 congDiemKhachHang(savedHoaDon.getKhachHang().getId(), savedHoaDon.getTongThanhToan().doubleValue());
             }
 
-            log.info("âœ… Thanh toÃ¡n hÃ³a Ä‘Æ¡n thÃ nh cÃ´ng ID: {} - PhÆ°Æ¡ng thá»©c: {}", hoaDonId, request.getPhuongThucThanhToan());
+            log.info("✅ Thanh toán hóa đơn thành công ID: {} - Phương thức: {}", hoaDonId, request.getPhuongThucThanhToan());
 
             return mapToHoaDonResponse(savedHoaDon);
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i khi thanh toÃ¡n hÃ³a Ä‘Æ¡n: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ thanh toÃ¡n hÃ³a Ä‘Æ¡n: " + e.getMessage());
+            log.error("❌ Lỗi khi thanh toán hóa đơn: {}", e.getMessage());
+            throw new RuntimeException("Không thể thanh toán hóa đơn: " + e.getMessage());
         }
     }
 
     private void taoChiTietVoucherNeuChuaCo(HoaDon hoaDon, Voucher voucher,
                                             BigDecimal giaTriDonHang, BigDecimal soTienGiam, BigDecimal thanhTien) {
         try {
-            // Kiá»ƒm tra Ä‘Ã£ cÃ³ chi tiáº¿t voucher chÆ°a (idempotency)
+            // Kiểm tra đã có chi tiết voucher chưa (idempotency)
             boolean existed = chiTietVoucherService.existsByHoaDonIdAndVoucherId(hoaDon.getId(), voucher.getId());
-            if (existed) return; // ÄÃ£ cÃ³ -> khÃ´ng táº¡o trÃ¹ng
+            if (existed) return; // Đã có -> không tạo trùng
 
             ChiTietVoucherDTO chiTietVoucherDTO = ChiTietVoucherDTO.builder()
                     .maChiTietVoucher("CTV" + hoaDon.getMaHoaDon() + "_" + System.currentTimeMillis())
                     .hoaDonId(hoaDon.getId())
                     .voucherId(voucher.getId())
 
-                    // Snapshot voucher táº¡i thá»i Ä‘iá»ƒm thanh toÃ¡n
+                    // Snapshot voucher tại thời điểm thanh toán
                     .maVoucher(voucher.getMaVoucher())
                     .tenVoucher(voucher.getTenVoucher())
                     .loaiGiamGia(voucher.getLoaiGiamGia())
@@ -1406,7 +1410,7 @@ public class BanHangServiceImpl implements BanHangService {
                     .giaTriGiamToiDa(voucher.getGiaTriGiamToiDa())
                     .giaTriGiamToiThieu(voucher.getGiaTriGiamToiThieu())
 
-                    // Sá»‘ liá»‡u cuá»‘i cÃ¹ng
+                    // Số liệu cuối cùng
                     .giaTriDonHang(giaTriDonHang)
                     .soTienGiam(soTienGiam)
                     .thanhTien(thanhTien)
@@ -1416,8 +1420,8 @@ public class BanHangServiceImpl implements BanHangService {
             chiTietVoucherService.create(chiTietVoucherDTO);
 
         } catch (Exception ex) {
-            log.warn("KhÃ´ng thá»ƒ táº¡o chi tiáº¿t voucher cho hÃ³a Ä‘Æ¡n {}: {}", hoaDon.getId(), ex.getMessage());
-            // KhÃ´ng throw Ä‘á»ƒ khÃ´ng rollback thanh toÃ¡n
+            log.warn("Không thể tạo chi tiết voucher cho hóa đơn {}: {}", hoaDon.getId(), ex.getMessage());
+            // Không throw để không rollback thanh toán
         }
     }
 
@@ -1428,15 +1432,15 @@ public class BanHangServiceImpl implements BanHangService {
             List<InventoryCheckResponse> responses = new ArrayList<>();
 
             for (HoaDonChiTiet chiTiet : chiTiets) {
-                ChiTietSanPham sanPham = chiTiet.getChiTietSanPham(); // Sá»­ dá»¥ng relationship
+                ChiTietSanPham sanPham = chiTiet.getChiTietSanPham(); // Sử dụng relationship
                 if (sanPham != null) {
-                    boolean coTheBan = sanPham.getSoLuong() >= 0; // ÄÃ£ trá»« khi thÃªm vÃ o hÃ³a Ä‘Æ¡n
-                    String thongBao = coTheBan ? "Äá»§ hÃ ng" : "ÄÃ£ bÃ¡n háº¿t";
+                    boolean coTheBan = sanPham.getSoLuong() >= 0; // Đã trừ khi thêm vào hóa đơn
+                    String thongBao = coTheBan ? "Đủ hàng" : "Đã bán hết";
 
-                    // Láº¥y thÃ´ng tin sáº£n pháº©m, mÃ u sáº¯c, kÃ­ch cá»¡
-                    SanPham sp = sanPham.getSanPham(); // Sá»­ dá»¥ng relationship náº¿u cÃ³
-                    MauSac mauSac = sanPham.getMauSac(); // Sá»­ dá»¥ng relationship náº¿u cÃ³
-                    KichCo kichCo = sanPham.getKichCo(); // Sá»­ dá»¥ng relationship náº¿u cÃ³
+                    // Lấy thông tin sản phẩm, màu sắc, kích cỡ
+                    SanPham sp = sanPham.getSanPham(); // Sử dụng relationship nếu có
+                    MauSac mauSac = sanPham.getMauSac(); // Sử dụng relationship nếu có
+                    KichCo kichCo = sanPham.getKichCo(); // Sử dụng relationship nếu có
 
                     responses.add(InventoryCheckResponse.builder()
                             .chiTietSanPhamId(sanPham.getId())
@@ -1453,12 +1457,12 @@ public class BanHangServiceImpl implements BanHangService {
             return responses;
 
         } catch (Exception e) {
-            log.error("Lá»—i khi kiá»ƒm tra tá»“n kho: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ kiá»ƒm tra tá»“n kho");
+            log.error("Lỗi khi kiểm tra tồn kho: {}", e.getMessage());
+            throw new RuntimeException("Không thể kiểm tra tồn kho");
         }
     }
 
-    // ===== THá»NG KÃŠ =====
+    // ===== THỐNG KÊ =====
 
     @Override
     public Map<String, Object> layThongKeBanHangTrongNgay() {
@@ -1482,26 +1486,26 @@ public class BanHangServiceImpl implements BanHangService {
             return thongKe;
 
         } catch (Exception e) {
-            log.error("Lá»—i khi láº¥y thá»‘ng kÃª bÃ¡n hÃ ng: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ láº¥y thá»‘ng kÃª bÃ¡n hÃ ng");
+            log.error("Lỗi khi lấy thống kê bán hàng: {}", e.getMessage());
+            throw new RuntimeException("Không thể lấy thống kê bán hàng");
         }
     }
 
     @Override
     public List<Map<String, Object>> laySanPhamBanChay(int limit) {
         try {
-            // Query Ä‘á»ƒ láº¥y sáº£n pháº©m bÃ¡n cháº¡y nháº¥t
+            // Query để lấy sản phẩm bán chạy nhất
             List<Map<String, Object>> results = new ArrayList<>();
 
-            // Giáº£ láº­p dá»¯ liá»‡u - cÃ³ thá»ƒ implement query phá»©c táº¡p sau
+            // Giả lập dữ liệu - có thể implement query phức tạp sau
             Map<String, Object> item1 = new HashMap<>();
-            item1.put("tenSanPham", "GiÃ y Nike Air Max");
+            item1.put("tenSanPham", "Giày Nike Air Max");
             item1.put("soLuongBan", 100);
             item1.put("doanhThu", 15000000.0);
             results.add(item1);
 
             Map<String, Object> item2 = new HashMap<>();
-            item2.put("tenSanPham", "GiÃ y Adidas Ultraboost");
+            item2.put("tenSanPham", "Giày Adidas Ultraboost");
             item2.put("soLuongBan", 85);
             item2.put("doanhThu", 12750000.0);
             results.add(item2);
@@ -1509,8 +1513,8 @@ public class BanHangServiceImpl implements BanHangService {
             return results.stream().limit(limit).collect(Collectors.toList());
 
         } catch (Exception e) {
-            log.error("Lá»—i khi láº¥y sáº£n pháº©m bÃ¡n cháº¡y: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ láº¥y sáº£n pháº©m bÃ¡n cháº¡y");
+            log.error("Lỗi khi lấy sản phẩm bán chạy: {}", e.getMessage());
+            throw new RuntimeException("Không thể lấy sản phẩm bán chạy");
         }
     }
 
@@ -1519,7 +1523,7 @@ public class BanHangServiceImpl implements BanHangService {
         try {
             Map<String, Object> thongKe = new HashMap<>();
 
-            // Giáº£ láº­p dá»¯ liá»‡u - cÃ³ thá»ƒ implement query phá»©c táº¡p sau
+            // Giả lập dữ liệu - có thể implement query phức tạp sau
             thongKe.put("tuNgay", tuNgay);
             thongKe.put("denNgay", denNgay);
             thongKe.put("tongDoanhThu", 50000000.0);
@@ -1529,8 +1533,8 @@ public class BanHangServiceImpl implements BanHangService {
             return thongKe;
 
         } catch (Exception e) {
-            log.error("Lá»—i khi láº¥y thá»‘ng kÃª doanh thu: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ láº¥y thá»‘ng kÃª doanh thu");
+            log.error("Lỗi khi lấy thống kê doanh thu: {}", e.getMessage());
+            throw new RuntimeException("Không thể lấy thống kê doanh thu");
         }
     }
 
@@ -1544,7 +1548,7 @@ public class BanHangServiceImpl implements BanHangService {
             BigDecimal tongTien = hoaDonChiTietRepository.calculateTotalAmountByHoaDonId(hoaDonId);
             BigDecimal tongThanhToan = tongTien;
 
-            // Ãp dá»¥ng voucher náº¿u cÃ³ (cáº§n implement logic voucher)
+            // Áp dụng voucher nếu có (cần implement logic voucher)
             // if (hoaDon.getVoucherId() != null) {
             //     Voucher voucher = voucherRepository.findById(hoaDon.getVoucherId()).orElse(null);
             //     if (voucher != null) {
@@ -1553,9 +1557,9 @@ public class BanHangServiceImpl implements BanHangService {
             //     }
             // }
 
-            // Ãp dá»¥ng Ä‘iá»ƒm tÃ­ch lÅ©y náº¿u cÃ³
+            // Áp dụng điểm tích lũy nếu có
             if (hoaDon.getDiemSuDung() != null && hoaDon.getDiemSuDung() > 0) {
-                BigDecimal giaTriDiem = BigDecimal.valueOf(hoaDon.getDiemSuDung() * 1000); // 1 Ä‘iá»ƒm = 1000 VND
+                BigDecimal giaTriDiem = BigDecimal.valueOf(hoaDon.getDiemSuDung() * 1000); // 1 điểm = 1000 VND
                 tongThanhToan = tongThanhToan.subtract(giaTriDiem);
             }
 
@@ -1569,7 +1573,7 @@ public class BanHangServiceImpl implements BanHangService {
             hoaDonRepository.save(hoaDon);
 
         } catch (Exception e) {
-            log.error("Lá»—i khi cáº­p nháº­t tá»•ng tiá»n hÃ³a Ä‘Æ¡n: {}", e.getMessage());
+            log.error("Lỗi khi cập nhật tổng tiền hóa đơn: {}", e.getMessage());
         }
     }
 
@@ -1586,9 +1590,9 @@ public class BanHangServiceImpl implements BanHangService {
         try {
             LichSuHoaDon lichSu = new LichSuHoaDon();
 
-            // Sá»¬A: Set object thay vÃ¬ ID
-            lichSu.setHoaDon(hoaDon);           // Thay vÃ¬ setIdHoaDon(hoaDon.getId())
-            lichSu.setNhanVien(nhanVien);       // Thay vÃ¬ setIdNhanVien(nhanVien.getId())
+            // SỬA: Set object thay vì ID
+            lichSu.setHoaDon(hoaDon);           // Thay vì setIdHoaDon(hoaDon.getId())
+            lichSu.setNhanVien(nhanVien);       // Thay vì setIdNhanVien(nhanVien.getId())
 
             lichSu.setMoTaHanhDong(moTa);
             lichSu.setTrangThaiHoaDon(hoaDon.getTrangThaiHoaDon());
@@ -1597,7 +1601,7 @@ public class BanHangServiceImpl implements BanHangService {
             lichSuHoaDonRepository.save(lichSu);
 
         } catch (Exception e) {
-            log.warn("KhÃ´ng thá»ƒ táº¡o lá»‹ch sá»­ hÃ³a Ä‘Æ¡n: {}", e.getMessage());
+            log.warn("Không thể tạo lịch sử hóa đơn: {}", e.getMessage());
         }
     }
 
@@ -1606,14 +1610,14 @@ public class BanHangServiceImpl implements BanHangService {
             KhachHang khachHang = khachHangRepository.findById(khachHangId).orElse(null);
             if (khachHang != null && khachHang.getViDiem() != null) {
                 ViDiem viDiem = khachHang.getViDiem();
-                Double diemCong = Math.floor(tongTien / 100000); // 1 Ä‘iá»ƒm cho má»—i 100k
+                Double diemCong = Math.floor(tongTien / 100000); // 1 điểm cho mỗi 100k
                 viDiem.setTongDiem(viDiem.getTongDiem() + diemCong);
                 viDiem.setSoDiemDaCong(viDiem.getSoDiemDaCong() + diemCong);
                 viDiem.setNgayCapNhat(new Date());
                 viDiemRepository.save(viDiem);
             }
         } catch (Exception e) {
-            log.warn("KhÃ´ng thá»ƒ cá»™ng Ä‘iá»ƒm cho khÃ¡ch hÃ ng: {}", e.getMessage());
+            log.warn("Không thể cộng điểm cho khách hàng: {}", e.getMessage());
         }
     }
 
@@ -1646,7 +1650,7 @@ public class BanHangServiceImpl implements BanHangService {
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            log.warn("KhÃ´ng thá»ƒ láº¥y khuyáº¿n mÃ£i sáº£n pháº©m: {}", e.getMessage());
+            log.warn("Không thể lấy khuyến mãi sản phẩm: {}", e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -1706,7 +1710,7 @@ public class BanHangServiceImpl implements BanHangService {
                 .map(ct -> BigDecimal.valueOf(ct.getGia()).multiply(BigDecimal.valueOf(ct.getSoLuong())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Láº¥y thÃ´ng tin khÃ¡ch hÃ ng - Sá»¬ Dá»¤NG RELATIONSHIP
+        // Lấy thông tin khách hàng - SỬ DỤNG RELATIONSHIP
         KhachHangResponse khachHangResponse = null;
         if (hoaDon.getKhachHang() != null) {
             khachHangResponse = mapToKhachHangResponse(hoaDon.getKhachHang());
@@ -1725,24 +1729,24 @@ public class BanHangServiceImpl implements BanHangService {
     }
 
     private HoaDonChoDetailResponse mapToHoaDonChoDetailResponse(HoaDon hoaDon, List<HoaDonChiTiet> chiTiets) {
-        // Láº¥y thÃ´ng tin nhÃ¢n viÃªn
+        // Lấy thông tin nhân viên
         NhanVienResponse nhanVienResponse = null;
         if (hoaDon.getNhanVien() != null) {
             nhanVienResponse = mapToNhanVienResponse(hoaDon.getNhanVien());
         }
 
-        // Láº¥y thÃ´ng tin khÃ¡ch hÃ ng
+        // Lấy thông tin khách hàng
         KhachHangResponse khachHangResponse = null;
         if (hoaDon.getKhachHang() != null) {
             khachHangResponse = mapToKhachHangResponse(hoaDon.getKhachHang());
         }
 
-        // Táº¡o danh sÃ¡ch sáº£n pháº©m
+        // Tạo danh sách sản phẩm
         List<HoaDonChoSanPhamResponse> danhSachSanPham = chiTiets.stream()
                 .map(this::mapToHoaDonChoSanPhamResponse)
                 .collect(Collectors.toList());
 
-        // Táº¡o thÃ´ng tin tá»•ng quan
+        // Tạo thông tin tổng quan
         HoaDonChoTongQuanResponse tongQuan = mapToHoaDonChoTongQuanResponse(hoaDon, chiTiets);
 
         return HoaDonChoDetailResponse.builder()
@@ -1755,8 +1759,8 @@ public class BanHangServiceImpl implements BanHangService {
                 .khachHang(khachHangResponse)
                 .voucher(null) // Implement voucher mapping later
                 .daApDungVoucher(false) // Implement voucher logic later
-                .danhSachSanPham(danhSachSanPham)  // Sá»¬A: Sá»­ dá»¥ng danhSachSanPham thay vÃ¬ chiTiets
-                .tongQuan(tongQuan)                // Sá»¬A: ThÃªm thÃ´ng tin tá»•ng quan
+                .danhSachSanPham(danhSachSanPham)  // SỬA: Sử dụng danhSachSanPham thay vì chiTiets
+                .tongQuan(tongQuan)                // SỬA: Thêm thông tin tổng quan
                 .ghiChu(hoaDon.getGhiChu())
                 .build();
     }
@@ -1769,10 +1773,10 @@ public class BanHangServiceImpl implements BanHangService {
             MauSac mauSac = sanPham.getMauSac();
             KichCo kichCo = sanPham.getKichCo();
 
-            // Láº¥y khuyáº¿n mÃ£i
+            // Lấy khuyến mãi
             List<KhuyenMaiSanPhamResponse> khuyenMais = layKhuyenMaiSanPham(sanPham.getId());
 
-            // Láº¥y hÃ¬nh áº£nh chÃ­nh - Sá»¬A: Format URL Ä‘Ãºng cÃ¡ch
+            // Lấy hình ảnh chính - SỬA: Format URL đúng cách
             String hinhAnhChinh = null;
             Optional<HinhAnh> hinhAnhOpt = hinhAnhRepository.findActiveImageByChiTietSanPhamId(sanPham.getId());
             if (hinhAnhOpt.isPresent()) {
@@ -1786,7 +1790,7 @@ public class BanHangServiceImpl implements BanHangService {
                 }
             }
 
-            // TÃ­nh giÃ¡
+            // Tính giá
             BigDecimal giaGoc = sanPham.getGiaGoc() != null ? BigDecimal.valueOf(sanPham.getGiaGoc()) : BigDecimal.ZERO;
             BigDecimal giaBan = BigDecimal.valueOf(chiTiet.getGia());
             int soLuong = chiTiet.getSoLuong();
@@ -1812,8 +1816,8 @@ public class BanHangServiceImpl implements BanHangService {
                     .tongTienSauGiam(tongTienSauGiam)
                     .soTienTietKiem(soTienTietKiem)
                     .khuyenMaiSanPham(khuyenMais)
-                    .hinhAnhChinh(hinhAnhChinh) // Sá»¬A: ThÃªm láº¡i field nÃ y
-                    .phanTramGiam(phanTramGiam) // Sá»¬A: ThÃªm láº¡i field nÃ y
+                    .hinhAnhChinh(hinhAnhChinh) // SỬA: Thêm lại field này
+                    .phanTramGiam(phanTramGiam) // SỬA: Thêm lại field này
                     .build();
         }
 
@@ -1830,7 +1834,7 @@ public class BanHangServiceImpl implements BanHangService {
         List<HoaDonChoSanPhamResponse> danhSachSanPham = new ArrayList<>();
 
         for (HoaDonChiTiet chiTiet : chiTiets) {
-            // Sá»¬A: Sá»­ dá»¥ng relationship thay vÃ¬ getIdCtsp()
+            // SỬA: Sử dụng relationship thay vì getIdCtsp()
             ChiTietSanPham sanPham = chiTiet.getChiTietSanPham();
             if (sanPham != null) {
                 BigDecimal giaGoc = sanPham.getGiaGoc() != null ? BigDecimal.valueOf(sanPham.getGiaGoc()) : BigDecimal.ZERO;
@@ -1847,17 +1851,17 @@ public class BanHangServiceImpl implements BanHangService {
                 Float phanTramGiam = tongTienGocSP.compareTo(BigDecimal.ZERO) > 0 ?
                         soTienTietKiem.divide(tongTienGocSP, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).floatValue() : 0f;
 
-                // Láº¥y khuyáº¿n mÃ£i
+                // Lấy khuyến mãi
                 List<KhuyenMaiSanPhamResponse> khuyenMais = layKhuyenMaiSanPham(sanPham.getId());
 
-                // Láº¥y hÃ¬nh áº£nh
+                // Lấy hình ảnh
                 String hinhAnhChinh = null;
                 List<HinhAnh> hinhAnhs = hinhAnhRepository.findActiveImagesByChiTietSanPhamIds(Arrays.asList(sanPham.getId()));
                 if (!hinhAnhs.isEmpty()) {
                     hinhAnhChinh = hinhAnhs.get(0).getDuongDan();
                 }
 
-                // Sá»¬A: Sá»­ dá»¥ng relationship thay vÃ¬ repository query
+                // SỬA: Sử dụng relationship thay vì repository query
                 SanPham sp = sanPham.getSanPham();
                 MauSac mauSac = sanPham.getMauSac();
                 KichCo kichCo = sanPham.getKichCo();
@@ -1874,14 +1878,14 @@ public class BanHangServiceImpl implements BanHangService {
                         .tongTienGoc(tongTienGocSP)
                         .tongTienSauGiam(tongTienSauGiam)
                         .soTienTietKiem(soTienTietKiem)
-                        .khuyenMaiSanPham(khuyenMais)  // Sá»¬A: danhSachKhuyenMai -> khuyenMaiSanPham
+                        .khuyenMaiSanPham(khuyenMais)  // SỬA: danhSachKhuyenMai -> khuyenMaiSanPham
                         .hinhAnhChinh(hinhAnhChinh)
                         .phanTramGiam(phanTramGiam)
                         .build());
             }
         }
 
-        // TÃ­nh voucher (implement later)
+        // Tính voucher (implement later)
         BigDecimal tongTienVoucher = BigDecimal.ZERO;
 
         BigDecimal tongTienThanhToan = tongTienKhuyenMai.subtract(tongTienVoucher);
@@ -1890,7 +1894,7 @@ public class BanHangServiceImpl implements BanHangService {
         Float phanTramGiamTongCong = tongTienGoc.compareTo(BigDecimal.ZERO) > 0 ?
                 tongTietKiem.divide(tongTienGoc, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).floatValue() : 0f;
 
-        // Láº¥y thÃ´ng tin khÃ¡ch hÃ ng
+        // Lấy thông tin khách hàng
         KhachHangResponse khachHangResponse = null;
         if (hoaDon.getKhachHang() != null) {
             khachHangResponse = mapToKhachHangResponse(hoaDon.getKhachHang());
@@ -1917,19 +1921,19 @@ public class BanHangServiceImpl implements BanHangService {
     }
 
     private SanPhamChiTietBanHangResponse mapToSanPhamChiTietBanHangResponse(ChiTietSanPham sanPham) {
-        // Láº¥y thÃ´ng tin sáº£n pháº©m gá»‘c
+        // Lấy thông tin sản phẩm gốc
         SanPham sp = sanPham.getSanPham();
-        // Láº¥y thuá»™c tÃ­nh - sá»­ dá»¥ng relationship
+        // Lấy thuộc tính - sử dụng relationship
         MauSac mauSac = sanPham.getMauSac();
         KichCo kichCo = sanPham.getKichCo();
 
-        // Láº¥y hÃ¬nh áº£nh tá»« relationship (giá»‘ng quáº£n lÃ½ sáº£n pháº©m)
+        // Lấy hình ảnh từ relationship (giống quản lý sản phẩm)
         List<HinhAnhResponse> danhSachHinhAnh = new ArrayList<>();
         String hinhAnhChinh = null;
 
         try {
-            // Sá»¬A: Láº¥y hÃ¬nh áº£nh tá»« ChiTietSanPham -> HinhAnh relationship
-            HinhAnh hinhAnhEntity = sanPham.getHinhAnh(); // Entity Ä‘Ã£ cÃ³ relationship nÃ y
+            // SỬA: Lấy hình ảnh từ ChiTietSanPham -> HinhAnh relationship
+            HinhAnh hinhAnhEntity = sanPham.getHinhAnh(); // Entity đã có relationship này
 
             if (hinhAnhEntity != null && hinhAnhEntity.getTrangThai() == 1) {
                 String imageUrl = createImageUrl(hinhAnhEntity.getDuongDan());
@@ -1941,7 +1945,7 @@ public class BanHangServiceImpl implements BanHangService {
                         .duongDan(hinhAnhEntity.getDuongDan())
                         .urlHinhAnh(imageUrl)
                         .trangThai(hinhAnhEntity.getTrangThai())
-                        .laHinhChinh(true) // LuÃ´n lÃ  hÃ¬nh chÃ­nh vÃ¬ chá»‰ cÃ³ 1 hÃ¬nh
+                        .laHinhChinh(true) // Luôn là hình chính vì chỉ có 1 hình
                         .build();
 
                 danhSachHinhAnh.add(hinhAnhResponse);
@@ -1949,13 +1953,13 @@ public class BanHangServiceImpl implements BanHangService {
             }
 
         } catch (Exception e) {
-            log.warn("KhÃ´ng thá»ƒ load hÃ¬nh áº£nh cho sáº£n pháº©m {}: {}", sanPham.getId(), e.getMessage());
+            log.warn("Không thể load hình ảnh cho sản phẩm {}: {}", sanPham.getId(), e.getMessage());
         }
 
-        // Láº¥y khuyáº¿n mÃ£i
+        // Lấy khuyến mãi
         List<KhuyenMaiSanPhamResponse> khuyenMais = layKhuyenMaiSanPham(sanPham.getId());
 
-        // TÃ­nh giÃ¡ khuyáº¿n mÃ£i - Convert Double sang BigDecimal
+        // Tính giá khuyến mãi - Convert Double sang BigDecimal
         BigDecimal giaGoc = sanPham.getGiaGoc() != null ? BigDecimal.valueOf(sanPham.getGiaGoc()) : BigDecimal.ZERO;
         BigDecimal giaBan = sanPham.getGiaBan() != null ? BigDecimal.valueOf(sanPham.getGiaBan()) : BigDecimal.ZERO;
         BigDecimal giaKhuyenMai = giaBan;
@@ -1982,7 +1986,7 @@ public class BanHangServiceImpl implements BanHangService {
                     .multiply(BigDecimal.valueOf(100)).floatValue();
         }
 
-        // Láº¥y thÃ´ng tin thuá»™c tÃ­nh tá»« sáº£n pháº©m gá»‘c
+        // Lấy thông tin thuộc tính từ sản phẩm gốc
         ThuongHieuResponse thuongHieuResponse = null;
         DanhMucResponse danhMucResponse = null;
         ChatLieuResponse chatLieuResponse = null;
@@ -2024,27 +2028,27 @@ public class BanHangServiceImpl implements BanHangService {
                 .danhMuc(danhMucResponse)
                 .chatLieu(chatLieuResponse)
                 .deGiay(deGiayResponse)
-                .danhSachHinhAnh(danhSachHinhAnh) // Sá»¬A: Sá»­ dá»¥ng List thay vÃ¬ single object
-                .hinhAnhChinh(hinhAnhChinh) // THÃŠM: URL hÃ¬nh áº£nh chÃ­nh
+                .danhSachHinhAnh(danhSachHinhAnh) // SỬA: Sử dụng List thay vì single object
+                .hinhAnhChinh(hinhAnhChinh) // THÊM: URL hình ảnh chính
                 .danhSachKhuyenMai(khuyenMais)
                 .tongTietKiem(tongTietKiem)
                 .phanTramGiam(phanTramGiam)
                 .coKhuyenMai(!khuyenMais.isEmpty())
                 .conHang(sanPham.getSoLuong() > 0)
-                .tinhTrangKho(sanPham.getSoLuong() > 10 ? "CÃ²n hÃ ng" :
-                        sanPham.getSoLuong() > 0 ? "Sáº¯p háº¿t hÃ ng" : "Háº¿t hÃ ng")
+                .tinhTrangKho(sanPham.getSoLuong() > 10 ? "Còn hàng" :
+                        sanPham.getSoLuong() > 0 ? "Sắp hết hàng" : "Hết hàng")
                 .build();
     }
 
     /**
-     * Táº¡o URL hÃ¬nh áº£nh giá»‘ng quáº£n lÃ½ sáº£n pháº©m
+     * Tạo URL hình ảnh giống quản lý sản phẩm
      */
     private String createImageUrl(String duongDan) {
         if (duongDan == null || duongDan.isEmpty()) {
             return null;
         }
 
-        // Clean path - loáº¡i bá» táº¥t cáº£ prefix
+        // Clean path - loại bỏ tất cả prefix
         String cleanPath = duongDan;
         if (cleanPath.startsWith("/hinh-anh/images/")) {
             cleanPath = cleanPath.replace("/hinh-anh/images/", "");
@@ -2052,7 +2056,7 @@ public class BanHangServiceImpl implements BanHangService {
             cleanPath = cleanPath.replace("/images/", "");
         }
 
-        // Táº¡o URL Ä‘áº§y Ä‘á»§
+        // Tạo URL đầy đủ
         return "http://localhost:8080/hinh-anh/images/" + cleanPath;
     }
 
@@ -2065,7 +2069,7 @@ public class BanHangServiceImpl implements BanHangService {
             hinhAnhChinh = hinhAnh.get().getDuongDan();
         }
 
-        // Láº¥y thÃ´ng tin sáº£n pháº©m, mÃ u sáº¯c, kÃ­ch cá»¡
+        // Lấy thông tin sản phẩm, màu sắc, kích cỡ
         SanPham sp = sanPham.getSanPham();
         MauSac mauSac = sanPham.getMauSac();
         KichCo kichCo = sanPham.getKichCo();
@@ -2082,8 +2086,8 @@ public class BanHangServiceImpl implements BanHangService {
                 .giaBan(sanPham.getGiaBan() != null ? BigDecimal.valueOf(sanPham.getGiaBan()) : BigDecimal.ZERO)
                 .hinhAnhChinh(hinhAnhChinh)
                 .conHang(sanPham.getSoLuong() > 0)
-                .tinhTrangKho(sanPham.getSoLuong() > 10 ? "CÃ²n hÃ ng" :
-                        sanPham.getSoLuong() > 0 ? "Sáº¯p háº¿t hÃ ng" : "Háº¿t hÃ ng")
+                .tinhTrangKho(sanPham.getSoLuong() > 10 ? "Còn hàng" :
+                        sanPham.getSoLuong() > 0 ? "Sắp hết hàng" : "Hết hàng")
                 .danhSachKhuyenMai(khuyenMais)
                 .build();
     }
@@ -2095,15 +2099,15 @@ public class BanHangServiceImpl implements BanHangService {
             diemTichLuy = viDiem.getTongDiem() - viDiem.getSoDiemDaDung();
         }
 
-        // âœ… Sá»¬A: Láº¥y email tá»« TaiKhoan vá»›i xá»­ lÃ½ lá»—i an toÃ n
+        // ✅ SỬA: Lấy email từ TaiKhoan với xử lý lỗi an toàn
         String email = "";
         try {
             if (khachHang.getTaiKhoan() != null && StringUtils.hasText(khachHang.getTaiKhoan().getEmail())) {
                 email = khachHang.getTaiKhoan().getEmail();
             }
         } catch (Exception e) {
-            log.warn("KhÃ´ng thá»ƒ láº¥y email cho khÃ¡ch hÃ ng ID: {}", khachHang.getId());
-            email = ""; // Fallback vá» empty string
+            log.warn("Không thể lấy email cho khách hàng ID: {}", khachHang.getId());
+            email = ""; // Fallback về empty string
         }
 
         return KhachHangResponse.builder()
@@ -2111,7 +2115,7 @@ public class BanHangServiceImpl implements BanHangService {
                 .maKhachHang(khachHang.getMaKhachHang())
                 .hoTen(khachHang.getHoTen())
                 .sdt(khachHang.getSdt())
-                .email(email) // âœ… Sá»¬A: Sá»­ dá»¥ng email tá»« TaiKhoan vá»›i xá»­ lÃ½ lá»—i
+                .email(email) // ✅ SỬA: Sử dụng email từ TaiKhoan với xử lý lỗi
                 .trangThai(khachHang.getTrangThai())
                 .diemTichLuy(diemTichLuy)
                 .ngayTao(khachHang.getNgayTao())
@@ -2121,7 +2125,7 @@ public class BanHangServiceImpl implements BanHangService {
     private KhachHangDetailResponse mapToKhachHangDetailResponse(KhachHang khachHang) {
         ViDiem viDiem = khachHang.getViDiem();
 
-        // Sá»¬A: Láº¥y Ä‘á»‹a chá»‰ tá»« TaiKhoan thay vÃ¬ tá»« KhachHang
+        // SỬA: Lấy địa chỉ từ TaiKhoan thay vì từ KhachHang
         DiaChi diaChi = null;
         if (khachHang.getTaiKhoan() != null) {
             Optional<DiaChi> diaChiOpt = diaChiRepository.findByTaiKhoanIdAndIsDefaultTrue(khachHang.getTaiKhoan().getId());
@@ -2133,7 +2137,7 @@ public class BanHangServiceImpl implements BanHangService {
         Double tongChiTieu = hoaDonRepository.getTongChiTieuByKhachHangId(khachHang.getId());
         Long soLuongDonHang = hoaDonRepository.countByKhachHangId(khachHang.getId());
 
-        // Sá»¬A: Láº¥y email tá»« TaiKhoan
+        // SỬA: Lấy email từ TaiKhoan
         String email = "";
         if (khachHang.getTaiKhoan() != null && StringUtils.hasText(khachHang.getTaiKhoan().getEmail())) {
             email = khachHang.getTaiKhoan().getEmail();
@@ -2143,7 +2147,7 @@ public class BanHangServiceImpl implements BanHangService {
                 .id(khachHang.getId())
                 .maKhachHang(khachHang.getMaKhachHang())
                 .hoTen(khachHang.getHoTen())
-                .email(email) // Sá»¬A: Sá»­ dá»¥ng email tá»« TaiKhoan
+                .email(email) // SỬA: Sử dụng email từ TaiKhoan
                 .sdt(khachHang.getSdt())
                 .trangThai(khachHang.getTrangThai())
                 .ngayTao(khachHang.getNgayTao())
@@ -2171,7 +2175,7 @@ public class BanHangServiceImpl implements BanHangService {
                 .duongDanHinhAnh(voucher.getDuongDanHinhAnh())
                 .giaTriGiamToiDa(BigDecimal.valueOf(voucher.getGiaTriGiamToiDa()))
                 .giaTriGiamToiThieu(BigDecimal.valueOf(voucher.getGiaTriGiamToiThieu()))
-                // XÃ“A dÃ²ng nÃ y: .giaTriDonHangToiThieu(BigDecimal.valueOf(voucher.getGiaTriGiamToiThieu()))
+                // XÓA dòng này: .giaTriDonHangToiThieu(BigDecimal.valueOf(voucher.getGiaTriGiamToiThieu()))
                 .soLuong(voucher.getSoLuong())
                 .ngayBatDau(voucher.getNgayBatDau())
                 .ngayKetThuc(voucher.getNgayKetThuc())
@@ -2187,14 +2191,14 @@ public class BanHangServiceImpl implements BanHangService {
     private DiaChiResponse mapToDiaChiResponse(DiaChi diaChi) {
         if (diaChi == null) return null;
 
-        // Sá»¬A: KhÃ´ng láº¥y hoTen tá»« DiaChi ná»¯a vÃ¬ schema má»›i khÃ´ng cÃ³ field nÃ y
+        // SỬA: Không lấy hoTen từ DiaChi nữa vì schema mới không có field này
         return DiaChiResponse.builder()
                 .id(diaChi.getId())
                 .maTinh(diaChi.getMaTinh())
                 .maPhuong(diaChi.getMaPhuong())
                 .tenTinh(diaChi.getTenTinh())
                 .tenPhuong(diaChi.getTenPhuong())
-                // Sá»¬A: XÃ³a dÃ²ng nÃ y vÃ¬ DiaChi khÃ´ng cÃ³ field hoTen
+                // SỬA: Xóa dòng này vì DiaChi không có field hoTen
                 // .hoTen(diaChi.getHoTen())
                 .diaChiChiTiet(diaChi.getDiaChiChiTiet())
                 .trangThai(diaChi.getTrangThai())
@@ -2209,13 +2213,13 @@ public class BanHangServiceImpl implements BanHangService {
     private HoaDonResponse mapToHoaDonResponse(HoaDon hoaDon) {
         List<HoaDonChiTiet> chiTiets = hoaDonChiTietRepository.findByHoaDonIdOrderByNgayTao(hoaDon.getId());
 
-        // Láº¥y thÃ´ng tin nhÃ¢n viÃªn - Sá»¬A: Sá»­ dá»¥ng relationship
+        // Lấy thông tin nhân viên - SỬA: Sử dụng relationship
         NhanVienResponse nhanVienResponse = null;
         if (hoaDon.getNhanVien() != null) {
             nhanVienResponse = mapToNhanVienResponse(hoaDon.getNhanVien());
         }
 
-        // Láº¥y thÃ´ng tin khÃ¡ch hÃ ng - Sá»¬A: Sá»­ dá»¥ng relationship
+        // Lấy thông tin khách hàng - SỬA: Sử dụng relationship
         KhachHangResponse khachHangResponse = null;
         if (hoaDon.getKhachHang() != null) {
             khachHangResponse = mapToKhachHangResponse(hoaDon.getKhachHang());
@@ -2224,7 +2228,7 @@ public class BanHangServiceImpl implements BanHangService {
         return HoaDonResponse.builder()
                 .id(hoaDon.getId())
                 .maHoaDon(hoaDon.getMaHoaDon())
-                .tenKhach(hoaDon.getTenNguoiDung() != null ? hoaDon.getTenNguoiDung() : "KhÃ¡ch láº»")
+                .tenKhach(hoaDon.getTenNguoiDung() != null ? hoaDon.getTenNguoiDung() : "Khách lẻ")
                 .sdt(hoaDon.getSdt() != null ? hoaDon.getSdt() : "")
                 .email(hoaDon.getEmail() != null ? hoaDon.getEmail() : "")
                 .trangThaiHoaDon(hoaDon.getTrangThaiHoaDon())
@@ -2241,19 +2245,19 @@ public class BanHangServiceImpl implements BanHangService {
     }
 
     private HoaDonChiTietResponse mapToHoaDonChiTietResponse(HoaDonChiTiet chiTiet) {
-        ChiTietSanPham sanPham = chiTiet.getChiTietSanPham(); // Sá»­ dá»¥ng relationship
+        ChiTietSanPham sanPham = chiTiet.getChiTietSanPham(); // Sử dụng relationship
 
         if (sanPham != null) {
-            // Láº¥y thÃ´ng tin sáº£n pháº©m, mÃ u sáº¯c, kÃ­ch cá»¡, thÆ°Æ¡ng hiá»‡u
-            SanPham sp = sanPham.getSanPham(); // Náº¿u cÃ³ relationship trong ChiTietSanPham
-            // Hoáº·c sá»­ dá»¥ng: sanPhamRepository.findById(sanPham.getIdSanPham()).orElse(null);
+            // Lấy thông tin sản phẩm, màu sắc, kích cỡ, thương hiệu
+            SanPham sp = sanPham.getSanPham(); // Nếu có relationship trong ChiTietSanPham
+            // Hoặc sử dụng: sanPhamRepository.findById(sanPham.getIdSanPham()).orElse(null);
 
-            MauSac mauSac = sanPham.getMauSac(); // Náº¿u cÃ³ relationship
-            KichCo kichCo = sanPham.getKichCo(); // Náº¿u cÃ³ relationship
+            MauSac mauSac = sanPham.getMauSac(); // Nếu có relationship
+            KichCo kichCo = sanPham.getKichCo(); // Nếu có relationship
 
             ThuongHieu thuongHieu = null;
             if (sp != null) {
-                thuongHieu = sp.getThuongHieu(); // Náº¿u cÃ³ relationship trong SanPham
+                thuongHieu = sp.getThuongHieu(); // Nếu có relationship trong SanPham
             }
 
             return HoaDonChiTietResponse.builder()
@@ -2287,7 +2291,7 @@ public class BanHangServiceImpl implements BanHangService {
     }
 
     private NhanVienResponse mapToNhanVienResponse(NhanVien nhanVien) {
-        // Sá»¬A: Láº¥y email tá»« TaiKhoan thay vÃ¬ tá»« NhanVien
+        // SỬA: Lấy email từ TaiKhoan thay vì từ NhanVien
         String email = "";
         if (nhanVien.getTaiKhoan() != null && StringUtils.hasText(nhanVien.getTaiKhoan().getEmail())) {
             email = nhanVien.getTaiKhoan().getEmail();
@@ -2297,7 +2301,7 @@ public class BanHangServiceImpl implements BanHangService {
                 .id(nhanVien.getId())
                 .maNhanVien(nhanVien.getMaNhanVien())
                 .hoTen(nhanVien.getHoTen())
-                .email(email) // Sá»¬A: Sá»­ dá»¥ng email tá»« TaiKhoan
+                .email(email) // SỬA: Sử dụng email từ TaiKhoan
                 .sdt(nhanVien.getSdt())
                 .trangThai(nhanVien.getTrangThai())
                 .vaiTro("NHAN_VIEN") // Default role
@@ -2322,7 +2326,7 @@ public class BanHangServiceImpl implements BanHangService {
     private HinhAnhResponse mapToHinhAnhResponse(HinhAnh hinhAnh) {
         if (hinhAnh == null) return null;
 
-        // Format URL Ä‘áº§y Ä‘á»§ giá»‘ng SanPhamChiTiet
+        // Format URL đầy đủ giống SanPhamChiTiet
         String duongDanGoc = hinhAnh.getDuongDan();
         String urlFormatted = duongDanGoc;
 
@@ -2337,10 +2341,10 @@ public class BanHangServiceImpl implements BanHangService {
                 .id(hinhAnh.getId())
                 .maHinhAnh(hinhAnh.getMaHinhAnh())
                 .tenHinhAnh(hinhAnh.getTenHinhAnh())
-                .duongDan(duongDanGoc) // ÄÆ°á»ng dáº«n gá»‘c
-                .urlHinhAnh(urlFormatted) // URL Ä‘Ã£ format
+                .duongDan(duongDanGoc) // Đường dẫn gốc
+                .urlHinhAnh(urlFormatted) // URL đã format
                 .trangThai(hinhAnh.getTrangThai())
-                .laHinhChinh(true) // Logic Ä‘á»ƒ xÃ¡c Ä‘á»‹nh hÃ¬nh chÃ­nh cÃ³ thá»ƒ Ä‘Æ°á»£c implement sau
+                .laHinhChinh(true) // Logic để xác định hình chính có thể được implement sau
                 .build();
     }
 
@@ -2362,8 +2366,8 @@ public class BanHangServiceImpl implements BanHangService {
                 .id(mauSac.getId())
                 .maMauSac(mauSac.getMaMauSac())
                 .tenMauSac(mauSac.getTenMauSac())
-                .tenMau(mauSac.getTenMauSac()) // âœ… THÃŠM: Alias cho frontend
-                .maMau(getMaMauHex(mauSac))    // âœ… THÃŠM: Hex color tá»« method
+                .tenMau(mauSac.getTenMauSac()) // ✅ THÊM: Alias cho frontend
+                .maMau(getMaMauHex(mauSac))    // ✅ THÊM: Hex color từ method
                 .trangThai(mauSac.getTrangThai())
                 .build();
     }
@@ -2376,7 +2380,7 @@ public class BanHangServiceImpl implements BanHangService {
                 .maKichCo(kichCo.getMaKichCo())
                 .tenKichCo(kichCo.getTenKichCo())
                 .trangThai(kichCo.getTrangThai())
-                .thuTu(getThuTuKichCo(kichCo.getTenKichCo())) // âœ… THÃŠM: Thá»© tá»± sáº¯p xáº¿p
+                .thuTu(getThuTuKichCo(kichCo.getTenKichCo())) // ✅ THÊM: Thứ tự sắp xếp
                 .build();
     }
 
@@ -2436,62 +2440,62 @@ public class BanHangServiceImpl implements BanHangService {
         if (tongChiTieu >= 50000000) {
             return "VIP";
         } else if (tongChiTieu >= 20000000) {
-            return "VÃ€NG";
+            return "VÀNG";
         } else if (tongChiTieu >= 5000000) {
-            return "Báº C";
+            return "BẠC";
         } else {
-            return "Äá»’NG";
+            return "ĐỒNG";
         }
     }
 
     // ===== ADDITIONAL UTILITY METHODS =====
 
     /**
-     * Kiá»ƒm tra quyá»n truy cáº­p cá»§a nhÃ¢n viÃªn
+     * Kiểm tra quyền truy cập của nhân viên
      */
     private void kiemTraQuyenNhanVien(Integer nhanVienId, String action) {
         NhanVien nhanVien = nhanVienRepository.findById(nhanVienId).orElse(null);
         if (nhanVien == null || nhanVien.getTrangThai() != 1) {
-            throw new RuntimeException("NhÃ¢n viÃªn khÃ´ng cÃ³ quyá»n thá»±c hiá»‡n " + action);
+            throw new RuntimeException("Nhân viên không có quyền thực hiện " + action);
         }
     }
 
     /**
-     * Kiá»ƒm tra sáº£n pháº©m cÃ³ thá»ƒ bÃ¡n khÃ´ng
+     * Kiểm tra sản phẩm có thể bán không
      */
     private void kiemTraSanPhamCoTheBan(ChiTietSanPham sanPham, int soLuongCanBan) {
         if (sanPham.getTrangThai() != 1) {
-            throw new RuntimeException("Sáº£n pháº©m khÃ´ng cÃ²n kinh doanh");
+            throw new RuntimeException("Sản phẩm không còn kinh doanh");
         }
 
         if (sanPham.getSoLuong() < soLuongCanBan) {
-            throw new RuntimeException("KhÃ´ng Ä‘á»§ tá»“n kho. CÃ²n láº¡i: " + sanPham.getSoLuong());
+            throw new RuntimeException("Không đủ tồn kho. Còn lại: " + sanPham.getSoLuong());
         }
 
-        // Sá»¬A: Sá»­ dá»¥ng relationship thay vÃ¬ getIdSanPham()
+        // SỬA: Sử dụng relationship thay vì getIdSanPham()
         SanPham sanPhamGoc = sanPham.getSanPham();
         if (sanPhamGoc == null || sanPhamGoc.getTrangThai() != 1) {
-            throw new RuntimeException("Sáº£n pháº©m khÃ´ng cÃ²n kinh doanh");
+            throw new RuntimeException("Sản phẩm không còn kinh doanh");
         }
     }
 
     /**
-     * Cáº­p nháº­t tá»“n kho sáº£n pháº©m an toÃ n
+     * Cập nhật tồn kho sản phẩm an toàn
      */
     private void capNhatTonKhoAnToan(Integer chiTietSanPhamId, int soLuongThayDoi) {
         ChiTietSanPham sanPham = chiTietSanPhamRepository.findById(chiTietSanPhamId)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y sáº£n pháº©m"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
 
         int soLuongMoi = sanPham.getSoLuong() + soLuongThayDoi;
         if (soLuongMoi < 0) {
-            throw new RuntimeException("Sá»‘ lÆ°á»£ng tá»“n kho khÃ´ng thá»ƒ Ã¢m");
+            throw new RuntimeException("Số lượng tồn kho không thể âm");
         }
 
         sanPham.setSoLuong(soLuongMoi);
         sanPham.setNgayCapNhat(new Date());
         chiTietSanPhamRepository.save(sanPham);
 
-        // Sá»¬A: Sá»­ dá»¥ng relationship Ä‘á»ƒ láº¥y ID sáº£n pháº©m gá»‘c
+        // SỬA: Sử dụng relationship để lấy ID sản phẩm gốc
         SanPham sanPhamGoc = sanPham.getSanPham();
         if (sanPhamGoc != null) {
             capNhatTongSoLuongSanPham(sanPhamGoc.getId());
@@ -2499,7 +2503,7 @@ public class BanHangServiceImpl implements BanHangService {
     }
 
     /**
-     * Cáº­p nháº­t tá»•ng sá»‘ lÆ°á»£ng sáº£n pháº©m gá»‘c
+     * Cập nhật tổng số lượng sản phẩm gốc
      */
     private void capNhatTongSoLuongSanPham(Integer sanPhamId) {
         try {
@@ -2513,21 +2517,21 @@ public class BanHangServiceImpl implements BanHangService {
                 sanPhamRepository.save(sanPham);
             }
         } catch (Exception e) {
-            log.warn("KhÃ´ng thá»ƒ cáº­p nháº­t tá»•ng sá»‘ lÆ°á»£ng sáº£n pháº©m: {}", e.getMessage());
+            log.warn("Không thể cập nhật tổng số lượng sản phẩm: {}", e.getMessage());
         }
     }
 
     /**
-     * Gá»­i thÃ´ng bÃ¡o cho khÃ¡ch hÃ ng
+     * Gửi thông báo cho khách hàng
      */
     private void guiThongBaoKhachHang(Integer khachHangId, String noiDung, Integer hoaDonId) {
         try {
             KhachHang khachHang = khachHangRepository.findById(khachHangId).orElse(null);
             if (khachHang != null && khachHang.getTaiKhoan() != null) {
-                log.info("Gá»­i thÃ´ng bÃ¡o cho khÃ¡ch hÃ ng {}: {}", khachHang.getHoTen(), noiDung);
+                log.info("Gửi thông báo cho khách hàng {}: {}", khachHang.getHoTen(), noiDung);
             }
         } catch (Exception e) {
-            log.warn("KhÃ´ng thá»ƒ gá»­i thÃ´ng bÃ¡o: {}", e.getMessage());
+            log.warn("Không thể gửi thông báo: {}", e.getMessage());
         }
     }
 
@@ -2536,37 +2540,37 @@ public class BanHangServiceImpl implements BanHangService {
      */
     private void validateThemSanPhamRequest(ThemSanPhamRequest request) {
         if (request.getChiTietSanPhamId() == null) {
-            throw new IllegalArgumentException("ID chi tiáº¿t sáº£n pháº©m khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            throw new IllegalArgumentException("ID chi tiết sản phẩm không được để trống");
         }
         if (request.getSoLuong() == null || request.getSoLuong() <= 0) {
-            throw new IllegalArgumentException("Sá»‘ lÆ°á»£ng pháº£i lá»›n hÆ¡n 0");
+            throw new IllegalArgumentException("Số lượng phải lớn hơn 0");
         }
     }
 
     private void validateCapNhatSanPhamRequest(CapNhatSanPhamRequest request) {
         if (request.getSoLuong() == null || request.getSoLuong() <= 0) {
-            throw new IllegalArgumentException("Sá»‘ lÆ°á»£ng pháº£i lá»›n hÆ¡n 0");
+            throw new IllegalArgumentException("Số lượng phải lớn hơn 0");
         }
     }
 
     private void validateThanhToanRequest(ThanhToanRequest request) {
         if (request.getKhachHangId() == null) {
-            throw new IllegalArgumentException("ID khÃ¡ch hÃ ng khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            throw new IllegalArgumentException("ID khách hàng không được để trống");
         }
         if (!StringUtils.hasText(request.getLoaiHoaDon())) {
-            throw new IllegalArgumentException("Loáº¡i hÃ³a Ä‘Æ¡n khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            throw new IllegalArgumentException("Loại hóa đơn không được để trống");
         }
     }
 
     /**
-     * Log hoáº¡t Ä‘á»™ng cá»§a há»‡ thá»‘ng
+     * Log hoạt động của hệ thống
      */
     private void logActivity(String action, Integer userId, String details) {
         log.info("ACTIVITY_LOG - Action: {}, User: {}, Details: {}", action, userId, details);
     }
 
     /**
-     * Táº¡o mÃ£ hÃ³a Ä‘Æ¡n theo format Ä‘áº·c biá»‡t
+     * Tạo mã hóa đơn theo format đặc biệt
      */
     private String taoMaHoaDonTheoFormat(String loaiHoaDon) {
         String prefix = "OFFLINE".equals(loaiHoaDon) ? "HDO" : "HDN";
@@ -2574,7 +2578,7 @@ public class BanHangServiceImpl implements BanHangService {
     }
 
     /**
-     * Kiá»ƒm tra thá»i gian lÃ m viá»‡c
+     * Kiểm tra thời gian làm việc
      */
     private boolean kiemTraThoiGianLamViec() {
         Calendar cal = Calendar.getInstance();
@@ -2583,27 +2587,27 @@ public class BanHangServiceImpl implements BanHangService {
     }
 
     /**
-     * TÃ­nh phÃ­ váº­n chuyá»ƒn
+     * Tính phí vận chuyển
      */
     private BigDecimal tinhPhiVanChuyen(String diaChiGiaoHang, BigDecimal tongTien) {
-        // Logic tÃ­nh phÃ­ váº­n chuyá»ƒn theo Ä‘á»‹a chá»‰ vÃ  tá»•ng tiá»n
+        // Logic tính phí vận chuyển theo địa chỉ và tổng tiền
         if (tongTien.compareTo(BigDecimal.valueOf(500000)) >= 0) {
-            return BigDecimal.ZERO; // Miá»…n phÃ­ ship cho Ä‘Æ¡n >= 500k
+            return BigDecimal.ZERO; // Miễn phí ship cho đơn >= 500k
         }
 
-        if (diaChiGiaoHang != null && diaChiGiaoHang.contains("HÃ  Ná»™i")) {
-            return BigDecimal.valueOf(30000); // 30k trong HÃ  Ná»™i
+        if (diaChiGiaoHang != null && diaChiGiaoHang.contains("Hà Nội")) {
+            return BigDecimal.valueOf(30000); // 30k trong Hà Nội
         } else {
-            return BigDecimal.valueOf(50000); // 50k ngoáº¡i tá»‰nh
+            return BigDecimal.valueOf(50000); // 50k ngoại tỉnh
         }
     }
 
     /**
-     * Backup dá»¯ liá»‡u quan trá»ng
+     * Backup dữ liệu quan trọng
      */
     private void backupHoaDonData(Integer hoaDonId) {
         try {
-            // Logic backup dá»¯ liá»‡u hÃ³a Ä‘Æ¡n quan trá»ng
+            // Logic backup dữ liệu hóa đơn quan trọng
             log.info("Backup data for invoice: {}", hoaDonId);
         } catch (Exception e) {
             log.warn("Backup failed for invoice {}: {}", hoaDonId, e.getMessage());
@@ -2611,10 +2615,10 @@ public class BanHangServiceImpl implements BanHangService {
     }
 
     /**
-     * Kiá»ƒm tra duplicate transaction
+     * Kiểm tra duplicate transaction
      */
     private boolean kiemTraDuplicateTransaction(String transactionId) {
-        // Logic kiá»ƒm tra giao dá»‹ch trÃ¹ng láº·p
+        // Logic kiểm tra giao dịch trùng lặp
         return false;
     }
 
@@ -2623,7 +2627,7 @@ public class BanHangServiceImpl implements BanHangService {
      */
     private void cleanupOldData() {
         try {
-            // Logic dá»n dáº¹p dá»¯ liá»‡u cÅ©, cache, temp files
+            // Logic dọn dẹp dữ liệu cũ, cache, temp files
             log.info("Cleanup old data completed");
         } catch (Exception e) {
             log.warn("Cleanup failed: {}", e.getMessage());
@@ -2632,124 +2636,124 @@ public class BanHangServiceImpl implements BanHangService {
     @Override
     public List<DanhMucResponse> layDanhSachDanhMuc() {
         try {
-            log.info("ðŸ“‚ Láº¥y danh sÃ¡ch danh má»¥c");
-            // âœ… Sá»¬A: Sá»­ dá»¥ng method name Ä‘Ãºng
+            log.info("📂 Lấy danh sách danh mục");
+            // ✅ SỬA: Sử dụng method name đúng
             List<DanhMuc> danhMucs = danhMucRepository.findByTrangThaiOrderByTenDanhMucAsc(1);
 
             List<DanhMucResponse> responses = danhMucs.stream()
                     .map(this::mapToDanhMucResponseForMasterData)
                     .collect(Collectors.toList());
 
-            log.info("âœ… Láº¥y {} danh má»¥c thÃ nh cÃ´ng", responses.size());
+            log.info("✅ Lấy {} danh mục thành công", responses.size());
             return responses;
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i láº¥y danh sÃ¡ch danh má»¥c", e);
-            throw new RuntimeException("KhÃ´ng thá»ƒ láº¥y danh sÃ¡ch danh má»¥c: " + e.getMessage());
+            log.error("❌ Lỗi lấy danh sách danh mục", e);
+            throw new RuntimeException("Không thể lấy danh sách danh mục: " + e.getMessage());
         }
     }
 
     @Override
     public List<ThuongHieuResponse> layDanhSachThuongHieu() {
         try {
-            log.info("ðŸ·ï¸ Láº¥y danh sÃ¡ch thÆ°Æ¡ng hiá»‡u");
-            // âœ… Sá»¬A: Sá»­ dá»¥ng method name Ä‘Ãºng
+            log.info("🏷️ Lấy danh sách thương hiệu");
+            // ✅ SỬA: Sử dụng method name đúng
             List<ThuongHieu> thuongHieus = thuongHieuRepository.findByTrangThaiOrderByTenThuongHieuAsc(1);
 
             List<ThuongHieuResponse> responses = thuongHieus.stream()
                     .map(this::mapToThuongHieuResponseForMasterData)
                     .collect(Collectors.toList());
 
-            log.info("âœ… Láº¥y {} thÆ°Æ¡ng hiá»‡u thÃ nh cÃ´ng", responses.size());
+            log.info("✅ Lấy {} thương hiệu thành công", responses.size());
             return responses;
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i láº¥y danh sÃ¡ch thÆ°Æ¡ng hiá»‡u", e);
-            throw new RuntimeException("KhÃ´ng thá»ƒ láº¥y danh sÃ¡ch thÆ°Æ¡ng hiá»‡u: " + e.getMessage());
+            log.error("❌ Lỗi lấy danh sách thương hiệu", e);
+            throw new RuntimeException("Không thể lấy danh sách thương hiệu: " + e.getMessage());
         }
     }
 
     @Override
     public List<MauSacResponse> layDanhSachMauSac() {
         try {
-            log.info("ðŸŽ¨ Láº¥y danh sÃ¡ch mÃ u sáº¯c");
-            // âœ… Sá»¬A: Sá»­ dá»¥ng method name Ä‘Ãºng
+            log.info("🎨 Lấy danh sách màu sắc");
+            // ✅ SỬA: Sử dụng method name đúng
             List<MauSac> mauSacs = mauSacRepository.findByTrangThaiOrderByTenMauSacAsc(1);
 
             List<MauSacResponse> responses = mauSacs.stream()
                     .map(this::mapToMauSacResponseForMasterData)
                     .collect(Collectors.toList());
 
-            log.info("âœ… Láº¥y {} mÃ u sáº¯c thÃ nh cÃ´ng", responses.size());
+            log.info("✅ Lấy {} màu sắc thành công", responses.size());
             return responses;
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i láº¥y danh sÃ¡ch mÃ u sáº¯c", e);
-            throw new RuntimeException("KhÃ´ng thá»ƒ láº¥y danh sÃ¡ch mÃ u sáº¯c: " + e.getMessage());
+            log.error("❌ Lỗi lấy danh sách màu sắc", e);
+            throw new RuntimeException("Không thể lấy danh sách màu sắc: " + e.getMessage());
         }
     }
 
     @Override
     public List<KichCoResponse> layDanhSachKichCo() {
         try {
-            log.info("ðŸ“ Láº¥y danh sÃ¡ch kÃ­ch cá»¡");
-            // âœ… Sá»¬A: Sá»­ dá»¥ng method name Ä‘Ãºng
+            log.info("📏 Lấy danh sách kích cỡ");
+            // ✅ SỬA: Sử dụng method name đúng
             List<KichCo> kichCos = kichCoRepository.findByTrangThaiOrderByTenKichCoAsc(1);
 
             List<KichCoResponse> responses = kichCos.stream()
                     .map(this::mapToKichCoResponseForMasterData)
                     .collect(Collectors.toList());
 
-            log.info("âœ… Láº¥y {} kÃ­ch cá»¡ thÃ nh cÃ´ng", responses.size());
+            log.info("✅ Lấy {} kích cỡ thành công", responses.size());
             return responses;
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i láº¥y danh sÃ¡ch kÃ­ch cá»¡", e);
-            throw new RuntimeException("KhÃ´ng thá»ƒ láº¥y danh sÃ¡ch kÃ­ch cá»¡: " + e.getMessage());
+            log.error("❌ Lỗi lấy danh sách kích cỡ", e);
+            throw new RuntimeException("Không thể lấy danh sách kích cỡ: " + e.getMessage());
         }
     }
 
     @Override
     public List<ChatLieuResponse> layDanhSachChatLieu() {
         try {
-            log.info("ðŸ§µ Láº¥y danh sÃ¡ch cháº¥t liá»‡u");
-            // âœ… Sá»¬A: Sá»­ dá»¥ng method name Ä‘Ãºng
+            log.info("🧵 Lấy danh sách chất liệu");
+            // ✅ SỬA: Sử dụng method name đúng
             List<ChatLieu> chatLieus = chatLieuRepository.findByTrangThaiOrderByTenChatLieuAsc(1);
 
             List<ChatLieuResponse> responses = chatLieus.stream()
                     .map(this::mapToChatLieuResponseForMasterData)
                     .collect(Collectors.toList());
 
-            log.info("âœ… Láº¥y {} cháº¥t liá»‡u thÃ nh cÃ´ng", responses.size());
+            log.info("✅ Lấy {} chất liệu thành công", responses.size());
             return responses;
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i láº¥y danh sÃ¡ch cháº¥t liá»‡u", e);
-            throw new RuntimeException("KhÃ´ng thá»ƒ láº¥y danh sÃ¡ch cháº¥t liá»‡u: " + e.getMessage());
+            log.error("❌ Lỗi lấy danh sách chất liệu", e);
+            throw new RuntimeException("Không thể lấy danh sách chất liệu: " + e.getMessage());
         }
     }
 
     @Override
     public List<DeGiayResponse> layDanhSachDeGiay() {
         try {
-            log.info("ðŸ‘Ÿ Láº¥y danh sÃ¡ch Ä‘áº¿ giÃ y");
-            // âœ… Sá»¬A: Sá»­ dá»¥ng method name Ä‘Ãºng
+            log.info("👟 Lấy danh sách đế giày");
+            // ✅ SỬA: Sử dụng method name đúng
             List<DeGiay> deGiays = deGiayRepository.findByTrangThaiOrderByTenDeGiayAsc(1);
 
             List<DeGiayResponse> responses = deGiays.stream()
                     .map(this::mapToDeGiayResponseForMasterData)
                     .collect(Collectors.toList());
 
-            log.info("âœ… Láº¥y {} Ä‘áº¿ giÃ y thÃ nh cÃ´ng", responses.size());
+            log.info("✅ Lấy {} đế giày thành công", responses.size());
             return responses;
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i láº¥y danh sÃ¡ch Ä‘áº¿ giÃ y", e);
-            throw new RuntimeException("KhÃ´ng thá»ƒ láº¥y danh sÃ¡ch Ä‘áº¿ giÃ y: " + e.getMessage());
+            log.error("❌ Lỗi lấy danh sách đế giày", e);
+            throw new RuntimeException("Không thể lấy danh sách đế giày: " + e.getMessage());
         }
     }
 
-// ===== MAPPING METHODS Má»šI CHO MASTER DATA =====
+// ===== MAPPING METHODS MỚI CHO MASTER DATA =====
 
     private DanhMucResponse mapToDanhMucResponseForMasterData(DanhMuc danhMuc) {
         if (danhMuc == null) return null;
@@ -2789,7 +2793,7 @@ public class BanHangServiceImpl implements BanHangService {
                 .maMauSac(mauSac.getMaMauSac())
                 .tenMauSac(mauSac.getTenMauSac())
                 .tenMau(mauSac.getTenMauSac()) // Alias cho frontend
-                .maMau(getMaMauHex(mauSac)) // Láº¥y mÃ£ mÃ u hex
+                .maMau(getMaMauHex(mauSac)) // Lấy mã màu hex
                 .trangThai(mauSac.getTrangThai())
                 .ngayTao(mauSac.getNgayTao())
                 .ngayCapNhat(mauSac.getNgayCapNhat())
@@ -2802,7 +2806,7 @@ public class BanHangServiceImpl implements BanHangService {
                 .maKichCo(kichCo.getMaKichCo())
                 .tenKichCo(kichCo.getTenKichCo())
                 .trangThai(kichCo.getTrangThai())
-                .thuTu(getThuTuKichCo(kichCo.getTenKichCo())) // Sáº¯p xáº¿p theo size
+                .thuTu(getThuTuKichCo(kichCo.getTenKichCo())) // Sắp xếp theo size
                 .ngayTao(kichCo.getNgayTao())
                 .ngayCapNhat(kichCo.getNgayCapNhat())
                 .build();
@@ -2837,54 +2841,54 @@ public class BanHangServiceImpl implements BanHangService {
 // ===== UTILITY METHODS =====
 
     /**
-     * Láº¥y mÃ£ mÃ u hex tá»« entity MauSac
+     * Lấy mã màu hex từ entity MauSac
      */
     private String getMaMauHex(MauSac mauSac) {
-        if (mauSac == null) return "#6c757d"; // MÃ u xÃ¡m máº·c Ä‘á»‹nh
+        if (mauSac == null) return "#6c757d"; // Màu xám mặc định
 
-        // Map theo tÃªn mÃ u tiáº¿ng Viá»‡t
+        // Map theo tên màu tiếng Việt
         String tenMau = mauSac.getTenMauSac().toLowerCase().trim();
         switch (tenMau) {
-            case "Ä‘á»":
+            case "đỏ":
             case "red":
             case "do":
                 return "#dc3545";
             case "xanh":
-            case "xanh dÆ°Æ¡ng":
+            case "xanh dương":
             case "blue":
                 return "#0066cc";
-            case "Ä‘en":
+            case "đen":
             case "black":
             case "den":
                 return "#000000";
-            case "tráº¯ng":
+            case "trắng":
             case "white":
             case "trang":
                 return "#ffffff";
-            case "vÃ ng":
+            case "vàng":
             case "yellow":
             case "vang":
                 return "#ffc107";
-            case "xanh lÃ¡":
+            case "xanh lá":
             case "xanh la":
             case "green":
                 return "#28a745";
-            case "tÃ­m":
+            case "tím":
             case "purple":
             case "tim":
                 return "#6f42c1";
-            case "há»“ng":
+            case "hồng":
             case "pink":
             case "hong":
                 return "#e83e8c";
-            case "nÃ¢u":
+            case "nâu":
             case "brown":
             case "nau":
                 return "#8b4513";
             case "cam":
             case "orange":
                 return "#fd7e14";
-            case "xÃ¡m":
+            case "xám":
             case "gray":
             case "xam":
                 return "#6c757d";
@@ -2894,29 +2898,29 @@ public class BanHangServiceImpl implements BanHangService {
             case "navy":
             case "xanh navy":
                 return "#000080";
-            case "báº¡c":
+            case "bạc":
             case "bac":
             case "silver":
                 return "#c0c0c0";
-            case "vÃ ng Ä‘á»“ng":
+            case "vàng đồng":
             case "gold":
                 return "#ffd700";
             default:
-                return "#6c757d"; // MÃ u máº·c Ä‘á»‹nh
+                return "#6c757d"; // Màu mặc định
         }
     }
 
     /**
-     * Láº¥y thá»© tá»± sáº¯p xáº¿p cho kÃ­ch cá»¡
+     * Lấy thứ tự sắp xếp cho kích cỡ
      */
     private Integer getThuTuKichCo(String tenKichCo) {
         if (tenKichCo == null) return 999;
 
         try {
-            // Náº¿u lÃ  sá»‘, convert trá»±c tiáº¿p
+            // Nếu là số, convert trực tiếp
             return Integer.parseInt(tenKichCo);
         } catch (NumberFormatException e) {
-            // Náº¿u khÃ´ng pháº£i sá»‘, map theo size chuáº©n
+            // Nếu không phải số, map theo size chuẩn
             switch (tenKichCo.toUpperCase().trim()) {
                 case "XS": return 1;
                 case "S": return 2;
@@ -2932,85 +2936,85 @@ public class BanHangServiceImpl implements BanHangService {
     @Override
     public Integer timNhanVienIdTheoMa(String ma) {
         try {
-            log.info("ðŸ” TÃ¬m nhÃ¢n viÃªn theo mÃ£: '{}'", ma);
+            log.info("🔍 Tìm nhân viên theo mã: '{}'", ma);
 
             if (ma == null || ma.trim().isEmpty()) {
-                log.warn("âš ï¸ MÃ£ null hoáº·c rá»—ng");
+                log.warn("⚠️ Mã null hoặc rỗng");
                 return null;
             }
 
             String maTrimmed = ma.trim();
 
-            // 1. âœ… Thá»­ tÃ¬m trá»±c tiáº¿p theo mÃ£ nhÃ¢n viÃªn trÆ°á»›c
+            // 1. ✅ Thử tìm trực tiếp theo mã nhân viên trước
             Optional<NhanVien> nhanVienByMaNV = nhanVienRepository
                     .findByMaNhanVienAndTrangThai(maTrimmed, 1);
 
             if (nhanVienByMaNV.isPresent()) {
                 NhanVien nhanVien = nhanVienByMaNV.get();
-                log.info("âœ… TÃ¬m tháº¥y nhÃ¢n viÃªn theo MÃƒ NHÃ‚N VIÃŠN: ID={}, TÃªn={}, MaNV={}",
+                log.info("✅ Tìm thấy nhân viên theo MÃ NHÂN VIÊN: ID={}, Tên={}, MaNV={}",
                         nhanVien.getId(), nhanVien.getHoTen(), nhanVien.getMaNhanVien());
                 return nhanVien.getId();
             }
 
-            // 2. âœ… Náº¿u khÃ´ng tÃ¬m tháº¥y, thá»­ tÃ¬m theo mÃ£ tÃ i khoáº£n
-            log.info("ðŸ”„ KhÃ´ng tÃ¬m tháº¥y theo mÃ£ nhÃ¢n viÃªn, thá»­ tÃ¬m theo mÃ£ tÃ i khoáº£n...");
+            // 2. ✅ Nếu không tìm thấy, thử tìm theo mã tài khoản
+            log.info("🔄 Không tìm thấy theo mã nhân viên, thử tìm theo mã tài khoản...");
 
             Optional<NhanVien> nhanVienByMaTK = nhanVienRepository
                     .findByTaiKhoan_MaTaiKhoanAndTrangThai(maTrimmed, 1);
 
             if (nhanVienByMaTK.isPresent()) {
                 NhanVien nhanVien = nhanVienByMaTK.get();
-                log.info("âœ… TÃ¬m tháº¥y nhÃ¢n viÃªn theo MÃƒ TÃ€I KHOáº¢N: ID={}, TÃªn={}, MaTK={}, MaNV={}",
+                log.info("✅ Tìm thấy nhân viên theo MÃ TÀI KHOẢN: ID={}, Tên={}, MaTK={}, MaNV={}",
                         nhanVien.getId(), nhanVien.getHoTen(),
                         nhanVien.getTaiKhoan().getMaTaiKhoan(), nhanVien.getMaNhanVien());
                 return nhanVien.getId();
             }
 
-            // 3. âœ… Thá»­ láº¥y mÃ£ nhÃ¢n viÃªn tá»« mÃ£ tÃ i khoáº£n (sá»­ dá»¥ng method má»›i)
-            log.info("ðŸ”„ Thá»­ láº¥y mÃ£ nhÃ¢n viÃªn tá»« mÃ£ tÃ i khoáº£n...");
+            // 3. ✅ Thử lấy mã nhân viên từ mã tài khoản (sử dụng method mới)
+            log.info("🔄 Thử lấy mã nhân viên từ mã tài khoản...");
 
             Optional<String> maNhanVienOpt = nhanVienRepository.findMaNhanVienByMaTaiKhoan(maTrimmed);
             if (maNhanVienOpt.isPresent()) {
                 String maNhanVien = maNhanVienOpt.get();
-                log.info("ðŸ”„ TÃ¬m tháº¥y mÃ£ nhÃ¢n viÃªn '{}' tá»« mÃ£ tÃ i khoáº£n '{}'", maNhanVien, maTrimmed);
+                log.info("🔄 Tìm thấy mã nhân viên '{}' từ mã tài khoản '{}'", maNhanVien, maTrimmed);
 
-                // TÃ¬m láº¡i nhÃ¢n viÃªn theo mÃ£ nhÃ¢n viÃªn vá»«a láº¥y Ä‘Æ°á»£c
+                // Tìm lại nhân viên theo mã nhân viên vừa lấy được
                 Optional<NhanVien> nhanVienFinal = nhanVienRepository
                         .findByMaNhanVienAndTrangThai(maNhanVien, 1);
 
                 if (nhanVienFinal.isPresent()) {
                     NhanVien nhanVien = nhanVienFinal.get();
-                    log.info("âœ… TÃ¬m tháº¥y nhÃ¢n viÃªn qua chuyá»ƒn Ä‘á»•i: ID={}, TÃªn={}, MaNV={}",
+                    log.info("✅ Tìm thấy nhân viên qua chuyển đổi: ID={}, Tên={}, MaNV={}",
                             nhanVien.getId(), nhanVien.getHoTen(), nhanVien.getMaNhanVien());
                     return nhanVien.getId();
                 }
             }
 
-            // 4. Debug: TÃ¬m táº¥t cáº£ nhÃ¢n viÃªn hoáº¡t Ä‘á»™ng Ä‘á»ƒ debug
+            // 4. Debug: Tìm tất cả nhân viên hoạt động để debug
             List<NhanVien> allActive = nhanVienRepository.findByTrangThai(1);
-            log.info("ðŸ“‹ CÃ³ {} nhÃ¢n viÃªn hoáº¡t Ä‘á»™ng trong há»‡ thá»‘ng:", allActive.size());
+            log.info("📋 Có {} nhân viên hoạt động trong hệ thống:", allActive.size());
 
             for (NhanVien nv : allActive) {
                 String maTaiKhoan = nv.getTaiKhoan() != null ? nv.getTaiKhoan().getMaTaiKhoan() : "NULL";
-                log.info("  - ID: {}, MÃ£NV: '{}', MÃ£TK: '{}', TÃªn: '{}'",
+                log.info("  - ID: {}, MãNV: '{}', MãTK: '{}', Tên: '{}'",
                         nv.getId(),
                         nv.getMaNhanVien(),
                         maTaiKhoan,
                         nv.getHoTen());
             }
 
-            log.warn("âš ï¸ KhÃ´ng tÃ¬m tháº¥y nhÃ¢n viÃªn hoáº¡t Ä‘á»™ng vá»›i mÃ£: '{}'", maTrimmed);
+            log.warn("⚠️ Không tìm thấy nhân viên hoạt động với mã: '{}'", maTrimmed);
             return null;
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i tÃ¬m nhÃ¢n viÃªn theo mÃ£: {}", e.getMessage(), e);
+            log.error("❌ Lỗi tìm nhân viên theo mã: {}", e.getMessage(), e);
             return null;
         }
     }
     @Override
     public String chuyenDoiMaTaiKhoanSangMaNhanVien(String maTaiKhoan) {
         try {
-            log.info("ðŸ”„ Chuyá»ƒn Ä‘á»•i mÃ£ tÃ i khoáº£n '{}' sang mÃ£ nhÃ¢n viÃªn", maTaiKhoan);
+            log.info("🔄 Chuyển đổi mã tài khoản '{}' sang mã nhân viên", maTaiKhoan);
 
             if (maTaiKhoan == null || maTaiKhoan.trim().isEmpty()) {
                 return null;
@@ -3020,15 +3024,15 @@ public class BanHangServiceImpl implements BanHangService {
 
             if (maNhanVienOpt.isPresent()) {
                 String maNhanVien = maNhanVienOpt.get();
-                log.info("âœ… Chuyá»ƒn Ä‘á»•i thÃ nh cÃ´ng: '{}' -> '{}'", maTaiKhoan, maNhanVien);
+                log.info("✅ Chuyển đổi thành công: '{}' -> '{}'", maTaiKhoan, maNhanVien);
                 return maNhanVien;
             }
 
-            log.warn("âš ï¸ KhÃ´ng tÃ¬m tháº¥y mÃ£ nhÃ¢n viÃªn cho mÃ£ tÃ i khoáº£n: '{}'", maTaiKhoan);
+            log.warn("⚠️ Không tìm thấy mã nhân viên cho mã tài khoản: '{}'", maTaiKhoan);
             return null;
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i chuyá»ƒn Ä‘á»•i mÃ£: {}", e.getMessage());
+            log.error("❌ Lỗi chuyển đổi mã: {}", e.getMessage());
             return null;
         }
     }
@@ -3036,7 +3040,7 @@ public class BanHangServiceImpl implements BanHangService {
     @Override
     public Integer timNhanVienIdLinhHoat(String ma) {
         try {
-            log.info("ðŸ” TÃ¬m nhÃ¢n viÃªn linh hoáº¡t vá»›i mÃ£: '{}'", ma);
+            log.info("🔍 Tìm nhân viên linh hoạt với mã: '{}'", ma);
 
             if (ma == null || ma.trim().isEmpty()) {
                 return null;
@@ -3044,40 +3048,40 @@ public class BanHangServiceImpl implements BanHangService {
 
             String maTrimmed = ma.trim();
 
-            // BÆ°á»›c 1: Thá»­ tÃ¬m trá»±c tiáº¿p báº±ng mÃ£ nhÃ¢n viÃªn
+            // Bước 1: Thử tìm trực tiếp bằng mã nhân viên
             Optional<NhanVien> nhanVienOpt = nhanVienRepository.findByMaNhanVienAndTrangThai(maTrimmed, 1);
             if (nhanVienOpt.isPresent()) {
-                log.info("âœ… TÃ¬m tháº¥y theo mÃ£ nhÃ¢n viÃªn");
+                log.info("✅ Tìm thấy theo mã nhân viên");
                 return nhanVienOpt.get().getId();
             }
 
-            // BÆ°á»›c 2: Thá»­ chuyá»ƒn Ä‘á»•i tá»« mÃ£ tÃ i khoáº£n
+            // Bước 2: Thử chuyển đổi từ mã tài khoản
             String maNhanVien = chuyenDoiMaTaiKhoanSangMaNhanVien(maTrimmed);
             if (maNhanVien != null) {
                 nhanVienOpt = nhanVienRepository.findByMaNhanVienAndTrangThai(maNhanVien, 1);
                 if (nhanVienOpt.isPresent()) {
-                    log.info("âœ… TÃ¬m tháº¥y sau khi chuyá»ƒn Ä‘á»•i: '{}' -> '{}'", maTrimmed, maNhanVien);
+                    log.info("✅ Tìm thấy sau khi chuyển đổi: '{}' -> '{}'", maTrimmed, maNhanVien);
                     return nhanVienOpt.get().getId();
                 }
             }
 
-            // BÆ°á»›c 3: Thá»­ tÃ¬m trá»±c tiáº¿p báº±ng mÃ£ tÃ i khoáº£n
+            // Bước 3: Thử tìm trực tiếp bằng mã tài khoản
             nhanVienOpt = nhanVienRepository.findByTaiKhoan_MaTaiKhoanAndTrangThai(maTrimmed, 1);
             if (nhanVienOpt.isPresent()) {
-                log.info("âœ… TÃ¬m tháº¥y theo mÃ£ tÃ i khoáº£n");
+                log.info("✅ Tìm thấy theo mã tài khoản");
                 return nhanVienOpt.get().getId();
             }
 
-            log.warn("âš ï¸ KhÃ´ng tÃ¬m tháº¥y nhÃ¢n viÃªn vá»›i mÃ£: '{}'", maTrimmed);
+            log.warn("⚠️ Không tìm thấy nhân viên với mã: '{}'", maTrimmed);
             return null;
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i tÃ¬m nhÃ¢n viÃªn linh hoáº¡t: {}", e.getMessage());
+            log.error("❌ Lỗi tìm nhân viên linh hoạt: {}", e.getMessage());
             return null;
         }
     }
     /**
-     * Kiá»ƒm tra email Ä‘Ã£ tá»“n táº¡i trong há»‡ thá»‘ng (an toÃ n)
+     * Kiểm tra email đã tồn tại trong hệ thống (an toàn)
      */
     private boolean isEmailExists(String email) {
         if (!StringUtils.hasText(email)) {
@@ -3085,22 +3089,22 @@ public class BanHangServiceImpl implements BanHangService {
         }
 
         try {
-            // Kiá»ƒm tra trong TaiKhoan trÆ°á»›c
+            // Kiểm tra trong TaiKhoan trước
             if (taiKhoanRepository.existsByEmail(email)) {
                 return true;
             }
 
-            // Kiá»ƒm tra thÃªm qua KhachHang (backup)
+            // Kiểm tra thêm qua KhachHang (backup)
             return khachHangRepository.existsByTaiKhoanEmail(email);
 
         } catch (Exception e) {
-            log.warn("Lá»—i kiá»ƒm tra email tá»“n táº¡i: {}", e.getMessage());
-            // Fallback - chá»‰ kiá»ƒm tra TaiKhoan
+            log.warn("Lỗi kiểm tra email tồn tại: {}", e.getMessage());
+            // Fallback - chỉ kiểm tra TaiKhoan
             try {
                 return taiKhoanRepository.existsByEmail(email);
             } catch (Exception e2) {
-                log.error("Lá»—i nghiÃªm trá»ng kiá»ƒm tra email: {}", e2.getMessage());
-                return false; // KhÃ´ng cháº·n Ä‘Æ°á»£c thÃ¬ cho phÃ©p táº¡o
+                log.error("Lỗi nghiêm trọng kiểm tra email: {}", e2.getMessage());
+                return false; // Không chặn được thì cho phép tạo
             }
         }
     }
@@ -3108,24 +3112,24 @@ public class BanHangServiceImpl implements BanHangService {
     @Transactional
     public HoaDonChoTongQuanResponse chuyenSangGiaoHang(Integer hoaDonId, GiaoHangRequest request) {
         try {
-            log.info("ðŸšš Chuyá»ƒn hÃ³a Ä‘Æ¡n {} sang giao hÃ ng", hoaDonId);
+            log.info("🚚 Chuyển hóa đơn {} sang giao hàng", hoaDonId);
 
-            // Kiá»ƒm tra hÃ³a Ä‘Æ¡n
+            // Kiểm tra hóa đơn
             HoaDon hoaDon = hoaDonRepository.findById(hoaDonId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
             if (!"CHO".equals(hoaDon.getTrangThaiHoaDon())) {
-                throw new RuntimeException("Chá»‰ cÃ³ thá»ƒ chuyá»ƒn hÃ³a Ä‘Æ¡n chá» sang giao hÃ ng");
+                throw new RuntimeException("Chỉ có thể chuyển hóa đơn chờ sang giao hàng");
             }
 
-            // Kiá»ƒm tra cÃ³ sáº£n pháº©m khÃ´ng
+            // Kiểm tra có sản phẩm không
             List<HoaDonChiTiet> chiTiets = hoaDonChiTietRepository.findByHoaDonId(hoaDonId);
             if (chiTiets.isEmpty()) {
-                throw new RuntimeException("HÃ³a Ä‘Æ¡n chÆ°a cÃ³ sáº£n pháº©m");
+                throw new RuntimeException("Hóa đơn chưa có sản phẩm");
             }
 
-            // Cáº­p nháº­t thÃ´ng tin giao hÃ ng
-            hoaDon.setLoaiHoaDon("ONLINE"); // ÄÃ¡nh dáº¥u lÃ  Ä‘Æ¡n giao hÃ ng
+            // Cập nhật thông tin giao hàng
+            hoaDon.setLoaiHoaDon("ONLINE"); // Đánh dấu là đơn giao hàng
             hoaDon.setTenNguoiDung(request.getTenNguoiNhan());
             hoaDon.setSdt(request.getSdt());
             hoaDon.setEmail(request.getEmail() != null ? request.getEmail() : "");
@@ -3134,60 +3138,60 @@ public class BanHangServiceImpl implements BanHangService {
             hoaDon.setPhuongThucThanhToan(request.getPhuongThucThanhToan() != null ?
                     request.getPhuongThucThanhToan() : "COD");
 
-            // TÃ­nh phÃ­ váº­n chuyá»ƒn
+            // Tính phí vận chuyển
             BigDecimal phiShip = request.getPhiVanChuyen() != null ?
                     request.getPhiVanChuyen() : tinhPhiVanChuyenMacDinh(request.getDiaChi(), hoaDon.getTongTien());
             hoaDon.setPhiVanChuyen(phiShip);
 
-            // Cáº­p nháº­t tá»•ng thanh toÃ¡n
+            // Cập nhật tổng thanh toán
             BigDecimal tongThanhToan = hoaDon.getTongTien().add(phiShip);
             hoaDon.setTongThanhToan(tongThanhToan);
 
             hoaDon.setNgayCapNhat(new Date());
             hoaDonRepository.save(hoaDon);
 
-            // Táº¡o lá»‹ch sá»­
-            taoLichSuHoaDon(hoaDon, "Chuyá»ƒn sang giao hÃ ng", hoaDon.getNhanVien());
+            // Tạo lịch sử
+            taoLichSuHoaDon(hoaDon, "Chuyển sang giao hàng", hoaDon.getNhanVien());
 
-            log.info("âœ… ÄÃ£ chuyá»ƒn hÃ³a Ä‘Æ¡n {} sang giao hÃ ng", hoaDonId);
+            log.info("✅ Đã chuyển hóa đơn {} sang giao hàng", hoaDonId);
 
             return layTongQuanHoaDonCho(hoaDonId);
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i chuyá»ƒn sang giao hÃ ng: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ chuyá»ƒn sang giao hÃ ng: " + e.getMessage());
+            log.error("❌ Lỗi chuyển sang giao hàng: {}", e.getMessage());
+            throw new RuntimeException("Không thể chuyển sang giao hàng: " + e.getMessage());
         }
     }
 
     @Override
     public TinhPhiShipResponse tinhPhiShip(TinhPhiShipRequest request) {
         try {
-            log.info("ðŸ’° TÃ­nh phÃ­ ship cho Ä‘á»‹a chá»‰: {}", request.getDiaChi());
+            log.info("💰 Tính phí ship cho địa chỉ: {}", request.getDiaChi());
 
             BigDecimal tongTien = request.getTongTien() != null ? request.getTongTien() : BigDecimal.ZERO;
             BigDecimal phiShip = BigDecimal.ZERO;
             boolean mienPhiShip = false;
             String lyDoMienPhi = null;
 
-            // Logic tÃ­nh phÃ­ ship
+            // Logic tính phí ship
             if (tongTien.compareTo(BigDecimal.valueOf(500000)) >= 0) {
-                // Miá»…n phÃ­ ship cho Ä‘Æ¡n >= 500k
+                // Miễn phí ship cho đơn >= 500k
                 mienPhiShip = true;
-                lyDoMienPhi = "Miá»…n phÃ­ ship cho Ä‘Æ¡n hÃ ng tá»« 500.000â‚«";
+                lyDoMienPhi = "Miễn phí ship cho đơn hàng từ 500.000₫";
                 phiShip = BigDecimal.ZERO;
             } else {
-                // TÃ­nh phÃ­ theo Ä‘á»‹a chá»‰
+                // Tính phí theo địa chỉ
                 String diaChi = request.getDiaChi() != null ? request.getDiaChi().toLowerCase() : "";
 
-                if (diaChi.contains("hÃ  ná»™i") || diaChi.contains("ha noi")) {
-                    phiShip = BigDecimal.valueOf(30000); // 30k trong HÃ  Ná»™i
-                } else if (diaChi.contains("há»“ chÃ­ minh") || diaChi.contains("hcm") ||
-                        diaChi.contains("sÃ i gÃ²n") || diaChi.contains("sai gon")) {
+                if (diaChi.contains("hà nội") || diaChi.contains("ha noi")) {
+                    phiShip = BigDecimal.valueOf(30000); // 30k trong Hà Nội
+                } else if (diaChi.contains("hồ chí minh") || diaChi.contains("hcm") ||
+                        diaChi.contains("sài gòn") || diaChi.contains("sai gon")) {
                     phiShip = BigDecimal.valueOf(35000); // 35k TP.HCM
-                } else if (diaChi.contains("Ä‘Ã  náºµng") || diaChi.contains("da nang")) {
-                    phiShip = BigDecimal.valueOf(35000); // 35k ÄÃ  Náºµng
+                } else if (diaChi.contains("đà nẵng") || diaChi.contains("da nang")) {
+                    phiShip = BigDecimal.valueOf(35000); // 35k Đà Nẵng
                 } else {
-                    phiShip = BigDecimal.valueOf(50000); // 50k cÃ¡c tá»‰nh khÃ¡c
+                    phiShip = BigDecimal.valueOf(50000); // 50k các tỉnh khác
                 }
             }
 
@@ -3201,8 +3205,8 @@ public class BanHangServiceImpl implements BanHangService {
                     .build();
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i tÃ­nh phÃ­ ship: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ tÃ­nh phÃ­ ship: " + e.getMessage());
+            log.error("❌ Lỗi tính phí ship: {}", e.getMessage());
+            throw new RuntimeException("Không thể tính phí ship: " + e.getMessage());
         }
     }
 
@@ -3210,16 +3214,16 @@ public class BanHangServiceImpl implements BanHangService {
     @Transactional
     public HoaDonChoTongQuanResponse capNhatThongTinGiaoHang(Integer hoaDonId, CapNhatGiaoHangRequest request) {
         try {
-            log.info("âœï¸ Cáº­p nháº­t thÃ´ng tin giao hÃ ng cho hÃ³a Ä‘Æ¡n {}", hoaDonId);
+            log.info("✏️ Cập nhật thông tin giao hàng cho hóa đơn {}", hoaDonId);
 
             HoaDon hoaDon = hoaDonRepository.findById(hoaDonId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
             if (!"CHO".equals(hoaDon.getTrangThaiHoaDon())) {
-                throw new RuntimeException("Chá»‰ cÃ³ thá»ƒ cáº­p nháº­t hÃ³a Ä‘Æ¡n Ä‘ang chá»");
+                throw new RuntimeException("Chỉ có thể cập nhật hóa đơn đang chờ");
             }
 
-            // Cáº­p nháº­t thÃ´ng tin náº¿u cÃ³
+            // Cập nhật thông tin nếu có
             if (request.getTenNguoiNhan() != null) {
                 hoaDon.setTenNguoiDung(request.getTenNguoiNhan());
             }
@@ -3237,7 +3241,7 @@ public class BanHangServiceImpl implements BanHangService {
             }
             if (request.getPhiVanChuyen() != null) {
                 hoaDon.setPhiVanChuyen(request.getPhiVanChuyen());
-                // Cáº­p nháº­t láº¡i tá»•ng thanh toÃ¡n
+                // Cập nhật lại tổng thanh toán
                 BigDecimal tongThanhToan = hoaDon.getTongTien().add(request.getPhiVanChuyen());
                 hoaDon.setTongThanhToan(tongThanhToan);
             }
@@ -3245,13 +3249,13 @@ public class BanHangServiceImpl implements BanHangService {
             hoaDon.setNgayCapNhat(new Date());
             hoaDonRepository.save(hoaDon);
 
-            log.info("âœ… ÄÃ£ cáº­p nháº­t thÃ´ng tin giao hÃ ng");
+            log.info("✅ Đã cập nhật thông tin giao hàng");
 
             return layTongQuanHoaDonCho(hoaDonId);
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i cáº­p nháº­t thÃ´ng tin giao hÃ ng: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ cáº­p nháº­t: " + e.getMessage());
+            log.error("❌ Lỗi cập nhật thông tin giao hàng: {}", e.getMessage());
+            throw new RuntimeException("Không thể cập nhật: " + e.getMessage());
         }
     }
 
@@ -3259,55 +3263,55 @@ public class BanHangServiceImpl implements BanHangService {
     @Transactional
     public HoaDonResponse xacNhanGiaoHang(Integer hoaDonId) {
         try {
-            log.info("âœ… XÃ¡c nháº­n giao hÃ ng cho hÃ³a Ä‘Æ¡n {}", hoaDonId);
+            log.info("✅ Xác nhận giao hàng cho hóa đơn {}", hoaDonId);
 
             HoaDon hoaDon = hoaDonRepository.findById(hoaDonId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
-            // Kiá»ƒm tra tráº¡ng thÃ¡i
+            // Kiểm tra trạng thái
             if (!"CHO".equals(hoaDon.getTrangThaiHoaDon())) {
-                throw new RuntimeException("HÃ³a Ä‘Æ¡n khÃ´ng á»Ÿ tráº¡ng thÃ¡i chá»");
+                throw new RuntimeException("Hóa đơn không ở trạng thái chờ");
             }
 
-            // Kiá»ƒm tra thÃ´ng tin giao hÃ ng
+            // Kiểm tra thông tin giao hàng
             if (!StringUtils.hasText(hoaDon.getDiaChi())) {
-                throw new RuntimeException("ChÆ°a cÃ³ Ä‘á»‹a chá»‰ giao hÃ ng");
+                throw new RuntimeException("Chưa có địa chỉ giao hàng");
             }
             if (!StringUtils.hasText(hoaDon.getSdt())) {
-                throw new RuntimeException("ChÆ°a cÃ³ sá»‘ Ä‘iá»‡n thoáº¡i ngÆ°á»i nháº­n");
+                throw new RuntimeException("Chưa có số điện thoại người nhận");
             }
 
-            // Cáº­p nháº­t tráº¡ng thÃ¡i vÃ  thá»i gian
-            hoaDon.setTrangThaiHoaDon("ÄÃ£ xÃ¡c nháº­n");
+            // Cập nhật trạng thái và thời gian
+            hoaDon.setTrangThaiHoaDon("Đã xác nhận");
             hoaDon.setNgayXacNhan(new Date());
             hoaDon.setNgayCapNhat(new Date());
 
-            // Náº¿u lÃ  COD thÃ¬ set thá»i gian váº­n chuyá»ƒn
+            // Nếu là COD thì set thời gian vận chuyển
             if ("COD".equals(hoaDon.getPhuongThucThanhToan())) {
                 Calendar cal = Calendar.getInstance();
-                cal.add(Calendar.DAY_OF_MONTH, 3); // Dá»± kiáº¿n giao sau 3 ngÃ y
+                cal.add(Calendar.DAY_OF_MONTH, 3); // Dự kiến giao sau 3 ngày
                 hoaDon.setThoiGianVanChuyen(cal.getTime());
             }
 
             hoaDonRepository.save(hoaDon);
 
-            // Cáº­p nháº­t chi tiáº¿t hÃ³a Ä‘Æ¡n
+            // Cập nhật chi tiết hóa đơn
             List<HoaDonChiTiet> chiTiets = hoaDonChiTietRepository.findByHoaDonId(hoaDonId);
             for (HoaDonChiTiet chiTiet : chiTiets) {
-                chiTiet.setTrangThaiHoaDon("ÄÃ£ xÃ¡c nháº­n");
+                chiTiet.setTrangThaiHoaDon("Đã xác nhận");
                 hoaDonChiTietRepository.save(chiTiet);
             }
 
-            // Táº¡o lá»‹ch sá»­
-            taoLichSuHoaDon(hoaDon, "XÃ¡c nháº­n Ä‘Æ¡n giao hÃ ng", hoaDon.getNhanVien());
+            // Tạo lịch sử
+            taoLichSuHoaDon(hoaDon, "Xác nhận đơn giao hàng", hoaDon.getNhanVien());
 
-            log.info("âœ… ÄÃ£ xÃ¡c nháº­n giao hÃ ng");
+            log.info("✅ Đã xác nhận giao hàng");
 
             return mapToHoaDonResponse(hoaDon);
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i xÃ¡c nháº­n giao hÃ ng: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ xÃ¡c nháº­n: " + e.getMessage());
+            log.error("❌ Lỗi xác nhận giao hàng: {}", e.getMessage());
+            throw new RuntimeException("Không thể xác nhận: " + e.getMessage());
         }
     }
 
@@ -3315,39 +3319,39 @@ public class BanHangServiceImpl implements BanHangService {
     @Transactional
     public HoaDonChoTongQuanResponse huyGiaoHang(Integer hoaDonId) {
         try {
-            log.info("ðŸš« Há»§y giao hÃ ng cho hÃ³a Ä‘Æ¡n {}", hoaDonId);
+            log.info("🚫 Hủy giao hàng cho hóa đơn {}", hoaDonId);
 
             HoaDon hoaDon = hoaDonRepository.findById(hoaDonId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
             if (!"CHO".equals(hoaDon.getTrangThaiHoaDon()) &&
-                    !"ÄÃ£ xÃ¡c nháº­n".equals(hoaDon.getTrangThaiHoaDon())) {
-                throw new RuntimeException("KhÃ´ng thá»ƒ há»§y giao hÃ ng cho hÃ³a Ä‘Æ¡n nÃ y");
+                    !"Đã xác nhận".equals(hoaDon.getTrangThaiHoaDon())) {
+                throw new RuntimeException("Không thể hủy giao hàng cho hóa đơn này");
             }
 
-            // Chuyá»ƒn vá» bÃ¡n táº¡i quáº§y
+            // Chuyển về bán tại quầy
             hoaDon.setLoaiHoaDon("OFFLINE");
             hoaDon.setDiaChi("");
             hoaDon.setPhiVanChuyen(BigDecimal.ZERO);
             hoaDon.setPhuongThucThanhToan("CASH");
             hoaDon.setTrangThaiHoaDon("CHO");
 
-            // Cáº­p nháº­t láº¡i tá»•ng thanh toÃ¡n (bá» phÃ­ ship)
+            // Cập nhật lại tổng thanh toán (bỏ phí ship)
             hoaDon.setTongThanhToan(hoaDon.getTongTien());
 
             hoaDon.setNgayCapNhat(new Date());
             hoaDonRepository.save(hoaDon);
 
-            // Táº¡o lá»‹ch sá»­
-            taoLichSuHoaDon(hoaDon, "Há»§y giao hÃ ng, chuyá»ƒn vá» bÃ¡n táº¡i quáº§y", hoaDon.getNhanVien());
+            // Tạo lịch sử
+            taoLichSuHoaDon(hoaDon, "Hủy giao hàng, chuyển về bán tại quầy", hoaDon.getNhanVien());
 
-            log.info("âœ… ÄÃ£ há»§y giao hÃ ng");
+            log.info("✅ Đã hủy giao hàng");
 
             return layTongQuanHoaDonCho(hoaDonId);
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i há»§y giao hÃ ng: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ há»§y: " + e.getMessage());
+            log.error("❌ Lỗi hủy giao hàng: {}", e.getMessage());
+            throw new RuntimeException("Không thể hủy: " + e.getMessage());
         }
     }
 
@@ -3355,31 +3359,31 @@ public class BanHangServiceImpl implements BanHangService {
     @Transactional
     public HoaDonResponse capNhatDangGiao(Integer hoaDonId) {
         try {
-            log.info("ðŸšš Cáº­p nháº­t Ä‘ang giao hÃ ng cho hÃ³a Ä‘Æ¡n {}", hoaDonId);
+            log.info("🚚 Cập nhật đang giao hàng cho hóa đơn {}", hoaDonId);
 
             HoaDon hoaDon = hoaDonRepository.findById(hoaDonId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
-            if (!"ÄÃ£ xÃ¡c nháº­n".equals(hoaDon.getTrangThaiHoaDon())) {
-                throw new RuntimeException("Chá»‰ cÃ³ thá»ƒ giao hÃ ng cho Ä‘Æ¡n Ä‘Ã£ xÃ¡c nháº­n");
+            if (!"Đã xác nhận".equals(hoaDon.getTrangThaiHoaDon())) {
+                throw new RuntimeException("Chỉ có thể giao hàng cho đơn đã xác nhận");
             }
 
-            hoaDon.setTrangThaiHoaDon("Äang giao");
+            hoaDon.setTrangThaiHoaDon("Đang giao");
             hoaDon.setNgayGiaoHang(new Date());
             hoaDon.setNgayCapNhat(new Date());
 
             hoaDonRepository.save(hoaDon);
 
-            // Táº¡o lá»‹ch sá»­
-            taoLichSuHoaDon(hoaDon, "Báº¯t Ä‘áº§u giao hÃ ng", hoaDon.getNhanVien());
+            // Tạo lịch sử
+            taoLichSuHoaDon(hoaDon, "Bắt đầu giao hàng", hoaDon.getNhanVien());
 
-            log.info("âœ… ÄÃ£ cáº­p nháº­t Ä‘ang giao hÃ ng");
+            log.info("✅ Đã cập nhật đang giao hàng");
 
             return mapToHoaDonResponse(hoaDon);
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i cáº­p nháº­t Ä‘ang giao: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ cáº­p nháº­t: " + e.getMessage());
+            log.error("❌ Lỗi cập nhật đang giao: {}", e.getMessage());
+            throw new RuntimeException("Không thể cập nhật: " + e.getMessage());
         }
     }
 
@@ -3387,116 +3391,116 @@ public class BanHangServiceImpl implements BanHangService {
     @Transactional
     public HoaDonResponse xacNhanDaGiao(Integer hoaDonId) {
         try {
-            log.info("âœ… XÃ¡c nháº­n Ä‘Ã£ giao hÃ ng cho hÃ³a Ä‘Æ¡n {}", hoaDonId);
+            log.info("✅ Xác nhận đã giao hàng cho hóa đơn {}", hoaDonId);
 
             HoaDon hoaDon = hoaDonRepository.findById(hoaDonId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
-            if (!"Äang giao".equals(hoaDon.getTrangThaiHoaDon())) {
-                throw new RuntimeException("Chá»‰ cÃ³ thá»ƒ xÃ¡c nháº­n cho Ä‘Æ¡n Ä‘ang giao");
+            if (!"Đang giao".equals(hoaDon.getTrangThaiHoaDon())) {
+                throw new RuntimeException("Chỉ có thể xác nhận cho đơn đang giao");
             }
 
-            hoaDon.setTrangThaiHoaDon("HoÃ n thÃ nh");
+            hoaDon.setTrangThaiHoaDon("Hoàn thành");
             hoaDon.setNgayNhanHang(new Date());
             hoaDon.setNgayHoanThanh(new Date());
             hoaDon.setNgayCapNhat(new Date());
 
             hoaDonRepository.save(hoaDon);
 
-            // Cáº­p nháº­t chi tiáº¿t
+            // Cập nhật chi tiết
             List<HoaDonChiTiet> chiTiets = hoaDonChiTietRepository.findByHoaDonId(hoaDonId);
             for (HoaDonChiTiet chiTiet : chiTiets) {
-                chiTiet.setTrangThaiHoaDon("HoÃ n thÃ nh");
+                chiTiet.setTrangThaiHoaDon("Hoàn thành");
                 hoaDonChiTietRepository.save(chiTiet);
             }
 
-            // Cá»™ng Ä‘iá»ƒm cho khÃ¡ch hÃ ng náº¿u cÃ³
+            // Cộng điểm cho khách hàng nếu có
             if (hoaDon.getKhachHang() != null) {
                 congDiemKhachHang(hoaDon.getKhachHang().getId(), hoaDon.getTongThanhToan().doubleValue());
             }
 
-            // Táº¡o lá»‹ch sá»­
-            taoLichSuHoaDon(hoaDon, "Giao hÃ ng thÃ nh cÃ´ng", hoaDon.getNhanVien());
+            // Tạo lịch sử
+            taoLichSuHoaDon(hoaDon, "Giao hàng thành công", hoaDon.getNhanVien());
 
-            log.info("âœ… ÄÃ£ xÃ¡c nháº­n giao hÃ ng thÃ nh cÃ´ng");
+            log.info("✅ Đã xác nhận giao hàng thành công");
 
             return mapToHoaDonResponse(hoaDon);
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i xÃ¡c nháº­n Ä‘Ã£ giao: {}", e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ xÃ¡c nháº­n: " + e.getMessage());
+            log.error("❌ Lỗi xác nhận đã giao: {}", e.getMessage());
+            throw new RuntimeException("Không thể xác nhận: " + e.getMessage());
         }
     }
 
     // Helper method
     private BigDecimal tinhPhiVanChuyenMacDinh(String diaChi, BigDecimal tongTien) {
         if (tongTien != null && tongTien.compareTo(BigDecimal.valueOf(500000)) >= 0) {
-            return BigDecimal.ZERO; // Miá»…n phÃ­ cho Ä‘Æ¡n >= 500k
+            return BigDecimal.ZERO; // Miễn phí cho đơn >= 500k
         }
 
         if (diaChi != null) {
             String diaChiLower = diaChi.toLowerCase();
-            if (diaChiLower.contains("hÃ  ná»™i") || diaChiLower.contains("ha noi")) {
+            if (diaChiLower.contains("hà nội") || diaChiLower.contains("ha noi")) {
                 return BigDecimal.valueOf(30000);
-            } else if (diaChiLower.contains("há»“ chÃ­ minh") || diaChiLower.contains("hcm")) {
+            } else if (diaChiLower.contains("hồ chí minh") || diaChiLower.contains("hcm")) {
                 return BigDecimal.valueOf(35000);
             }
         }
 
-        return BigDecimal.valueOf(50000); // Máº·c Ä‘á»‹nh 50k
+        return BigDecimal.valueOf(50000); // Mặc định 50k
     }
     private void xuLyThanhToanTienMat(ThanhToanRequest request, BigDecimal tongTienCanThanhToan) {
         if (request.getTienMat() == null || request.getTienMat().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RuntimeException("Sá»‘ tiá»n máº·t pháº£i lá»›n hÆ¡n 0");
+            throw new RuntimeException("Số tiền mặt phải lớn hơn 0");
         }
 
         if (request.getTienMat().compareTo(tongTienCanThanhToan) < 0) {
-            throw new RuntimeException("Sá»‘ tiá»n máº·t khÃ´ng Ä‘á»§ Ä‘á»ƒ thanh toÃ¡n");
+            throw new RuntimeException("Số tiền mặt không đủ để thanh toán");
         }
 
-        log.info("ðŸ’µ Thanh toÃ¡n tiá»n máº·t: {} - Tá»•ng cáº§n thanh toÃ¡n: {}",
+        log.info("💵 Thanh toán tiền mặt: {} - Tổng cần thanh toán: {}",
                 request.getTienMat(), tongTienCanThanhToan);
     }
 
     /**
-     * Xá»­ lÃ½ thanh toÃ¡n báº±ng chuyá»ƒn khoáº£n
+     * Xử lý thanh toán bằng chuyển khoản
      */
     private void xuLyThanhToanChuyenKhoan(ThanhToanRequest request, BigDecimal tongTienCanThanhToan) {
         if (request.getTienChuyenKhoan() == null || request.getTienChuyenKhoan().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RuntimeException("Sá»‘ tiá»n chuyá»ƒn khoáº£n pháº£i lá»›n hÆ¡n 0");
+            throw new RuntimeException("Số tiền chuyển khoản phải lớn hơn 0");
         }
 
         if (request.getTienChuyenKhoan().compareTo(tongTienCanThanhToan) < 0) {
-            throw new RuntimeException("Sá»‘ tiá»n chuyá»ƒn khoáº£n khÃ´ng Ä‘á»§ Ä‘á»ƒ thanh toÃ¡n");
+            throw new RuntimeException("Số tiền chuyển khoản không đủ để thanh toán");
         }
 
-        log.info("ðŸ¦ Thanh toÃ¡n chuyá»ƒn khoáº£n: {} - Tá»•ng cáº§n thanh toÃ¡n: {}",
+        log.info("🏦 Thanh toán chuyển khoản: {} - Tổng cần thanh toán: {}",
                 request.getTienChuyenKhoan(), tongTienCanThanhToan);
     }
 
     /**
-     * Xá»­ lÃ½ thanh toÃ¡n káº¿t há»£p (tiá»n máº·t + chuyá»ƒn khoáº£n)
+     * Xử lý thanh toán kết hợp (tiền mặt + chuyển khoản)
      */
     private void xuLyThanhToanKetHop(ThanhToanRequest request, BigDecimal tongTienCanThanhToan) {
         BigDecimal tienMat = request.getTienMat() != null ? request.getTienMat() : BigDecimal.ZERO;
         BigDecimal tienChuyenKhoan = request.getTienChuyenKhoan() != null ? request.getTienChuyenKhoan() : BigDecimal.ZERO;
 
         if (tienMat.compareTo(BigDecimal.ZERO) <= 0 && tienChuyenKhoan.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RuntimeException("Pháº£i cÃ³ Ã­t nháº¥t má»™t phÆ°Æ¡ng thá»©c thanh toÃ¡n cÃ³ giÃ¡ trá»‹ > 0");
+            throw new RuntimeException("Phải có ít nhất một phương thức thanh toán có giá trị > 0");
         }
 
         BigDecimal tongTienNhan = tienMat.add(tienChuyenKhoan);
         if (tongTienNhan.compareTo(tongTienCanThanhToan) < 0) {
-            throw new RuntimeException("Tá»•ng tiá»n thanh toÃ¡n khÃ´ng Ä‘á»§. Cáº§n: " +
-                    tongTienCanThanhToan + ", CÃ³: " + tongTienNhan);
+            throw new RuntimeException("Tổng tiền thanh toán không đủ. Cần: " +
+                    tongTienCanThanhToan + ", Có: " + tongTienNhan);
         }
 
-        log.info("ðŸ’° Thanh toÃ¡n káº¿t há»£p - Tiá»n máº·t: {}, Chuyá»ƒn khoáº£n: {}, Tá»•ng: {}",
+        log.info("💰 Thanh toán kết hợp - Tiền mặt: {}, Chuyển khoản: {}, Tổng: {}",
                 tienMat, tienChuyenKhoan, tongTienNhan);
     }
 
     /**
-     * Xá»­ lÃ½ trá»« Ä‘iá»ƒm tÃ­ch lÅ©y
+     * Xử lý trừ điểm tích lũy
      */
     private void xuLyDiemTichLuy(KhachHang khachHang, Integer diemSuDung) {
         if (khachHang != null && khachHang.getViDiem() != null) {
@@ -3504,59 +3508,59 @@ public class BanHangServiceImpl implements BanHangService {
             Double diemHienTai = viDiem.getTongDiem() - viDiem.getSoDiemDaDung();
 
             if (diemSuDung > diemHienTai) {
-                throw new RuntimeException("KhÃ´ng Ä‘á»§ Ä‘iá»ƒm Ä‘á»ƒ sá»­ dá»¥ng. CÃ³: " + diemHienTai + " Ä‘iá»ƒm");
+                throw new RuntimeException("Không đủ điểm để sử dụng. Có: " + diemHienTai + " điểm");
             }
 
             viDiem.setSoDiemDaDung(viDiem.getSoDiemDaDung() + diemSuDung);
             viDiem.setNgayCapNhat(new Date());
             viDiemRepository.save(viDiem);
 
-            log.info("ðŸŽ¯ Sá»­ dá»¥ng {} Ä‘iá»ƒm tÃ­ch lÅ©y", diemSuDung);
+            log.info("🎯 Sử dụng {} điểm tích lũy", diemSuDung);
         }
     }
 
     /**
-     * Táº¡o mÃ´ táº£ cho lá»‹ch sá»­ thanh toÃ¡n
+     * Tạo mô tả cho lịch sử thanh toán
      */
     private String taoMoTaThanhToan(ThanhToanRequest request) {
-        StringBuilder moTa = new StringBuilder("Thanh toÃ¡n thÃ nh cÃ´ng - ");
+        StringBuilder moTa = new StringBuilder("Thanh toán thành công - ");
 
         switch (request.getPhuongThucThanhToan()) {
             case "TIEN_MAT":
-                moTa.append("Tiá»n máº·t: ").append(formatMoney(request.getTienMat()));
+                moTa.append("Tiền mặt: ").append(formatMoney(request.getTienMat()));
                 break;
             case "CHUYEN_KHOAN":
-                moTa.append("Chuyá»ƒn khoáº£n: ").append(formatMoney(request.getTienChuyenKhoan()));
+                moTa.append("Chuyển khoản: ").append(formatMoney(request.getTienChuyenKhoan()));
                 break;
             case "KET_HOP":
-                moTa.append("Káº¿t há»£p - Tiá»n máº·t: ").append(formatMoney(request.getTienMat()))
-                        .append(", Chuyá»ƒn khoáº£n: ").append(formatMoney(request.getTienChuyenKhoan()));
+                moTa.append("Kết hợp - Tiền mặt: ").append(formatMoney(request.getTienMat()))
+                        .append(", Chuyển khoản: ").append(formatMoney(request.getTienChuyenKhoan()));
                 break;
         }
 
         if (request.getDiemSuDung() != null && request.getDiemSuDung() > 0) {
-            moTa.append(", Äiá»ƒm sá»­ dá»¥ng: ").append(request.getDiemSuDung());
+            moTa.append(", Điểm sử dụng: ").append(request.getDiemSuDung());
         }
 
         return moTa.toString();
     }
 
     /**
-     * Format tiá»n tá»‡
+     * Format tiền tệ
      */
     private String formatMoney(BigDecimal amount) {
-        if (amount == null) return "0â‚«";
-        return String.format("%,.0fâ‚«", amount);
+        if (amount == null) return "0₫";
+        return String.format("%,.0f₫", amount);
     }
 
     @Override
     @Transactional
     public ThanhToanResponse thanhToanHoaDonChiTiet(Integer hoaDonId, ThanhToanRequest request) {
         try {
-            log.info("ðŸ’° Thanh toÃ¡n chi tiáº¿t hÃ³a Ä‘Æ¡n ID: {} vá»›i phÆ°Æ¡ng thá»©c: {}", hoaDonId, request.getPhuongThucThanhToan());
+            log.info("💰 Thanh toán chi tiết hóa đơn ID: {} với phương thức: {}", hoaDonId, request.getPhuongThucThanhToan());
 
-            // ===== BÆ¯á»šC 1: KIá»‚M TRA Tá»’N KHO NGAY Äáº¦U =====
-            log.info("ðŸ” BÆ°á»›c 1: Kiá»ƒm tra tá»“n kho má»›i nháº¥t...");
+            // ===== BƯỚC 1: KIỂM TRA TỒN KHO NGAY ĐẦU =====
+            log.info("🔍 Bước 1: Kiểm tra tồn kho mới nhất...");
             List<InventoryCheckResponse> inventoryChecks = kiemTraTonKhoTruocThanhToan(hoaDonId);
 
             List<InventoryCheckResponse> sanPhamThieu = inventoryChecks.stream()
@@ -3564,14 +3568,14 @@ public class BanHangServiceImpl implements BanHangService {
                     .collect(Collectors.toList());
 
             if (!sanPhamThieu.isEmpty()) {
-                // Táº¡o thÃ´ng bÃ¡o chi tiáº¿t vá» cÃ¡c sáº£n pháº©m thiáº¿u
-                StringBuilder errorMessage = new StringBuilder("KhÃ´ng thá»ƒ thanh toÃ¡n do thiáº¿u tá»“n kho:\n");
+                // Tạo thông báo chi tiết về các sản phẩm thiếu
+                StringBuilder errorMessage = new StringBuilder("Không thể thanh toán do thiếu tồn kho:\n");
                 for (InventoryCheckResponse item : sanPhamThieu) {
                     errorMessage.append(String.format("- %s (%s - %s): %s\n",
                             item.getTenSanPham(), item.getMauSac(), item.getKichCo(), item.getThongBao()));
                 }
 
-                log.warn("âš ï¸ Tá»« chá»‘i thanh toÃ¡n do thiáº¿u tá»“n kho: {}", errorMessage.toString());
+                log.warn("⚠️ Từ chối thanh toán do thiếu tồn kho: {}", errorMessage.toString());
 
                 return ThanhToanResponse.builder()
                         .hoaDonId(hoaDonId)
@@ -3581,156 +3585,156 @@ public class BanHangServiceImpl implements BanHangService {
                         .build();
             }
 
-            // ===== VALIDATION CÆ  Báº¢N =====
+            // ===== VALIDATION CƠ BẢN =====
             if (hoaDonId == null || request == null) {
-                throw new RuntimeException("ThÃ´ng tin thanh toÃ¡n khÃ´ng há»£p lá»‡");
+                throw new RuntimeException("Thông tin thanh toán không hợp lệ");
             }
 
             HoaDon hoaDon = hoaDonRepository.findById(hoaDonId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
             if (!"CHO".equals(hoaDon.getTrangThaiHoaDon())) {
-                throw new RuntimeException("HÃ³a Ä‘Æ¡n khÃ´ng á»Ÿ tráº¡ng thÃ¡i chá» thanh toÃ¡n");
+                throw new RuntimeException("Hóa đơn không ở trạng thái chờ thanh toán");
             }
 
-            log.info("âœ… BÆ°á»›c 1 hoÃ n thÃ nh: Tá»“n kho Ä‘á»§ Ä‘á»ƒ thanh toÃ¡n");
+            log.info("✅ Bước 1 hoàn thành: Tồn kho đủ để thanh toán");
 
-            // ===== BÆ¯á»šC 2: TÃNH Tá»”NG TIá»€N BAN Äáº¦U =====
+            // ===== BƯỚC 2: TÍNH TỔNG TIỀN BAN ĐẦU =====
             BigDecimal tongTienGoc = hoaDonChiTietRepository.calculateTotalAmountByHoaDonId(hoaDonId);
             BigDecimal tongTienCanThanhToan = tongTienGoc;
             BigDecimal tienThua = BigDecimal.ZERO;
 
-            log.info("ðŸ“Š Tá»•ng tiá»n gá»‘c: {}", tongTienGoc);
+            log.info("📊 Tổng tiền gốc: {}", tongTienGoc);
 
-            // ===== BÆ¯á»šC 3: Xá»¬ LÃ VOUCHER =====
+            // ===== BƯỚC 3: XỬ LÝ VOUCHER =====
             Voucher voucherApplied = null;
             BigDecimal giaTriGiamVoucher = BigDecimal.ZERO;
 
             if (request.getVoucherId() != null) {
-                log.info("ðŸŽ« Xá»­ lÃ½ voucher ID: {}", request.getVoucherId());
+                log.info("🎫 Xử lý voucher ID: {}", request.getVoucherId());
 
                 voucherApplied = voucherRepository.findById(request.getVoucherId()).orElse(null);
                 if (voucherApplied == null) {
-                    throw new RuntimeException("KhÃ´ng tÃ¬m tháº¥y voucher");
+                    throw new RuntimeException("Không tìm thấy voucher");
                 }
 
-                // Kiá»ƒm tra tÃ­nh há»£p lá»‡ cá»§a voucher
+                // Kiểm tra tính hợp lệ của voucher
                 Date currentDate = new Date();
                 if (!voucherApplied.isValid()) {
-                    throw new RuntimeException("Voucher khÃ´ng há»£p lá»‡");
+                    throw new RuntimeException("Voucher không hợp lệ");
                 }
 
                 if (voucherApplied.getSoLuong() <= 0) {
-                    throw new RuntimeException("Voucher Ä‘Ã£ háº¿t lÆ°á»£t sá»­ dá»¥ng");
+                    throw new RuntimeException("Voucher đã hết lượt sử dụng");
                 }
 
                 if (currentDate.before(voucherApplied.getNgayBatDau()) ||
                         currentDate.after(voucherApplied.getNgayKetThuc())) {
-                    throw new RuntimeException("Voucher ngoÃ i thá»i gian sá»­ dá»¥ng");
+                    throw new RuntimeException("Voucher ngoài thời gian sử dụng");
                 }
 
-                // Kiá»ƒm tra giÃ¡ trá»‹ Ä‘Æ¡n hÃ ng tá»‘i thiá»ƒu
+                // Kiểm tra giá trị đơn hàng tối thiểu
                 if (tongTienGoc.doubleValue() < voucherApplied.getGiaTriGiamToiThieu()) {
-                    throw new RuntimeException("ÄÆ¡n hÃ ng chÆ°a Ä‘á»§ giÃ¡ trá»‹ tá»‘i thiá»ƒu Ä‘á»ƒ Ã¡p dá»¥ng voucher: " +
+                    throw new RuntimeException("Đơn hàng chưa đủ giá trị tối thiểu để áp dụng voucher: " +
                             formatMoney(BigDecimal.valueOf(voucherApplied.getGiaTriGiamToiThieu())));
                 }
 
-                // TÃ­nh giÃ¡ trá»‹ giáº£m
+                // Tính giá trị giảm
                 Double giaTriGiam = voucherApplied.tinhGiaTriGiam(tongTienGoc.doubleValue());
                 giaTriGiamVoucher = BigDecimal.valueOf(giaTriGiam);
 
-                // Trá»« voucher khá»i tá»•ng tiá»n
+                // Trừ voucher khỏi tổng tiền
                 tongTienCanThanhToan = tongTienCanThanhToan.subtract(giaTriGiamVoucher);
                 tongTienCanThanhToan = tongTienCanThanhToan.max(BigDecimal.ZERO);
 
-                log.info("âœ… Voucher Ã¡p dá»¥ng: {} - Giáº£m: {}", voucherApplied.getTenVoucher(), giaTriGiamVoucher);
+                log.info("✅ Voucher áp dụng: {} - Giảm: {}", voucherApplied.getTenVoucher(), giaTriGiamVoucher);
             }
 
-            // ===== BÆ¯á»šC 4: Xá»¬ LÃ ÄIá»‚M TÃCH LÅ¨Y =====
+            // ===== BƯỚC 4: XỬ LÝ ĐIỂM TÍCH LŨY =====
             BigDecimal giaTriDiem = BigDecimal.ZERO;
             if (request.getDiemSuDung() != null && request.getDiemSuDung() > 0) {
-                log.info("ðŸŽ¯ Xá»­ lÃ½ Ä‘iá»ƒm tÃ­ch lÅ©y: {} Ä‘iá»ƒm", request.getDiemSuDung());
+                log.info("🎯 Xử lý điểm tích lũy: {} điểm", request.getDiemSuDung());
 
-                // Kiá»ƒm tra khÃ¡ch hÃ ng cÃ³ Ä‘á»§ Ä‘iá»ƒm khÃ´ng
+                // Kiểm tra khách hàng có đủ điểm không
                 if (request.getKhachHangId() == null) {
-                    throw new RuntimeException("Cáº§n cÃ³ khÃ¡ch hÃ ng Ä‘á»ƒ sá»­ dá»¥ng Ä‘iá»ƒm tÃ­ch lÅ©y");
+                    throw new RuntimeException("Cần có khách hàng để sử dụng điểm tích lũy");
                 }
 
                 KhachHang khachHang = khachHangRepository.findById(request.getKhachHangId()).orElse(null);
                 if (khachHang == null || khachHang.getViDiem() == null) {
-                    throw new RuntimeException("KhÃ¡ch hÃ ng khÃ´ng cÃ³ vÃ­ Ä‘iá»ƒm");
+                    throw new RuntimeException("Khách hàng không có ví điểm");
                 }
 
                 ViDiem viDiem = khachHang.getViDiem();
                 Double diemHienTai = viDiem.getTongDiem() - viDiem.getSoDiemDaDung();
 
                 if (request.getDiemSuDung() > diemHienTai) {
-                    throw new RuntimeException("KhÃ´ng Ä‘á»§ Ä‘iá»ƒm Ä‘á»ƒ sá»­ dá»¥ng. CÃ³: " + diemHienTai + " Ä‘iá»ƒm");
+                    throw new RuntimeException("Không đủ điểm để sử dụng. Có: " + diemHienTai + " điểm");
                 }
 
-                // TÃ­nh giÃ¡ trá»‹ Ä‘iá»ƒm (1 Ä‘iá»ƒm = 1000 VND)
+                // Tính giá trị điểm (1 điểm = 1000 VND)
                 giaTriDiem = BigDecimal.valueOf(request.getDiemSuDung() * 1000);
                 tongTienCanThanhToan = tongTienCanThanhToan.subtract(giaTriDiem);
                 tongTienCanThanhToan = tongTienCanThanhToan.max(BigDecimal.ZERO);
 
-                log.info("ðŸ’° Sá»­ dá»¥ng {} Ä‘iá»ƒm = {}", request.getDiemSuDung(), formatMoney(giaTriDiem));
+                log.info("💰 Sử dụng {} điểm = {}", request.getDiemSuDung(), formatMoney(giaTriDiem));
             }
 
-            log.info("ðŸ’µ Tá»•ng tiá»n cáº§n thanh toÃ¡n sau giáº£m giÃ¡: {}", tongTienCanThanhToan);
+            log.info("💵 Tổng tiền cần thanh toán sau giảm giá: {}", tongTienCanThanhToan);
 
-            // ===== BÆ¯á»šC 5: VALIDATION VÃ€ Xá»¬ LÃ PHÆ¯Æ NG THá»¨C THANH TOÃN =====
+            // ===== BƯỚC 5: VALIDATION VÀ XỬ LÝ PHƯƠNG THỨC THANH TOÁN =====
             if ("TIEN_MAT".equals(request.getPhuongThucThanhToan())) {
                 if (request.getTienMat() == null || request.getTienMat().compareTo(BigDecimal.ZERO) <= 0) {
-                    throw new RuntimeException("Sá»‘ tiá»n máº·t pháº£i lá»›n hÆ¡n 0");
+                    throw new RuntimeException("Số tiền mặt phải lớn hơn 0");
                 }
                 if (request.getTienMat().compareTo(tongTienCanThanhToan) < 0) {
-                    throw new RuntimeException("Sá»‘ tiá»n máº·t khÃ´ng Ä‘á»§ Ä‘á»ƒ thanh toÃ¡n. Cáº§n: " +
+                    throw new RuntimeException("Số tiền mặt không đủ để thanh toán. Cần: " +
                             formatMoney(tongTienCanThanhToan));
                 }
                 tienThua = request.getTienMat().subtract(tongTienCanThanhToan);
-                log.info("ðŸ’µ Thanh toÃ¡n tiá»n máº·t: {} - Tiá»n thá»«a: {}",
+                log.info("💵 Thanh toán tiền mặt: {} - Tiền thừa: {}",
                         formatMoney(request.getTienMat()), formatMoney(tienThua));
 
             } else if ("CHUYEN_KHOAN".equals(request.getPhuongThucThanhToan())) {
                 if (request.getTienChuyenKhoan() == null || request.getTienChuyenKhoan().compareTo(BigDecimal.ZERO) <= 0) {
-                    throw new RuntimeException("Sá»‘ tiá»n chuyá»ƒn khoáº£n pháº£i lá»›n hÆ¡n 0");
+                    throw new RuntimeException("Số tiền chuyển khoản phải lớn hơn 0");
                 }
                 if (request.getTienChuyenKhoan().compareTo(tongTienCanThanhToan) < 0) {
-                    throw new RuntimeException("Sá»‘ tiá»n chuyá»ƒn khoáº£n khÃ´ng Ä‘á»§ Ä‘á»ƒ thanh toÃ¡n. Cáº§n: " +
+                    throw new RuntimeException("Số tiền chuyển khoản không đủ để thanh toán. Cần: " +
                             formatMoney(tongTienCanThanhToan));
                 }
-                log.info("ðŸ¦ Thanh toÃ¡n chuyá»ƒn khoáº£n: {}", formatMoney(request.getTienChuyenKhoan()));
+                log.info("🏦 Thanh toán chuyển khoản: {}", formatMoney(request.getTienChuyenKhoan()));
 
             } else if ("KET_HOP".equals(request.getPhuongThucThanhToan())) {
                 BigDecimal tienMat = request.getTienMat() != null ? request.getTienMat() : BigDecimal.ZERO;
                 BigDecimal tienChuyenKhoan = request.getTienChuyenKhoan() != null ? request.getTienChuyenKhoan() : BigDecimal.ZERO;
 
                 if (tienMat.compareTo(BigDecimal.ZERO) <= 0 && tienChuyenKhoan.compareTo(BigDecimal.ZERO) <= 0) {
-                    throw new RuntimeException("Pháº£i cÃ³ Ã­t nháº¥t má»™t phÆ°Æ¡ng thá»©c thanh toÃ¡n cÃ³ giÃ¡ trá»‹ > 0");
+                    throw new RuntimeException("Phải có ít nhất một phương thức thanh toán có giá trị > 0");
                 }
 
                 BigDecimal tongTienNhan = tienMat.add(tienChuyenKhoan);
                 if (tongTienNhan.compareTo(tongTienCanThanhToan) < 0) {
-                    throw new RuntimeException("Tá»•ng tiá»n thanh toÃ¡n khÃ´ng Ä‘á»§. Cáº§n: " +
-                            formatMoney(tongTienCanThanhToan) + ", CÃ³: " + formatMoney(tongTienNhan));
+                    throw new RuntimeException("Tổng tiền thanh toán không đủ. Cần: " +
+                            formatMoney(tongTienCanThanhToan) + ", Có: " + formatMoney(tongTienNhan));
                 }
 
                 tienThua = tongTienNhan.subtract(tongTienCanThanhToan);
-                log.info("ðŸ’° Thanh toÃ¡n káº¿t há»£p - Tiá»n máº·t: {}, Chuyá»ƒn khoáº£n: {}, Tiá»n thá»«a: {}",
+                log.info("💰 Thanh toán kết hợp - Tiền mặt: {}, Chuyển khoản: {}, Tiền thừa: {}",
                         formatMoney(tienMat), formatMoney(tienChuyenKhoan), formatMoney(tienThua));
 
             } else {
-                throw new RuntimeException("PhÆ°Æ¡ng thá»©c thanh toÃ¡n khÃ´ng há»£p lá»‡: " + request.getPhuongThucThanhToan());
+                throw new RuntimeException("Phương thức thanh toán không hợp lệ: " + request.getPhuongThucThanhToan());
             }
 
-            // ===== BÆ¯á»šC 6: Cáº¬P NHáº¬T THÃ”NG TIN HÃ“A ÄÆ N =====
-            // Cáº­p nháº­t thÃ´ng tin khÃ¡ch hÃ ng náº¿u cÃ³
+            // ===== BƯỚC 6: CẬP NHẬT THÔNG TIN HÓA ĐƠN =====
+            // Cập nhật thông tin khách hàng nếu có
             if (request.getKhachHangId() != null) {
                 KhachHang khachHang = khachHangRepository.findById(request.getKhachHangId()).orElse(null);
                 if (khachHang != null) {
                     hoaDon.setKhachHang(khachHang);
 
-                    // Láº¥y email tá»« TaiKhoan
+                    // Lấy email từ TaiKhoan
                     if (khachHang.getTaiKhoan() != null && StringUtils.hasText(khachHang.getTaiKhoan().getEmail())) {
                         hoaDon.setEmail(khachHang.getTaiKhoan().getEmail());
                     } else {
@@ -3740,7 +3744,7 @@ public class BanHangServiceImpl implements BanHangService {
                     hoaDon.setSdt(khachHang.getSdt());
                     hoaDon.setTenNguoiDung(khachHang.getHoTen());
 
-                    // Láº¥y Ä‘á»‹a chá»‰ tá»« TaiKhoan -> DiaChi
+                    // Lấy địa chỉ từ TaiKhoan -> DiaChi
                     if (khachHang.getTaiKhoan() != null) {
                         Optional<DiaChi> diaChiOpt = diaChiRepository.findByTaiKhoanIdAndIsDefaultTrue(khachHang.getTaiKhoan().getId());
                         if (diaChiOpt.isPresent()) {
@@ -3752,12 +3756,12 @@ public class BanHangServiceImpl implements BanHangService {
                         }
                     }
 
-                    log.info("ðŸ‘¤ Cáº­p nháº­t khÃ¡ch hÃ ng: {}", khachHang.getHoTen());
+                    log.info("👤 Cập nhật khách hàng: {}", khachHang.getHoTen());
                 }
             }
 
-            // Cáº­p nháº­t tráº¡ng thÃ¡i vÃ  thÃ´ng tin thanh toÃ¡n
-            hoaDon.setTrangThaiHoaDon("DA_THANH_TOAN");
+            // Cập nhật trạng thái và thông tin thanh toán
+            hoaDon.setTrangThaiHoaDon("COMPLETED");
             hoaDon.setLoaiHoaDon(request.getLoaiHoaDon() != null ? request.getLoaiHoaDon() : "OFFLINE");
             hoaDon.setPhuongThucThanhToan(request.getPhuongThucThanhToan());
             hoaDon.setNgayHoanThanh(new Date());
@@ -3765,48 +3769,48 @@ public class BanHangServiceImpl implements BanHangService {
             hoaDon.setGhiChu(request.getGhiChu());
             hoaDon.setDiemSuDung(request.getDiemSuDung());
 
-            // Cáº­p nháº­t tá»•ng tiá»n Ä‘Ãºng cÃ¡ch
-            hoaDon.setTongTien(tongTienGoc);                // Tá»•ng tiá»n gá»‘c
-            hoaDon.setTongThanhToan(tongTienCanThanhToan);   // Tá»•ng tiá»n sau khi Ä‘Ã£ trá»« voucher vÃ  Ä‘iá»ƒm
+            // Cập nhật tổng tiền đúng cách
+            hoaDon.setTongTien(tongTienGoc);                // Tổng tiền gốc
+            hoaDon.setTongThanhToan(tongTienCanThanhToan);   // Tổng tiền sau khi đã trừ voucher và điểm
 
             HoaDon savedHoaDon = hoaDonRepository.save(hoaDon);
 
-            // ===== BÆ¯á»šC 7: Xá»¬ LÃ VOUCHER VÃ€ ÄIá»‚M SAU KHI THANH TOÃN THÃ€NH CÃ”NG =====
+            // ===== BƯỚC 7: XỬ LÝ VOUCHER VÀ ĐIỂM SAU KHI THANH TOÁN THÀNH CÔNG =====
             if (voucherApplied != null) {
-                // Táº¡o chi tiáº¿t voucher SAU khi thanh toÃ¡n thÃ nh cÃ´ng
+                // Tạo chi tiết voucher SAU khi thanh toán thành công
                 taoChiTietVoucherNeuChuaCo(savedHoaDon, voucherApplied, tongTienGoc, giaTriGiamVoucher, tongTienCanThanhToan);
 
-                // Giáº£m sá»‘ lÆ°á»£ng voucher
+                // Giảm số lượng voucher
                 voucherApplied.setSoLuong(voucherApplied.getSoLuong() - 1);
                 voucherRepository.save(voucherApplied);
-                log.info("ðŸŽ« ÄÃ£ sá»­ dá»¥ng voucher: {}", voucherApplied.getTenVoucher());
+                log.info("🎫 Đã sử dụng voucher: {}", voucherApplied.getTenVoucher());
             }
 
             if (request.getDiemSuDung() != null && request.getDiemSuDung() > 0 && savedHoaDon.getKhachHang() != null) {
-                // Trá»« Ä‘iá»ƒm Ä‘Ã£ sá»­ dá»¥ng
+                // Trừ điểm đã sử dụng
                 xuLyDiemTichLuy(savedHoaDon.getKhachHang(), request.getDiemSuDung());
-                log.info("ðŸŽ¯ ÄÃ£ sá»­ dá»¥ng {} Ä‘iá»ƒm", request.getDiemSuDung());
+                log.info("🎯 Đã sử dụng {} điểm", request.getDiemSuDung());
             }
 
-            // ===== BÆ¯á»šC 8: Cáº¬P NHáº¬T CHI TIáº¾T HÃ“A ÄÆ N =====
+            // ===== BƯỚC 8: CẬP NHẬT CHI TIẾT HÓA ĐƠN =====
             List<HoaDonChiTiet> chiTiets = hoaDonChiTietRepository.findByHoaDonId(hoaDonId);
             for (HoaDonChiTiet chiTiet : chiTiets) {
-                chiTiet.setTrangThaiHoaDon("DA_THANH_TOAN");
+                chiTiet.setTrangThaiHoaDon("COMPLETED");
                 chiTiet.setNgayCapNhat(new Date());
                 hoaDonChiTietRepository.save(chiTiet);
             }
 
-            // ===== BÆ¯á»šC 9: Táº O Lá»ŠCH Sá»¬ HÃ“A ÄÆ N =====
+            // ===== BƯỚC 9: TẠO LỊCH SỬ HÓA ĐƠN =====
             String moTaThanhToan = taoMoTaThanhToanChiTiet(request, voucherApplied, giaTriGiamVoucher, giaTriDiem, tienThua);
             taoLichSuHoaDon(savedHoaDon, moTaThanhToan, savedHoaDon.getNhanVien());
 
-            // ===== BÆ¯á»šC 10: Cá»˜NG ÄIá»‚M CHO KHÃCH HÃ€NG =====
+            // ===== BƯỚC 10: CỘNG ĐIỂM CHO KHÁCH HÀNG =====
             if (savedHoaDon.getKhachHang() != null) {
                 congDiemKhachHang(savedHoaDon.getKhachHang().getId(), savedHoaDon.getTongThanhToan().doubleValue());
-                log.info("ðŸ’Ž ÄÃ£ cá»™ng Ä‘iá»ƒm cho khÃ¡ch hÃ ng");
+                log.info("💎 Đã cộng điểm cho khách hàng");
             }
 
-            // ===== BÆ¯á»šC 11: Táº O RESPONSE =====
+            // ===== BƯỚC 11: TẠO RESPONSE =====
             String thongBaoThanhToan = taoThongBaoThanhToan(request, tienThua, voucherApplied, giaTriGiamVoucher);
 
             ThanhToanResponse response = ThanhToanResponse.builder()
@@ -3814,7 +3818,7 @@ public class BanHangServiceImpl implements BanHangService {
                     .maHoaDon(savedHoaDon.getMaHoaDon())
                     .trangThaiHoaDon(savedHoaDon.getTrangThaiHoaDon())
                     .phuongThucThanhToan(request.getPhuongThucThanhToan())
-                    .tongTienCanThanhToan(tongTienCanThanhToan) // Tá»•ng sau giáº£m giÃ¡
+                    .tongTienCanThanhToan(tongTienCanThanhToan) // Tổng sau giảm giá
                     .tienMat(request.getTienMat())
                     .tienChuyenKhoan(request.getTienChuyenKhoan())
                     .tienThua(tienThua)
@@ -3824,7 +3828,7 @@ public class BanHangServiceImpl implements BanHangService {
                     .diemSuDung(request.getDiemSuDung())
                     .giaTriDiem(giaTriDiem)
                     .khachHangId(savedHoaDon.getKhachHang() != null ? savedHoaDon.getKhachHang().getId() : null)
-                    .tenKhachHang(savedHoaDon.getKhachHang() != null ? savedHoaDon.getKhachHang().getHoTen() : "KhÃ¡ch láº»")
+                    .tenKhachHang(savedHoaDon.getKhachHang() != null ? savedHoaDon.getKhachHang().getHoTen() : "Khách lẻ")
                     .sdtKhachHang(savedHoaDon.getKhachHang() != null ? savedHoaDon.getKhachHang().getSdt() : "")
                     .ngayThanhToan(savedHoaDon.getNgayCapNhat())
                     .ngayHoanThanh(savedHoaDon.getNgayHoanThanh())
@@ -3833,49 +3837,49 @@ public class BanHangServiceImpl implements BanHangService {
                     .ghiChu(request.getGhiChu())
                     .thongBaoThanhToan(thongBaoThanhToan)
                     .thanhCong(true)
-                    .kiemTraTonKho(inventoryChecks) // Tráº£ vá» káº¿t quáº£ kiá»ƒm tra tá»“n kho
+                    .kiemTraTonKho(inventoryChecks) // Trả về kết quả kiểm tra tồn kho
                     .build();
 
-            log.info("âœ… Thanh toÃ¡n chi tiáº¿t thÃ nh cÃ´ng - HÃ³a Ä‘Æ¡n: {} - Tá»•ng: {} - PhÆ°Æ¡ng thá»©c: {}",
+            log.info("✅ Thanh toán chi tiết thành công - Hóa đơn: {} - Tổng: {} - Phương thức: {}",
                     savedHoaDon.getMaHoaDon(), formatMoney(tongTienCanThanhToan), request.getPhuongThucThanhToan());
 
             return response;
 
         } catch (RuntimeException e) {
-            log.error("âŒ Lá»—i nghiá»‡p vá»¥ thanh toÃ¡n: {}", e.getMessage());
+            log.error("❌ Lỗi nghiệp vụ thanh toán: {}", e.getMessage());
             return ThanhToanResponse.builder()
                     .hoaDonId(hoaDonId)
                     .thanhCong(false)
-                    .thongBaoThanhToan("Thanh toÃ¡n tháº¥t báº¡i: " + e.getMessage())
+                    .thongBaoThanhToan("Thanh toán thất bại: " + e.getMessage())
                     .build();
         } catch (Exception e) {
-            log.error("âŒ Lá»—i há»‡ thá»‘ng thanh toÃ¡n: {}", e.getMessage(), e);
+            log.error("❌ Lỗi hệ thống thanh toán: {}", e.getMessage(), e);
             return ThanhToanResponse.builder()
                     .hoaDonId(hoaDonId)
                     .thanhCong(false)
-                    .thongBaoThanhToan("Lá»—i há»‡ thá»‘ng: Vui lÃ²ng thá»­ láº¡i sau")
+                    .thongBaoThanhToan("Lỗi hệ thống: Vui lòng thử lại sau")
                     .build();
         }
     }
 
     /**
-     * Táº¡o mÃ´ táº£ chi tiáº¿t cho lá»‹ch sá»­ thanh toÃ¡n
+     * Tạo mô tả chi tiết cho lịch sử thanh toán
      */
     private String taoMoTaThanhToanChiTiet(ThanhToanRequest request, Voucher voucher,
                                            BigDecimal giaTriGiamVoucher, BigDecimal giaTriDiem, BigDecimal tienThua) {
-        StringBuilder moTa = new StringBuilder("Thanh toÃ¡n thÃ nh cÃ´ng - ");
+        StringBuilder moTa = new StringBuilder("Thanh toán thành công - ");
 
-        // PhÆ°Æ¡ng thá»©c thanh toÃ¡n
+        // Phương thức thanh toán
         switch (request.getPhuongThucThanhToan()) {
             case "TIEN_MAT":
-                moTa.append("Tiá»n máº·t: ").append(formatMoney(request.getTienMat()));
+                moTa.append("Tiền mặt: ").append(formatMoney(request.getTienMat()));
                 break;
             case "CHUYEN_KHOAN":
-                moTa.append("Chuyá»ƒn khoáº£n: ").append(formatMoney(request.getTienChuyenKhoan()));
+                moTa.append("Chuyển khoản: ").append(formatMoney(request.getTienChuyenKhoan()));
                 break;
             case "KET_HOP":
-                moTa.append("Káº¿t há»£p - Tiá»n máº·t: ").append(formatMoney(request.getTienMat()))
-                        .append(", Chuyá»ƒn khoáº£n: ").append(formatMoney(request.getTienChuyenKhoan()));
+                moTa.append("Kết hợp - Tiền mặt: ").append(formatMoney(request.getTienMat()))
+                        .append(", Chuyển khoản: ").append(formatMoney(request.getTienChuyenKhoan()));
                 break;
         }
 
@@ -3885,22 +3889,22 @@ public class BanHangServiceImpl implements BanHangService {
                     .append("': -").append(formatMoney(giaTriGiamVoucher));
         }
 
-        // Äiá»ƒm tÃ­ch lÅ©y
+        // Điểm tích lũy
         if (request.getDiemSuDung() != null && request.getDiemSuDung() > 0) {
-            moTa.append(", Äiá»ƒm sá»­ dá»¥ng: ").append(request.getDiemSuDung())
-                    .append(" Ä‘iá»ƒm (-").append(formatMoney(giaTriDiem)).append(")");
+            moTa.append(", Điểm sử dụng: ").append(request.getDiemSuDung())
+                    .append(" điểm (-").append(formatMoney(giaTriDiem)).append(")");
         }
 
-        // Tiá»n thá»«a
+        // Tiền thừa
         if (tienThua.compareTo(BigDecimal.ZERO) > 0) {
-            moTa.append(", Tiá»n thá»«a: ").append(formatMoney(tienThua));
+            moTa.append(", Tiền thừa: ").append(formatMoney(tienThua));
         }
 
         return moTa.toString();
     }
 
     /**
-     * Táº¡o thÃ´ng bÃ¡o thanh toÃ¡n cho frontend
+     * Tạo thông báo thanh toán cho frontend
      */
     private String taoThongBaoThanhToan(ThanhToanRequest request, BigDecimal tienThua,
                                         Voucher voucher, BigDecimal giaTriGiamVoucher) {
@@ -3908,24 +3912,24 @@ public class BanHangServiceImpl implements BanHangService {
 
         switch (request.getPhuongThucThanhToan()) {
             case "TIEN_MAT":
-                thongBao.append("Thanh toÃ¡n tiá»n máº·t thÃ nh cÃ´ng");
+                thongBao.append("Thanh toán tiền mặt thành công");
                 if (tienThua.compareTo(BigDecimal.ZERO) > 0) {
-                    thongBao.append(". Tiá»n thá»«a: ").append(formatMoney(tienThua));
+                    thongBao.append(". Tiền thừa: ").append(formatMoney(tienThua));
                 }
                 break;
             case "CHUYEN_KHOAN":
-                thongBao.append("Thanh toÃ¡n chuyá»ƒn khoáº£n thÃ nh cÃ´ng");
+                thongBao.append("Thanh toán chuyển khoản thành công");
                 break;
             case "KET_HOP":
-                thongBao.append("Thanh toÃ¡n káº¿t há»£p thÃ nh cÃ´ng");
+                thongBao.append("Thanh toán kết hợp thành công");
                 if (tienThua.compareTo(BigDecimal.ZERO) > 0) {
-                    thongBao.append(". Tiá»n thá»«a: ").append(formatMoney(tienThua));
+                    thongBao.append(". Tiền thừa: ").append(formatMoney(tienThua));
                 }
                 break;
         }
 
         if (voucher != null && giaTriGiamVoucher.compareTo(BigDecimal.ZERO) > 0) {
-            thongBao.append(". Voucher Ä‘Ã£ giáº£m ").append(formatMoney(giaTriGiamVoucher));
+            thongBao.append(". Voucher đã giảm ").append(formatMoney(giaTriGiamVoucher));
         }
 
         return thongBao.toString();
@@ -3934,74 +3938,74 @@ public class BanHangServiceImpl implements BanHangService {
     @Transactional(readOnly = true)
     public List<InventoryCheckResponse> kiemTraTonKhoTruocThanhToan(Integer hoaDonId) {
         try {
-            logger.info("ðŸ“¦ Báº¯t Ä‘áº§u kiá»ƒm tra tá»“n kho cho hÃ³a Ä‘Æ¡n: {}", hoaDonId);
+            logger.info("📦 Bắt đầu kiểm tra tồn kho cho hóa đơn: {}", hoaDonId);
 
             // Validate input
             if (hoaDonId == null || hoaDonId <= 0) {
-                throw new RuntimeException("ID hÃ³a Ä‘Æ¡n khÃ´ng há»£p lá»‡: " + hoaDonId);
+                throw new RuntimeException("ID hóa đơn không hợp lệ: " + hoaDonId);
             }
 
-            // Kiá»ƒm tra hÃ³a Ä‘Æ¡n tá»“n táº¡i vÃ  tráº¡ng thÃ¡i
+            // Kiểm tra hóa đơn tồn tại và trạng thái
             HoaDon hoaDon = hoaDonRepository.findById(hoaDonId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n vá»›i ID: " + hoaDonId));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn với ID: " + hoaDonId));
 
             if (!"CHO".equals(hoaDon.getTrangThaiHoaDon())) {
-                throw new RuntimeException("HÃ³a Ä‘Æ¡n khÃ´ng á»Ÿ tráº¡ng thÃ¡i chá» thanh toÃ¡n. Tráº¡ng thÃ¡i hiá»‡n táº¡i: " + hoaDon.getTrangThaiHoaDon());
+                throw new RuntimeException("Hóa đơn không ở trạng thái chờ thanh toán. Trạng thái hiện tại: " + hoaDon.getTrangThaiHoaDon());
             }
 
-            // Láº¥y danh sÃ¡ch chi tiáº¿t hÃ³a Ä‘Æ¡n
+            // Lấy danh sách chi tiết hóa đơn
             List<HoaDonChiTiet> chiTiets = hoaDonChiTietRepository.findByHoaDonId(hoaDonId);
             if (chiTiets.isEmpty()) {
-                throw new RuntimeException("HÃ³a Ä‘Æ¡n chÆ°a cÃ³ sáº£n pháº©m nÃ o");
+                throw new RuntimeException("Hóa đơn chưa có sản phẩm nào");
             }
 
             List<InventoryCheckResponse> responses = new ArrayList<>();
 
-            logger.info("ðŸ” Kiá»ƒm tra {} sáº£n pháº©m trong hÃ³a Ä‘Æ¡n", chiTiets.size());
+            logger.info("🔍 Kiểm tra {} sản phẩm trong hóa đơn", chiTiets.size());
 
             for (HoaDonChiTiet chiTiet : chiTiets) {
                 try {
-                    // Kiá»ƒm tra null safety
+                    // Kiểm tra null safety
                     if (chiTiet.getChiTietSanPham() == null) {
-                        logger.warn("âš ï¸ Chi tiáº¿t hÃ³a Ä‘Æ¡n {} khÃ´ng cÃ³ sáº£n pháº©m", chiTiet.getId());
+                        logger.warn("⚠️ Chi tiết hóa đơn {} không có sản phẩm", chiTiet.getId());
 
                         responses.add(InventoryCheckResponse.builder()
                                 .chiTietSanPhamId(null)
-                                .tenSanPham("Sáº£n pháº©m khÃ´ng xÃ¡c Ä‘á»‹nh")
+                                .tenSanPham("Sản phẩm không xác định")
                                 .mauSac("N/A")
                                 .kichCo("N/A")
                                 .soLuongTon(0)
                                 .soLuongCanBan(chiTiet.getSoLuong())
                                 .coTheban(false)
-                                .thongBao("Lá»—i: KhÃ´ng tÃ¬m tháº¥y thÃ´ng tin sáº£n pháº©m")
+                                .thongBao("Lỗi: Không tìm thấy thông tin sản phẩm")
                                 .build());
                         continue;
                     }
 
                     ChiTietSanPham sanPham = chiTiet.getChiTietSanPham();
 
-                    // Refresh dá»¯ liá»‡u tá»« database Ä‘á»ƒ cÃ³ sá»‘ liá»‡u má»›i nháº¥t
+                    // Refresh dữ liệu từ database để có số liệu mới nhất
                     sanPham = chiTietSanPhamRepository.findById(sanPham.getId())
                             .orElse(sanPham);
 
-                    // Sá»‘ lÆ°á»£ng cáº§n bÃ¡n
+                    // Số lượng cần bán
                     int soLuongCanBan = chiTiet.getSoLuong();
 
-                    // Sá»‘ lÆ°á»£ng tá»“n kho hiá»‡n táº¡i (Ä‘Ã£ bá»‹ trá»« khi thÃªm vÃ o hÃ³a Ä‘Æ¡n)
+                    // Số lượng tồn kho hiện tại (đã bị trừ khi thêm vào hóa đơn)
                     int soLuongTonHienTai = sanPham.getSoLuong();
 
-                    // Logic kiá»ƒm tra: náº¿u tá»“n kho >= 0 thÃ¬ cÃ³ thá»ƒ bÃ¡n (vÃ¬ Ä‘Ã£ trá»« khi thÃªm vÃ o giá»)
+                    // Logic kiểm tra: nếu tồn kho >= 0 thì có thể bán (vì đã trừ khi thêm vào giỏ)
                     boolean coTheBan = soLuongTonHienTai >= 0;
                     String thongBao;
 
                     if (!coTheBan) {
                         int soLuongThieu = Math.abs(soLuongTonHienTai);
-                        thongBao = String.format("Thiáº¿u %d sáº£n pháº©m trong kho", soLuongThieu);
+                        thongBao = String.format("Thiếu %d sản phẩm trong kho", soLuongThieu);
                     } else {
-                        thongBao = "Äá»§ hÃ ng";
+                        thongBao = "Đủ hàng";
                     }
 
-                    // Láº¥y thÃ´ng tin sáº£n pháº©m an toÃ n
+                    // Lấy thông tin sản phẩm an toàn
                     String tenSanPham = "N/A";
                     String mauSac = "N/A";
                     String kichCo = "N/A";
@@ -4012,7 +4016,7 @@ public class BanHangServiceImpl implements BanHangService {
                             tenSanPham = sp.getTenSanPham();
                         }
                     } catch (Exception e) {
-                        logger.debug("KhÃ´ng thá»ƒ láº¥y tÃªn sáº£n pháº©m: {}", e.getMessage());
+                        logger.debug("Không thể lấy tên sản phẩm: {}", e.getMessage());
                     }
 
                     try {
@@ -4021,7 +4025,7 @@ public class BanHangServiceImpl implements BanHangService {
                             mauSac = ms.getTenMauSac();
                         }
                     } catch (Exception e) {
-                        logger.debug("KhÃ´ng thá»ƒ láº¥y mÃ u sáº¯c: {}", e.getMessage());
+                        logger.debug("Không thể lấy màu sắc: {}", e.getMessage());
                     }
 
                     try {
@@ -4030,7 +4034,7 @@ public class BanHangServiceImpl implements BanHangService {
                             kichCo = kc.getTenKichCo();
                         }
                     } catch (Exception e) {
-                        logger.debug("KhÃ´ng thá»ƒ láº¥y kÃ­ch cá»¡: {}", e.getMessage());
+                        logger.debug("Không thể lấy kích cỡ: {}", e.getMessage());
                     }
 
                     responses.add(InventoryCheckResponse.builder()
@@ -4038,53 +4042,53 @@ public class BanHangServiceImpl implements BanHangService {
                             .tenSanPham(tenSanPham)
                             .mauSac(mauSac)
                             .kichCo(kichCo)
-                            .soLuongTon(Math.max(0, soLuongTonHienTai)) // Hiá»ƒn thá»‹ >= 0
+                            .soLuongTon(Math.max(0, soLuongTonHienTai)) // Hiển thị >= 0
                             .soLuongCanBan(soLuongCanBan)
                             .coTheban(coTheBan)
                             .thongBao(thongBao)
                             .build());
 
-                    logger.debug("âœ… Kiá»ƒm tra sáº£n pháº©m '{}': Tá»“n={}, Cáº§n={}, Äá»§HÃ ng={}",
+                    logger.debug("✅ Kiểm tra sản phẩm '{}': Tồn={}, Cần={}, ĐủHàng={}",
                             tenSanPham, soLuongTonHienTai, soLuongCanBan, coTheBan);
 
                 } catch (Exception e) {
-                    logger.error("âŒ Lá»—i kiá»ƒm tra chi tiáº¿t sáº£n pháº©m {}: {}",
+                    logger.error("❌ Lỗi kiểm tra chi tiết sản phẩm {}: {}",
                             chiTiet.getId(), e.getMessage());
 
-                    // Táº¡o response lá»—i cho sáº£n pháº©m nÃ y
+                    // Tạo response lỗi cho sản phẩm này
                     responses.add(InventoryCheckResponse.builder()
                             .chiTietSanPhamId(chiTiet.getChiTietSanPham() != null ?
                                     chiTiet.getChiTietSanPham().getId() : null)
-                            .tenSanPham("Lá»—i kiá»ƒm tra sáº£n pháº©m")
+                            .tenSanPham("Lỗi kiểm tra sản phẩm")
                             .mauSac("N/A")
                             .kichCo("N/A")
                             .soLuongTon(0)
                             .soLuongCanBan(chiTiet.getSoLuong())
                             .coTheban(false)
-                            .thongBao("Lá»—i há»‡ thá»‘ng khi kiá»ƒm tra sáº£n pháº©m")
+                            .thongBao("Lỗi hệ thống khi kiểm tra sản phẩm")
                             .build());
                 }
             }
 
-            // Log tá»•ng káº¿t
+            // Log tổng kết
             long soSanPhamDuHang = responses.stream().filter(InventoryCheckResponse::getCoTheban).count();
             long soSanPhamThieuHang = responses.size() - soSanPhamDuHang;
 
-            logger.info("ðŸ“Š Káº¿t quáº£ kiá»ƒm tra tá»“n kho: {}/{} sáº£n pháº©m Ä‘á»§ hÃ ng, {} sáº£n pháº©m thiáº¿u hÃ ng",
+            logger.info("📊 Kết quả kiểm tra tồn kho: {}/{} sản phẩm đủ hàng, {} sản phẩm thiếu hàng",
                     soSanPhamDuHang, responses.size(), soSanPhamThieuHang);
 
             if (soSanPhamThieuHang > 0) {
-                logger.warn("âš ï¸ Cáº£nh bÃ¡o: CÃ³ {} sáº£n pháº©m khÃ´ng Ä‘á»§ tá»“n kho", soSanPhamThieuHang);
+                logger.warn("⚠️ Cảnh báo: Có {} sản phẩm không đủ tồn kho", soSanPhamThieuHang);
             }
 
             return responses;
 
         } catch (RuntimeException e) {
-            // NÃ©m láº¡i exception nghiá»‡p vá»¥ Ä‘á»ƒ Controller xá»­ lÃ½
+            // Ném lại exception nghiệp vụ để Controller xử lý
             throw e;
         } catch (Exception e) {
-            logger.error("âŒ Lá»—i há»‡ thá»‘ng khi kiá»ƒm tra tá»“n kho hÃ³a Ä‘Æ¡n {}: {}", hoaDonId, e.getMessage(), e);
-            throw new RuntimeException("Lá»—i há»‡ thá»‘ng khi kiá»ƒm tra tá»“n kho: " + e.getMessage());
+            logger.error("❌ Lỗi hệ thống khi kiểm tra tồn kho hóa đơn {}: {}", hoaDonId, e.getMessage(), e);
+            throw new RuntimeException("Lỗi hệ thống khi kiểm tra tồn kho: " + e.getMessage());
         }
     }
 }

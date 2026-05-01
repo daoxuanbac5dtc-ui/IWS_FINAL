@@ -6,10 +6,10 @@ import jakarta.validation.constraints.NotBlank;
 
 @Data
 public class ValidateVoucherRequest {
-    @NotBlank(message = "MÃ£ voucher khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
+    @NotBlank(message = "Mã voucher không được để trống")
     private String maVoucher;
 
-    @NotNull(message = "Tá»•ng tiá»n khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
+    @NotNull(message = "Tổng tiền không được để trống")
     private Double tongTien;
 
     private Integer khachHangId;

@@ -245,7 +245,7 @@ export default {
       reviews: [
         {
           id: 1,
-          name: 'Nguyễn Văn A',
+          name: 'Nguyễn Văn An',
           rating: 5,
           title: 'Sản phẩm tuyệt vời!',
           content: 'Giày rất đẹp và chất lượng, giao hàng nhanh. Tôi rất hài lòng với sản phẩm này. Chất liệu da mềm, đế êm chân. Sẽ mua thêm những đôi khác.',
@@ -265,7 +265,7 @@ export default {
         },
         {
           id: 2,
-          name: 'Trần Thị B',
+          name: 'Trần Thị Bích',
           rating: 4,
           title: 'Chất lượng tốt',
           content: 'Giày đẹp nhưng hơi chật so với size thông thường. Nên chọn size lớn hơn 0.5 so với bình thường. Nhìn chung vẫn ok, giá cả hợp lý.',
@@ -278,7 +278,7 @@ export default {
         },
         {
           id: 3,
-          name: 'Lê Văn C',
+          name: 'Lê Văn Cường',
           rating: 5,
           title: 'Xuất sắc',
           content: 'Mình đã mua 3 đôi rồi, chất lượng luôn ổn định. Recommend! Đóng gói cẩn thận, ship nhanh.',
@@ -291,7 +291,7 @@ export default {
         },
         {
           id: 4,
-          name: 'Phạm Thị D',
+          name: 'Phạm Thị Duyên',
           rating: 4,
           title: 'Đáng tiền',
           content: 'Giày đẹp, form chuẩn. Màu sắc như hình. Chỉ tiếc là không có thêm màu khác để lựa chọn.',

@@ -41,8 +41,8 @@ public class ThuongHieuServiceImpl implements ThuongHieuService {
 
     @Override
     public void deleteThuongHieuById(int id) {
-        repoSanPham.removeThuongHieuReference(id); // Gá»¡ rÃ ng buá»™c khÃ³a ngoáº¡i tá»« báº£ng san_pham
-        repoThuongHIeu.deleteById(id);// XÃ³a thÆ°Æ¡ng hiá»‡u
+        repoSanPham.removeThuongHieuReference(id); // Gỡ ràng buộc khóa ngoại từ bảng san_pham
+        repoThuongHIeu.deleteById(id);// Xóa thương hiệu
     }
 }
 

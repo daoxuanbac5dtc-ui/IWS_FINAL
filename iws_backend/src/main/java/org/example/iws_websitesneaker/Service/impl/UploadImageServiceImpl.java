@@ -19,14 +19,14 @@ import java.util.UUID;
 @Service
 public class UploadImageServiceImpl implements UploadImageService {
 
-    // Cáº¥u hÃ¬nh thÆ° má»¥c upload tá»« application.properties
+    // Cấu hình thư mục upload từ application.properties
     @Value("${app.upload.dir:uploads}")
     private String uploadDir;
 
-    // KÃ­ch thÆ°á»›c file tá»‘i Ä‘a (5MB)
+    // Kích thước file tối đa (5MB)
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-    // CÃ¡c Ä‘á»‹nh dáº¡ng áº£nh Ä‘Æ°á»£c phÃ©p
+    // Các định dạng ảnh được phép
     private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList(
             "jpg", "jpeg", "png", "gif", "bmp", "webp"
     );
@@ -39,32 +39,32 @@ public class UploadImageServiceImpl implements UploadImageService {
     @Override
     public String saveImage(MultipartFile file, String folder) {
         try {
-            // Kiá»ƒm tra file há»£p lá»‡
+            // Kiểm tra file hợp lệ
             if (!isValidImage(file)) {
-                throw new RuntimeException("File khÃ´ng pháº£i lÃ  áº£nh há»£p lá»‡");
+                throw new RuntimeException("File không phải là ảnh hợp lệ");
             }
 
-            // Táº¡o thÆ° má»¥c náº¿u chÆ°a tá»“n táº¡i
+            // Tạo thư mục nếu chưa tồn tại
             String folderPath = uploadDir + File.separator + folder;
             Path uploadPath = Paths.get(folderPath);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
 
-            // Táº¡o tÃªn file unique
+            // Tạo tên file unique
             String fileName = generateUniqueFileName(file.getOriginalFilename());
 
-            // ÄÆ°á»ng dáº«n Ä‘áº§y Ä‘á»§ cá»§a file
+            // Đường dẫn đầy đủ của file
             Path filePath = uploadPath.resolve(fileName);
 
-            // LÆ°u file
+            // Lưu file
             Files.copy(file.getInputStream(), filePath);
 
-            // Tráº£ vá» Ä‘Æ°á»ng dáº«n tÆ°Æ¡ng Ä‘á»‘i
+            // Trả về đường dẫn tương đối
             return folder + "/" + fileName;
 
         } catch (IOException e) {
-            throw new RuntimeException("Lá»—i khi lÆ°u áº£nh: " + e.getMessage());
+            throw new RuntimeException("Lỗi khi lưu ảnh: " + e.getMessage());
         }
     }
 
@@ -75,10 +75,10 @@ public class UploadImageServiceImpl implements UploadImageService {
                 return false;
             }
 
-            // Táº¡o Ä‘Æ°á»ng dáº«n Ä‘áº§y Ä‘á»§
+            // Tạo đường dẫn đầy đủ
             Path fullPath = Paths.get(uploadDir, imagePath);
 
-            // Kiá»ƒm tra file tá»“n táº¡i vÃ  xÃ³a
+            // Kiểm tra file tồn tại và xóa
             if (Files.exists(fullPath)) {
                 Files.delete(fullPath);
                 return true;
@@ -86,7 +86,7 @@ public class UploadImageServiceImpl implements UploadImageService {
 
             return false;
         } catch (IOException e) {
-            System.err.println("Lá»—i khi xÃ³a áº£nh: " + e.getMessage());
+            System.err.println("Lỗi khi xóa ảnh: " + e.getMessage());
             return false;
         }
     }
@@ -97,18 +97,18 @@ public class UploadImageServiceImpl implements UploadImageService {
             return false;
         }
 
-        // Kiá»ƒm tra kÃ­ch thÆ°á»›c file
+        // Kiểm tra kích thước file
         if (file.getSize() > MAX_FILE_SIZE) {
             return false;
         }
 
-        // Kiá»ƒm tra content type
+        // Kiểm tra content type
         String contentType = file.getContentType();
         if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType.toLowerCase())) {
             return false;
         }
 
-        // Kiá»ƒm tra extension
+        // Kiểm tra extension
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null) {
             return false;
@@ -128,25 +128,25 @@ public class UploadImageServiceImpl implements UploadImageService {
     }
 
     /**
-     * Táº¡o tÃªn file unique Ä‘á»ƒ trÃ¡nh trÃ¹ng láº·p
+     * Tạo tên file unique để tránh trùng lặp
      */
     private String generateUniqueFileName(String originalFilename) {
-        // Láº¥y extension
+        // Lấy extension
         String extension = getFileExtension(originalFilename);
 
-        // Táº¡o timestamp
+        // Tạo timestamp
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
         String timestamp = sdf.format(new Date());
 
-        // Táº¡o UUID ngáº¯n
+        // Tạo UUID ngắn
         String uuid = UUID.randomUUID().toString().substring(0, 8);
 
-        // Káº¿t há»£p: timestamp_uuid.extension
+        // Kết hợp: timestamp_uuid.extension
         return String.format("%s_%s.%s", timestamp, uuid, extension);
     }
 
     /**
-     * Láº¥y extension tá»« tÃªn file
+     * Lấy extension từ tên file
      */
     private String getFileExtension(String filename) {
         if (filename == null || !filename.contains(".")) {
@@ -157,16 +157,16 @@ public class UploadImageServiceImpl implements UploadImageService {
     }
 
     /**
-     * Táº¡o thÆ° má»¥c theo cáº¥u trÃºc ngÃ y (optional, cÃ³ thá»ƒ dÃ¹ng cho tá»• chá»©c file tá»‘t hÆ¡n)
+     * Tạo thư mục theo cấu trúc ngày (optional, có thể dùng cho tổ chức file tốt hơn)
      */
     public String saveImageWithDateStructure(MultipartFile file, String folder) {
         try {
-            // Kiá»ƒm tra file há»£p lá»‡
+            // Kiểm tra file hợp lệ
             if (!isValidImage(file)) {
-                throw new RuntimeException("File khÃ´ng pháº£i lÃ  áº£nh há»£p lá»‡");
+                throw new RuntimeException("File không phải là ảnh hợp lệ");
             }
 
-            // Táº¡o cáº¥u trÃºc thÆ° má»¥c theo ngÃ y: uploads/folder/2024/01/15/
+            // Tạo cấu trúc thư mục theo ngày: uploads/folder/2024/01/15/
             SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
             SimpleDateFormat monthFormat = new SimpleDateFormat("MM");
             SimpleDateFormat dayFormat = new SimpleDateFormat("dd");
@@ -185,35 +185,35 @@ public class UploadImageServiceImpl implements UploadImageService {
                 Files.createDirectories(uploadPath);
             }
 
-            // Táº¡o tÃªn file unique
+            // Tạo tên file unique
             String fileName = generateUniqueFileName(file.getOriginalFilename());
 
-            // ÄÆ°á»ng dáº«n Ä‘áº§y Ä‘á»§ cá»§a file
+            // Đường dẫn đầy đủ của file
             Path filePath = uploadPath.resolve(fileName);
 
-            // LÆ°u file
+            // Lưu file
             Files.copy(file.getInputStream(), filePath);
 
-            // Tráº£ vá» Ä‘Æ°á»ng dáº«n tÆ°Æ¡ng Ä‘á»‘i
+            // Trả về đường dẫn tương đối
             return datePath + fileName;
 
         } catch (IOException e) {
-            throw new RuntimeException("Lá»—i khi lÆ°u áº£nh: " + e.getMessage());
+            throw new RuntimeException("Lỗi khi lưu ảnh: " + e.getMessage());
         }
     }
 
     /**
-     * Resize áº£nh (optional - cáº§n thÃªm dependency image processing)
-     * CÃ³ thá»ƒ implement sau náº¿u cáº§n
+     * Resize ảnh (optional - cần thêm dependency image processing)
+     * Có thể implement sau nếu cần
      */
     public String saveImageWithResize(MultipartFile file, String folder, int maxWidth, int maxHeight) {
         // TODO: Implement image resizing
-        // Cáº§n thÃªm dependency nhÆ° Apache Commons Imaging hoáº·c ImageIO
+        // Cần thêm dependency như Apache Commons Imaging hoặc ImageIO
         return saveImage(file, folder);
     }
 
     /**
-     * Validate vÃ  láº¥y thÃ´ng tin chi tiáº¿t cá»§a áº£nh
+     * Validate và lấy thông tin chi tiết của ảnh
      */
     public ImageInfo getImageInfo(MultipartFile file) {
         if (!isValidImage(file)) {
@@ -229,7 +229,7 @@ public class UploadImageServiceImpl implements UploadImageService {
         return info;
     }
 
-    // Class Ä‘á»ƒ chá»©a thÃ´ng tin áº£nh
+    // Class để chứa thông tin ảnh
     public static class ImageInfo {
         private String fileName;
         private long fileSize;

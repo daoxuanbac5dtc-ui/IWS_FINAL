@@ -2,7 +2,7 @@ package org.example.iws_websitesneaker.Dto.BanHang;
 
 import lombok.*;
 import lombok.Builder;
-// Sá»¬A: Import tá»« package BanHang thay vÃ¬ package gá»‘c
+// SỬA: Import từ package BanHang thay vì package gốc
 import org.example.iws_websitesneaker.Dto.BanHang.KhachHangResponse;
 import org.example.iws_websitesneaker.Dto.BanHang.NhanVienResponse;
 import org.example.iws_websitesneaker.Dto.BanHang.VoucherResponse;
@@ -21,22 +21,22 @@ public class HoaDonChoDetailResponse {
     private Date ngayTao;
     private Date ngayCapNhat;
 
-    // ThÃ´ng tin nhÃ¢n viÃªn
+    // Thông tin nhân viên
     private NhanVienResponse nhanVien;
 
-    // ThÃ´ng tin khÃ¡ch hÃ ng
+    // Thông tin khách hàng
     private KhachHangResponse khachHang;
 
-    // ThÃ´ng tin voucher
+    // Thông tin voucher
     private VoucherResponse voucher;
     private Boolean daApDungVoucher;
 
-    // Danh sÃ¡ch sáº£n pháº©m
+    // Danh sách sản phẩm
     private List<HoaDonChoSanPhamResponse> danhSachSanPham;
 
-    // ThÃ´ng tin tá»•ng quan
+    // Thông tin tổng quan
     private HoaDonChoTongQuanResponse tongQuan;
 
-    // Ghi chÃº
+    // Ghi chú
     private String ghiChu;
 }

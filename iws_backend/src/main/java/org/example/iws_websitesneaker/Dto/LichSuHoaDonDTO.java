@@ -18,7 +18,7 @@ public class LichSuHoaDonDTO {
 
     public LichSuHoaDonDTO() {}
 
-    // Getters vÃ  Setters
+    // Getters và Setters
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 

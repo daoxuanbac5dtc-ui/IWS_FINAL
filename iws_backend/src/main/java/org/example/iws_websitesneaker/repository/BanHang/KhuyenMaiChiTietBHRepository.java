@@ -13,7 +13,7 @@ import java.util.List;
 public interface KhuyenMaiChiTietBHRepository extends JpaRepository<KhuyenMaiChiTiet, Integer> {
 
     /**
-     * Láº¥y khuyáº¿n mÃ£i cho sáº£n pháº©m
+     * Lấy khuyến mãi cho sản phẩm
      */
     @Query("SELECT kmct FROM KhuyenMaiChiTiet kmct " +
             "WHERE kmct.id = :chiTietSanPhamId " +
@@ -26,12 +26,12 @@ public interface KhuyenMaiChiTietBHRepository extends JpaRepository<KhuyenMaiChi
             @Param("currentDate") Date currentDate);
 
     /**
-     * Láº¥y khuyáº¿n mÃ£i theo chi tiáº¿t sáº£n pháº©m
+     * Lấy khuyến mãi theo chi tiết sản phẩm
      */
     List<KhuyenMaiChiTiet> findByChiTietSanPham_IdAndTrangThai(Integer chiTietSanPhamId, Integer trangThai);
 
     /**
-     * Kiá»ƒm tra sáº£n pháº©m cÃ³ khuyáº¿n mÃ£i
+     * Kiểm tra sản phẩm có khuyến mãi
      */
     @Query("SELECT COUNT(kmct) > 0 FROM KhuyenMaiChiTiet kmct " +
             "WHERE kmct.id = :chiTietSanPhamId " +

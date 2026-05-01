@@ -1,4 +1,4 @@
-    // ===== 1. Cáº¬P NHáº¬T DiaChiDto (GIá»® NGUYÃŠN TÃŠN) =====
+    // ===== 1. CẬP NHẬT DiaChiDto (GIỮ NGUYÊN TÊN) =====
     package org.example.iws_websitesneaker.Dto;
 
     import jakarta.validation.constraints.NotNull;
@@ -7,19 +7,19 @@
     public class DiaChiDto {
         private Integer id;
 
-        @NotNull(message = "ID tÃ i khoáº£n khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng!")
+        @NotNull(message = "ID tài khoản không được để trống!")
         private Integer idTaiKhoan;
 
 
         private String maTinh;
-        // Bá»Ž: private String maHuyen;
+        // BỎ: private String maHuyen;
         private String maPhuong;
 
-        @NotBlank(message = "TÃªn tá»‰nh/thÃ nh phá»‘ khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng!")
+        @NotBlank(message = "Tên tỉnh/thành phố không được để trống!")
         private String tenTinh;
-        // Bá»Ž: private String tenHuyen;
+        // BỎ: private String tenHuyen;
 
-        @NotBlank(message = "TÃªn xÃ£/phÆ°á»ng khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng!")
+        @NotBlank(message = "Tên xã/phường không được để trống!")
         private String tenPhuong;
 
         private String tenKhachHang;
@@ -29,7 +29,7 @@
         // Constructors
         public DiaChiDto() {}
 
-        // Getters and Setters (GIá»® NGUYÃŠN TÃŠN)
+        // Getters and Setters (GIỮ NGUYÊN TÊN)
         public Integer getId() { return id; }
         public void setId(Integer id) { this.id = id; }
 
@@ -61,6 +61,6 @@
         public void setTrangThai(Integer trangThai) { this.trangThai = trangThai; }
 
         public void setIsDefault(boolean b) {
-            // Method Ä‘á»ƒ tÆ°Æ¡ng thÃ­ch
+            // Method để tương thích
         }
     }

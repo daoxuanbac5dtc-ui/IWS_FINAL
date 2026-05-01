@@ -25,7 +25,7 @@ public class ChiTietTraHangRestController {
     @Autowired
     private RepoHoaDonChiTiet hoaDonChiTietRepository;
 
-    @Autowired(required = false) // Optional injection Ä‘á»ƒ trÃ¡nh lá»—i khi chÆ°a cÃ³
+    @Autowired(required = false) // Optional injection để tránh lỗi khi chưa có
     private UploadImageService uploadImageService;
 
     @GetMapping("/by-hoa-don/{hoaDonId}")
@@ -36,7 +36,7 @@ public class ChiTietTraHangRestController {
                     "success", true,
                     "data", chiTietList,
                     "total", chiTietList.size(),
-                    "message", "Láº¥y danh sÃ¡ch chi tiáº¿t tráº£ hÃ ng thÃ nh cÃ´ng"
+                    "message", "Lấy danh sách chi tiết trả hàng thành công"
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -54,7 +54,7 @@ public class ChiTietTraHangRestController {
                     "success", true,
                     "data", chiTietList,
                     "total", chiTietList.size(),
-                    "message", "Láº¥y danh sÃ¡ch chi tiáº¿t tráº£ hÃ ng theo sáº£n pháº©m thÃ nh cÃ´ng"
+                    "message", "Lấy danh sách chi tiết trả hàng theo sản phẩm thành công"
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -71,7 +71,7 @@ public class ChiTietTraHangRestController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "data", chiTiet,
-                    "message", "Láº¥y thÃ´ng tin chi tiáº¿t tráº£ hÃ ng thÃ nh cÃ´ng"
+                    "message", "Lấy thông tin chi tiết trả hàng thành công"
             ));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -81,38 +81,38 @@ public class ChiTietTraHangRestController {
         }
     }
 
-    // âœ… Cáº¬P NHáº¬T: API táº¡o chi tiáº¿t tráº£ hÃ ng vá»›i há»— trá»£ hoaDonId
+    // ✅ CẬP NHẬT: API tạo chi tiết trả hàng với hỗ trợ hoaDonId
     @PostMapping("/create")
     public ResponseEntity<Map<String, Object>> createChiTietTraHang(@RequestBody ChiTietTraHangDTO request) {
         try {
-            // Kiá»ƒm tra dá»¯ liá»‡u Ä‘áº§u vÃ o
+            // Kiểm tra dữ liệu đầu vào
             if (request.getChiTietSanPhamId() == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "success", false,
-                        "message", "Vui lÃ²ng chá»n sáº£n pháº©m"
+                        "message", "Vui lòng chọn sản phẩm"
                 ));
             }
 
             if (request.getSoLuong() == null || request.getSoLuong() <= 0) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "success", false,
-                        "message", "Vui lÃ²ng nháº­p sá»‘ lÆ°á»£ng há»£p lá»‡"
+                        "message", "Vui lòng nhập số lượng hợp lệ"
                 ));
             }
 
-            // âœ… THÃŠM: Validate lÃ½ do tráº£ hÃ ng
+            // ✅ THÊM: Validate lý do trả hàng
             if (request.getLyDo() == null || request.getLyDo().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "success", false,
-                        "message", "Vui lÃ²ng nháº­p lÃ½ do tráº£ hÃ ng"
+                        "message", "Vui lòng nhập lý do trả hàng"
                 ));
             }
 
-            // Validate hoaDonId náº¿u Ä‘Æ°á»£c cung cáº¥p
+            // Validate hoaDonId nếu được cung cấp
             if (request.getHoaDonId() != null && request.getHoaDonId() <= 0) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "success", false,
-                        "message", "ID hÃ³a Ä‘Æ¡n khÃ´ng há»£p lá»‡"
+                        "message", "ID hóa đơn không hợp lệ"
                 ));
             }
 
@@ -120,7 +120,7 @@ public class ChiTietTraHangRestController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "data", created,
-                    "message", "Táº¡o yÃªu cáº§u tráº£ hÃ ng thÃ nh cÃ´ng"
+                    "message", "Tạo yêu cầu trả hàng thành công"
             ));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -138,14 +138,14 @@ public class ChiTietTraHangRestController {
             if (anhMinhChung == null || anhMinhChung.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "success", false,
-                        "message", "Vui lÃ²ng chá»n áº£nh Ä‘á»ƒ upload"
+                        "message", "Vui lòng chọn ảnh để upload"
                 ));
             }
 
-            // Upload áº£nh má»›i
+            // Upload ảnh mới
             String duongDanAnh = uploadImageService.saveImage(anhMinhChung, "return-images");
 
-            // Cáº­p nháº­t Ä‘Æ°á»ng dáº«n áº£nh
+            // Cập nhật đường dẫn ảnh
             ChiTietTraHangDTO dto = new ChiTietTraHangDTO();
             dto.setDuongDanAnh(duongDanAnh);
 
@@ -153,7 +153,7 @@ public class ChiTietTraHangRestController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "data", updated,
-                    "message", "Cáº­p nháº­t áº£nh minh chá»©ng thÃ nh cÃ´ng"
+                    "message", "Cập nhật ảnh minh chứng thành công"
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -171,35 +171,35 @@ public class ChiTietTraHangRestController {
             @RequestParam(value = "hoaDonId", required = false) Integer hoaDonId,
             @RequestParam(value = "anhMinhChung", required = false) MultipartFile anhMinhChung) {
         try {
-            // Validate dá»¯ liá»‡u Ä‘áº§u vÃ o
+            // Validate dữ liệu đầu vào
             if (chiTietSanPhamId == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "success", false,
-                        "message", "Vui lÃ²ng chá»n sáº£n pháº©m"
+                        "message", "Vui lòng chọn sản phẩm"
                 ));
             }
 
             if (soLuong == null || soLuong <= 0) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "success", false,
-                        "message", "Vui lÃ²ng nháº­p sá»‘ lÆ°á»£ng há»£p lá»‡"
+                        "message", "Vui lòng nhập số lượng hợp lệ"
                 ));
             }
 
             if (lyDo == null || lyDo.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "success", false,
-                        "message", "Vui lÃ²ng nháº­p lÃ½ do tráº£ hÃ ng"
+                        "message", "Vui lòng nhập lý do trả hàng"
                 ));
             }
 
-            // Xá»­ lÃ½ upload áº£nh náº¿u cÃ³
+            // Xử lý upload ảnh nếu có
             String duongDanAnh = null;
             if (anhMinhChung != null && !anhMinhChung.isEmpty()) {
                 duongDanAnh = uploadImageService.saveImage(anhMinhChung, "return-images");
             }
 
-            // Táº¡o DTO
+            // Tạo DTO
             ChiTietTraHangDTO dto = new ChiTietTraHangDTO();
             dto.setChiTietSanPhamId(chiTietSanPhamId);
             dto.setSoLuong(soLuong);
@@ -212,7 +212,7 @@ public class ChiTietTraHangRestController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "data", created,
-                    "message", "Táº¡o yÃªu cáº§u tráº£ hÃ ng thÃ nh cÃ´ng"
+                    "message", "Tạo yêu cầu trả hàng thành công"
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -222,7 +222,7 @@ public class ChiTietTraHangRestController {
         }
     }
 
-    // âœ… THÃŠM: API táº¡o chi tiáº¿t tráº£ hÃ ng tá»« hÃ³a Ä‘Æ¡n cá»¥ thá»ƒ
+    // ✅ THÊM: API tạo chi tiết trả hàng từ hóa đơn cụ thể
     @PostMapping("/create-from-invoice")
     public ResponseEntity<Map<String, Object>> createChiTietTraHangFromInvoice(@RequestBody Map<String, Object> request) {
         try {
@@ -234,7 +234,7 @@ public class ChiTietTraHangRestController {
             if (hoaDonId == null || chiTietSanPhamId == null || soLuong == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "success", false,
-                        "message", "Thiáº¿u thÃ´ng tin báº¯t buá»™c"
+                        "message", "Thiếu thông tin bắt buộc"
                 ));
             }
 
@@ -248,7 +248,7 @@ public class ChiTietTraHangRestController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "data", created,
-                    "message", "Táº¡o yÃªu cáº§u tráº£ hÃ ng tá»« hÃ³a Ä‘Æ¡n thÃ nh cÃ´ng"
+                    "message", "Tạo yêu cầu trả hàng từ hóa đơn thành công"
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -263,11 +263,11 @@ public class ChiTietTraHangRestController {
             @PathVariable Integer id,
             @RequestBody ChiTietTraHangDTO request) {
         try {
-            // Validate lÃ½ do náº¿u Ä‘Æ°á»£c cáº­p nháº­t
+            // Validate lý do nếu được cập nhật
             if (request.getLyDo() != null && request.getLyDo().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "success", false,
-                        "message", "LÃ½ do tráº£ hÃ ng khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng"
+                        "message", "Lý do trả hàng không được để trống"
                 ));
             }
 
@@ -275,7 +275,7 @@ public class ChiTietTraHangRestController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "data", updated,
-                    "message", "Cáº­p nháº­t chi tiáº¿t tráº£ hÃ ng thÃ nh cÃ´ng"
+                    "message", "Cập nhật chi tiết trả hàng thành công"
             ));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -296,7 +296,7 @@ public class ChiTietTraHangRestController {
             if (trangThai == null || trangThai.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "success", false,
-                        "message", "Vui lÃ²ng chá»n tráº¡ng thÃ¡i"
+                        "message", "Vui lòng chọn trạng thái"
                 ));
             }
 
@@ -304,7 +304,7 @@ public class ChiTietTraHangRestController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "data", updated,
-                    "message", "Cáº­p nháº­t tráº¡ng thÃ¡i thÃ nh cÃ´ng"
+                    "message", "Cập nhật trạng thái thành công"
             ));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -324,7 +324,7 @@ public class ChiTietTraHangRestController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "data", updated,
-                    "message", "Cháº¥p nháº­n tráº£ hÃ ng thÃ nh cÃ´ng (khÃ´ng hoÃ n kho)."
+                    "message", "Chấp nhận trả hàng thành công (không hoàn kho)."
             ));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -343,7 +343,7 @@ public class ChiTietTraHangRestController {
             if (lyDoTuChoi == null || lyDoTuChoi.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "success", false,
-                        "message", "Vui lÃ²ng nháº­p lÃ½ do tá»« chá»‘i"
+                        "message", "Vui lòng nhập lý do từ chối"
                 ));
             }
 
@@ -351,7 +351,7 @@ public class ChiTietTraHangRestController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "data", updated,
-                    "message", "Tá»« chá»‘i tráº£ hÃ ng thÃ nh cÃ´ng"
+                    "message", "Từ chối trả hàng thành công"
             ));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -367,7 +367,7 @@ public class ChiTietTraHangRestController {
             chiTietTraHangService.deleteChiTietTraHang(id);
             return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", "XÃ³a chi tiáº¿t tráº£ hÃ ng thÃ nh cÃ´ng"
+                    "message", "Xóa chi tiết trả hàng thành công"
             ));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -385,7 +385,7 @@ public class ChiTietTraHangRestController {
             boolean canReturn = chiTietTraHangService.canReturn(chiTietSanPhamId, soLuong);
             Integer totalReturned = chiTietTraHangService.getTotalReturnedQuantity(chiTietSanPhamId);
 
-            // âœ… THÃŠM: Láº¥y thÃ´ng tin tá»•ng sá»‘ Ä‘Ã£ mua
+            // ✅ THÊM: Lấy thông tin tổng số đã mua
             Integer totalSold = hoaDonChiTietRepository.getTotalSoldQuantity(chiTietSanPhamId);
             Integer canReturnMore = (totalSold != null && totalReturned != null) ? (totalSold - totalReturned) : 0;
 
@@ -397,8 +397,8 @@ public class ChiTietTraHangRestController {
                     "canReturnMore", Math.max(0, canReturnMore),
                     "requestedQuantity", soLuong,
                     "message", canReturn ?
-                            "CÃ³ thá»ƒ tráº£ hÃ ng" :
-                            String.format("KhÃ´ng thá»ƒ tráº£ %d sáº£n pháº©m. ÄÃ£ mua: %d, Ä‘Ã£ tráº£: %d, cÃ³ thá»ƒ tráº£ thÃªm: %d",
+                            "Có thể trả hàng" :
+                            String.format("Không thể trả %d sản phẩm. Đã mua: %d, đã trả: %d, có thể trả thêm: %d",
                                     soLuong, totalSold != null ? totalSold : 0, totalReturned != null ? totalReturned : 0, canReturnMore)
             ));
         } catch (Exception e) {
@@ -416,7 +416,7 @@ public class ChiTietTraHangRestController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "data", statistics,
-                    "message", "Láº¥y thá»‘ng kÃª tráº£ hÃ ng thÃ nh cÃ´ng"
+                    "message", "Lấy thống kê trả hàng thành công"
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -426,14 +426,14 @@ public class ChiTietTraHangRestController {
         }
     }
 
-    // âœ… THÃŠM: API láº¥y danh sÃ¡ch tráº£ hÃ ng theo tráº¡ng thÃ¡i
+    // ✅ THÊM: API lấy danh sách trả hàng theo trạng thái
     @GetMapping("/by-status/{trangThai}")
     public ResponseEntity<Map<String, Object>> getByStatus(@PathVariable String trangThai) {
         try {
             // Implement this method in service if needed
             return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", "Endpoint sáº½ Ä‘Æ°á»£c implement"
+                    "message", "Endpoint sẽ được implement"
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -443,7 +443,7 @@ public class ChiTietTraHangRestController {
         }
     }
 
-    // âœ… THÃŠM: API kiá»ƒm tra tráº£ hÃ ng cho má»™t hÃ³a Ä‘Æ¡n cá»¥ thá»ƒ
+    // ✅ THÊM: API kiểm tra trả hàng cho một hóa đơn cụ thể
     @GetMapping("/check-invoice/{hoaDonId}")
     public ResponseEntity<Map<String, Object>> checkInvoiceReturns(@PathVariable Integer hoaDonId) {
         try {
@@ -457,7 +457,7 @@ public class ChiTietTraHangRestController {
                             "statistics", statistics,
                             "hasReturns", !returns.isEmpty()
                     ),
-                    "message", "Kiá»ƒm tra tráº£ hÃ ng thÃ nh cÃ´ng"
+                    "message", "Kiểm tra trả hàng thành công"
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -472,7 +472,7 @@ public class ChiTietTraHangRestController {
             Integer totalSold = hoaDonChiTietRepository.getTotalSoldQuantity(chiTietSanPhamId);
             Integer totalReturned = chiTietTraHangService.getTotalReturnedQuantity(chiTietSanPhamId);
 
-            // Láº¥y chi tiáº¿t cÃ¡c yÃªu cáº§u tráº£ hÃ ng
+            // Lấy chi tiết các yêu cầu trả hàng
             List<ChiTietTraHangDTO> returns = chiTietTraHangService.getChiTietTraHangByChiTietSanPham(chiTietSanPhamId);
 
             return ResponseEntity.ok(Map.of(
@@ -503,7 +503,7 @@ public class ChiTietTraHangRestController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "data", updated,
-                    "message", "Cháº¥p nháº­n tráº£ hÃ ng vÃ  hoÃ n láº¡i kho thÃ nh cÃ´ng"
+                    "message", "Chấp nhận trả hàng và hoàn lại kho thành công"
             ));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -523,7 +523,7 @@ public class ChiTietTraHangRestController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "data", updated,
-                    "message", "Cháº¥p nháº­n tráº£ hÃ ng nhÆ°ng khÃ´ng hoÃ n kho"
+                    "message", "Chấp nhận trả hàng nhưng không hoàn kho"
             ));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of(

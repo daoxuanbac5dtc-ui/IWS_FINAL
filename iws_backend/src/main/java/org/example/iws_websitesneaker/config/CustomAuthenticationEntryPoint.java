@@ -27,7 +27,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
             response.getWriter().write(
-                    "{\"success\": false, \"message\": \"Vui lÃ²ng Ä‘Äƒng nháº­p\", \"data\": null}"
+                    "{\"success\": false, \"message\": \"Vui lòng đăng nhập\", \"data\": null}"
             );
         } else {
             // For regular requests, redirect to login page

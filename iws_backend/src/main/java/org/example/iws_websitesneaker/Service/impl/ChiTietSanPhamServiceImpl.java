@@ -74,7 +74,7 @@ public class ChiTietSanPhamServiceImpl implements ChiTietSanPhamService {
     @Transactional(readOnly = true)
     public ChiTietSanPham getById(Integer id) {
         ChiTietSanPham product = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t sáº£n pháº©m vá»›i ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết sản phẩm với ID: " + id));
 
         // Force load associations
         forceLoadAssociations(product);
@@ -115,89 +115,89 @@ public class ChiTietSanPhamServiceImpl implements ChiTietSanPhamService {
     @Override
     public ChiTietSanPham save(ChiTietSanPham chiTietSanPham) {
         try {
-            // Validation cÆ¡ báº£n
+            // Validation cơ bản
             if (chiTietSanPham.getSanPham() == null) {
-                throw new IllegalArgumentException("Sáº£n pháº©m khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+                throw new IllegalArgumentException("Sản phẩm không được để trống");
             }
 
             if (chiTietSanPham.getMauSac() == null) {
-                throw new IllegalArgumentException("MÃ u sáº¯c khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+                throw new IllegalArgumentException("Màu sắc không được để trống");
             }
 
             if (chiTietSanPham.getKichCo() == null) {
-                throw new IllegalArgumentException("KÃ­ch cá»¡ khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+                throw new IllegalArgumentException("Kích cỡ không được để trống");
             }
 
             if (chiTietSanPham.getSoLuong() == null || chiTietSanPham.getSoLuong() < 0) {
-                throw new IllegalArgumentException("Sá»‘ lÆ°á»£ng khÃ´ng há»£p lá»‡");
+                throw new IllegalArgumentException("Số lượng không hợp lệ");
             }
 
             if (chiTietSanPham.getGiaGoc() == null || chiTietSanPham.getGiaGoc() < 0) {
-                throw new IllegalArgumentException("GiÃ¡ gá»‘c khÃ´ng há»£p lá»‡");
+                throw new IllegalArgumentException("Giá gốc không hợp lệ");
             }
 
             if (chiTietSanPham.getGiaBan() == null || chiTietSanPham.getGiaBan() <= 0) {
-                throw new IllegalArgumentException("GiÃ¡ bÃ¡n pháº£i lá»›n hÆ¡n 0");
+                throw new IllegalArgumentException("Giá bán phải lớn hơn 0");
             }
 
-            // Kiá»ƒm tra logic giÃ¡ bÃ¡n >= giÃ¡ gá»‘c
+            // Kiểm tra logic giá bán >= giá gốc
             if (chiTietSanPham.getGiaBan() < chiTietSanPham.getGiaGoc()) {
-                throw new IllegalArgumentException("GiÃ¡ bÃ¡n pháº£i lá»›n hÆ¡n hoáº·c báº±ng giÃ¡ gá»‘c");
+                throw new IllegalArgumentException("Giá bán phải lớn hơn hoặc bằng giá gốc");
             }
 
-            // Náº¿u lÃ  táº¡o má»›i (id = null)
+            // Nếu là tạo mới (id = null)
             if (chiTietSanPham.getId() == null) {
                 chiTietSanPham.setNgayTao(new Date());
 
-                // Tá»± Ä‘á»™ng táº¡o mÃ£ chi tiáº¿t náº¿u chÆ°a cÃ³
+                // Tự động tạo mã chi tiết nếu chưa có
                 if (chiTietSanPham.getMaChiTiet() == null || chiTietSanPham.getMaChiTiet().trim().isEmpty()) {
                     chiTietSanPham.setMaChiTiet("CTSP" + System.currentTimeMillis());
                 }
 
-                // Set tráº¡ng thÃ¡i máº·c Ä‘á»‹nh náº¿u chÆ°a cÃ³
+                // Set trạng thái mặc định nếu chưa có
                 if (chiTietSanPham.getTrangThai() == null) {
-                    chiTietSanPham.setTrangThai(1); // 1 = Hoáº¡t Ä‘á»™ng
+                    chiTietSanPham.setTrangThai(1); // 1 = Hoạt động
                 }
             } else {
-                // Náº¿u lÃ  cáº­p nháº­t
+                // Nếu là cập nhật
                 chiTietSanPham.setNgayCapNhat(new Date());
             }
 
-            // LÆ°u vÃ o database
+            // Lưu vào database
             return chiTietSanPhamRepository.save(chiTietSanPham);
 
         } catch (Exception e) {
-            throw new RuntimeException("Lá»—i khi lÆ°u chi tiáº¿t sáº£n pháº©m: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi khi lưu chi tiết sản phẩm: " + e.getMessage(), e);
         }
     }
     /**
-     * Force load táº¥t cáº£ lazy associations Ä‘á»ƒ trÃ¡nh LazyInitializationException
+     * Force load tất cả lazy associations để tránh LazyInitializationException
      */
     private void forceLoadAssociations(ChiTietSanPham product) {
         try {
-            // Force load sáº£n pháº©m
+            // Force load sản phẩm
             if (product.getSanPham() != null) {
                 String tenSanPham = product.getSanPham().getTenSanPham();
                 String maSanPham = product.getSanPham().getMaSanPham();
 
-                // Force load thÆ°Æ¡ng hiá»‡u
+                // Force load thương hiệu
                 if (product.getSanPham().getThuongHieu() != null) {
                     String tenThuongHieu = product.getSanPham().getThuongHieu().getTenThuongHieu();
                 }
 
-                // Force load danh má»¥c
+                // Force load danh mục
                 if (product.getSanPham().getDanhMuc() != null) {
                     String tenDanhMuc = product.getSanPham().getDanhMuc().getTenDanhMuc();
                 }
             }
 
-            // Force load mÃ u sáº¯c
+            // Force load màu sắc
             if (product.getMauSac() != null) {
                 String tenMauSac = product.getMauSac().getTenMauSac();
                 String maMau = product.getMauSac().getMaMauSac();
             }
 
-            // Force load kÃ­ch cá»¡
+            // Force load kích cỡ
             if (product.getKichCo() != null) {
                 String tenKichCo = product.getKichCo().getTenKichCo();
             }

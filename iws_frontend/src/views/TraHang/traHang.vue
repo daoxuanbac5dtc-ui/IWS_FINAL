@@ -791,7 +791,7 @@ function createSampleData() {
             id: 1,
             hoaDonId: 1,
             maHoaDon: 'HD001',
-            tenKhachHang: 'Nguyễn Văn A',
+            tenKhachHang: 'Nguyễn Văn An',
             sdtKhachHang: '0912345671',
             tenSanPham: 'Giày Nike Air Max',
             maSanPham: 'SP001',

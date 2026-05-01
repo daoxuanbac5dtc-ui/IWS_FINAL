@@ -13,12 +13,12 @@ public interface ChiTietSanPhamService {
     List<ChiTietSanPham> searchByKeyword(String keyword);
     Long countActiveProducts();
     ChiTietSanPham save(ChiTietSanPham chiTietSanPham);
-    // Kiá»ƒm tra trÃ¹ng láº·p
+    // Kiểm tra trùng lặp
 //    ChiTietSanPham findBySanPhamAndMauSacAndKichCo(Integer sanPhamId, Integer mauSacId, Integer kichCoId);
 //
 //    // Validation
 //    boolean existsByMaChiTiet(String maChiTiet);
 //
-//    // Thá»‘ng kÃª
+//    // Thống kê
 //    Integer getTotalQuantityBySanPhamId(Integer sanPhamId);
 }

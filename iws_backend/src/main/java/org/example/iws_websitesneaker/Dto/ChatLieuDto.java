@@ -14,13 +14,13 @@ import lombok.Setter;
 public class ChatLieuDto {
     private Integer id;
 
-    @NotBlank(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng mÃ£ cháº¥t liá»‡u! ")
+    @NotBlank(message = "Không được để trống mã chất liệu! ")
     private String maChatLieu;
 
-    @NotBlank(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng tÃªn cháº¥t liá»‡u! ")
+    @NotBlank(message = "Không được để trống tên chất liệu! ")
     private String tenChatLieu;
 
-    @NotNull(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng tráº¡ng thÃ¡i cá»§a cháº¥t liá»‡u! ")
+    @NotNull(message = "Không được để trống trạng thái của chất liệu! ")
     private Integer trangThai;
 }
 

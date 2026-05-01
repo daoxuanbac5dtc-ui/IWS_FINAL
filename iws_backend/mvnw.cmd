@@ -31,6 +31,18 @@
 @SET __MVNW_CMD__=
 @SET __MVNW_ERROR__=
 @SET __MVNW_PSMODULEP_SAVE=%PSModulePath%
+@FOR /F "usebackq tokens=1* delims==" %%A IN (`powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+  "$ErrorActionPreference='SilentlyContinue';" ^
+  "function Get-Major([string]$versionText){ if(-not $versionText){ return $null }; if($versionText.StartsWith('1.')){ return [int]$versionText.Split('.')[1] }; return [int]$versionText.Split('.')[0] };" ^
+  "function Test-JavaHome([string]$javaHome){ if(-not $javaHome){ return $null }; $javaExe = Join-Path $javaHome 'bin\\java.exe'; $javacExe = Join-Path $javaHome 'bin\\javac.exe'; $releaseFile = Join-Path $javaHome 'release'; if(-not (Test-Path $javaExe) -or -not (Test-Path $javacExe) -or -not (Test-Path $releaseFile)){ return $null }; $versionLine = Get-Content $releaseFile | Where-Object { $_ -like 'JAVA_VERSION=*' } | Select-Object -First 1; if(-not $versionLine){ return $null }; $major = Get-Major ($versionLine.Split('=', 2)[1].Trim('""')); if($major -ge 17){ return $javaHome }; return $null };" ^
+  "$homes = New-Object System.Collections.Generic.List[string];" ^
+  "if($env:JAVA_HOME){ $homes.Add($env:JAVA_HOME) };" ^
+  "try { $javaCommand = Get-Command java -ErrorAction Stop; $homes.Add((Split-Path (Split-Path $javaCommand.Source -Parent) -Parent)) } catch {};" ^
+  "foreach($root in @('C:\\Program Files\\Java','C:\\Program Files\\Eclipse Adoptium','C:\\Program Files\\Microsoft','C:\\Program Files\\Amazon Corretto')){ if(Test-Path $root){ Get-ChildItem $root -Directory -ErrorAction SilentlyContinue | Sort-Object FullName -Descending | ForEach-Object { $homes.Add($_.FullName) } } };" ^
+  "$javaHome = $homes | Where-Object { $_ } | Select-Object -Unique | ForEach-Object { Test-JavaHome $_ } | Where-Object { $_ } | Select-Object -First 1;" ^
+  "if($javaHome){ 'MVNW_JAVA_HOME=' + $javaHome }"`) DO @(
+  IF "%%A"=="MVNW_JAVA_HOME" (SET JAVA_HOME=%%B)
+)
 @SET PSModulePath=
 @FOR /F "usebackq tokens=1* delims==" %%A IN (`powershell -noprofile "& {$scriptDir='%~dp0'; $script='%__MVNW_ARG0_NAME__%'; icm -ScriptBlock ([Scriptblock]::Create((Get-Content -Raw '%~f0'))) -NoNewScope}"`) DO @(
   IF "%%A"=="MVN_CMD" (set __MVNW_CMD__=%%B) ELSE IF "%%B"=="" (echo %%A) ELSE (echo %%A=%%B)

@@ -15,10 +15,10 @@ public class ChiTietVoucherDTO {
 
     private String maChiTietVoucher;
 
-    private Integer hoaDonId;   // chá»‰ lÆ°u id, khÃ´ng tráº£ vá» full object
-    private Integer voucherId;  // chá»‰ lÆ°u id, khÃ´ng tráº£ vá» full object
+    private Integer hoaDonId;   // chỉ lưu id, không trả về full object
+    private Integer voucherId;  // chỉ lưu id, không trả về full object
 
-    // ThÃ´ng tin voucher táº¡i thá»i Ä‘iá»ƒm Ã¡p dá»¥ng
+    // Thông tin voucher tại thời điểm áp dụng
     private String maVoucher;
     private String tenVoucher;
     private String loaiGiamGia;
@@ -26,12 +26,12 @@ public class ChiTietVoucherDTO {
     private Double giaTriGiamToiDa;
     private Double giaTriGiamToiThieu;
 
-    // ThÃ´ng tin tÃ­nh toÃ¡n
+    // Thông tin tính toán
     private BigDecimal giaTriDonHang;
     private BigDecimal soTienGiam;
     private BigDecimal thanhTien;
 
-    // ThÃ´ng tin thá»i gian
+    // Thông tin thời gian
     private Date ngayApDung;
     private Date ngayTao;
     private Date ngayCapNhat;

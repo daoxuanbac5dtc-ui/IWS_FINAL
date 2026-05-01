@@ -12,15 +12,15 @@ public class ChiTietTraHangDTO {
     private Date ngayTaoTraHang;
     private Date ngayCapNhat;
 
-    // âœ… THÃŠM: ThÃ´ng tin lÃ½ do vÃ  áº£nh
+    // ✅ THÊM: Thông tin lý do và ảnh
     private String lyDo;
     private String duongDanAnh;
 
-    // ThÃ´ng tin hÃ³a Ä‘Æ¡n
+    // Thông tin hóa đơn
     private Integer hoaDonId;
     private String maHoaDon;
 
-    // ThÃ´ng tin chi tiáº¿t sáº£n pháº©m
+    // Thông tin chi tiết sản phẩm
     private Integer chiTietSanPhamId;
     private String maChiTiet;
     private String tenSanPham;
@@ -33,7 +33,7 @@ public class ChiTietTraHangDTO {
     private Double giaGoc;
     private Double giaBan;
 
-    // ThÃ´ng tin tÃ­nh toÃ¡n
+    // Thông tin tính toán
     private BigDecimal thanhTien;
     private BigDecimal tienHoan;
 
@@ -52,11 +52,11 @@ public class ChiTietTraHangDTO {
         this.duongDanAnh = duongDanAnh;
     }
 
-    // Method Ä‘á»ƒ tÃ­nh toÃ¡n cÃ¡c giÃ¡ trá»‹
+    // Method để tính toán các giá trị
     public void calculateValues() {
         if (giaBan != null && soLuong != null) {
             this.thanhTien = BigDecimal.valueOf(giaBan * soLuong);
-            this.tienHoan = this.thanhTien; // Tiá»n hoÃ n = thÃ nh tiá»n
+            this.tienHoan = this.thanhTien; // Tiền hoàn = thành tiền
         } else {
             this.thanhTien = BigDecimal.ZERO;
             this.tienHoan = BigDecimal.ZERO;
@@ -120,7 +120,7 @@ public class ChiTietTraHangDTO {
         this.ngayCapNhat = ngayCapNhat;
     }
 
-    // âœ… THÃŠM: Getters vÃ  Setters cho lÃ½ do vÃ  áº£nh
+    // ✅ THÊM: Getters và Setters cho lý do và ảnh
     public String getLyDo() {
         return lyDo;
     }

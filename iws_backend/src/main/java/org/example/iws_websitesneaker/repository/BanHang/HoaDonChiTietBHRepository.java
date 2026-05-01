@@ -16,49 +16,49 @@ import java.util.Optional;
 public interface HoaDonChiTietBHRepository extends JpaRepository<HoaDonChiTiet, Integer> {
 
     /**
-     * Láº¥y chi tiáº¿t theo hÃ³a Ä‘Æ¡n
+     * Lấy chi tiết theo hóa đơn
      */
     List<HoaDonChiTiet> findByHoaDonId(Integer hoaDonId);
 
     /**
-     * Láº¥y chi tiáº¿t theo hÃ³a Ä‘Æ¡n cÃ³ sáº¯p xáº¿p
+     * Lấy chi tiết theo hóa đơn có sắp xếp
      */
     List<HoaDonChiTiet> findByHoaDonIdOrderByNgayTao(Integer hoaDonId);
 
     /**
-     * TÃ¬m chi tiáº¿t theo hÃ³a Ä‘Æ¡n vÃ  chi tiáº¿t sáº£n pháº©m
+     * Tìm chi tiết theo hóa đơn và chi tiết sản phẩm
      */
     Optional<HoaDonChiTiet> findByHoaDonIdAndChiTietSanPham_Id(Integer hoaDonId, Integer chiTietSanPhamId);
 
     /**
-     * XÃ³a chi tiáº¿t theo hÃ³a Ä‘Æ¡n
+     * Xóa chi tiết theo hóa đơn
      */
     void deleteByHoaDonId(Integer hoaDonId);
 
     /**
-     * TÃ­nh tá»•ng tiá»n theo hÃ³a Ä‘Æ¡n
+     * Tính tổng tiền theo hóa đơn
      */
     @Query("SELECT COALESCE(SUM(hct.gia * hct.soLuong), 0) FROM HoaDonChiTiet hct " +
             "WHERE hct.hoaDon.id = :hoaDonId")
     BigDecimal calculateTotalAmountByHoaDonId(@Param("hoaDonId") Integer hoaDonId);
 
     /**
-     * TÃ­nh tá»•ng sá»‘ lÆ°á»£ng bÃ¡n theo ngÃ y
+     * Tính tổng số lượng bán theo ngày
      */
     @Query("SELECT COALESCE(SUM(hct.soLuong), 0) FROM HoaDonChiTiet hct " +
             "WHERE hct.hoaDon.ngayTao BETWEEN :startDate AND :endDate " +
-            "AND hct.hoaDon.trangThaiHoaDon = 'DA_THANH_TOAN'")
+            "AND hct.hoaDon.trangThaiHoaDon IN ('COMPLETED', 'DA_THANH_TOAN', 'HOAN_THANH')")
     Long getTotalQuantityByDate(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
     @Query("SELECT ctsp FROM ChiTietSanPham ctsp " +
-            "WHERE (ctsp.sanPham.danhMuc.id = :danhMucId " +         // Náº¿u dÃ¹ng relationship
-            "OR ctsp.sanPham.thuongHieu.id = :thuongHieuId) " +      // Náº¿u dÃ¹ng relationship
-            // "WHERE (ctsp.idSanPham IN (SELECT sp.id FROM SanPham sp WHERE sp.idDanhMuc = :danhMucId) " +  // Náº¿u dÃ¹ng ID
-            // "OR ctsp.idSanPham IN (SELECT sp.id FROM SanPham sp WHERE sp.idThuongHieu = :thuongHieuId)) " + // Náº¿u dÃ¹ng ID
+            "WHERE (ctsp.sanPham.danhMuc.id = :danhMucId " +         // Nếu dùng relationship
+            "OR ctsp.sanPham.thuongHieu.id = :thuongHieuId) " +      // Nếu dùng relationship
+            // "WHERE (ctsp.idSanPham IN (SELECT sp.id FROM SanPham sp WHERE sp.idDanhMuc = :danhMucId) " +  // Nếu dùng ID
+            // "OR ctsp.idSanPham IN (SELECT sp.id FROM SanPham sp WHERE sp.idThuongHieu = :thuongHieuId)) " + // Nếu dùng ID
             "AND ctsp.id != :excludeId " +
             "AND ctsp.trangThai = 1 " +
-            "AND ctsp.sanPham.trangThai = 1 " +                      // Náº¿u dÃ¹ng relationship
-            // "AND ctsp.idSanPham IN (SELECT sp.id FROM SanPham sp WHERE sp.trangThai = 1) " + // Náº¿u dÃ¹ng ID
+            "AND ctsp.sanPham.trangThai = 1 " +                      // Nếu dùng relationship
+            // "AND ctsp.idSanPham IN (SELECT sp.id FROM SanPham sp WHERE sp.trangThai = 1) " + // Nếu dùng ID
             "ORDER BY ctsp.ngayTao DESC")
     List<ChiTietSanPham> findSanPhamTuongTu(
             @Param("danhMucId") Integer danhMucId,

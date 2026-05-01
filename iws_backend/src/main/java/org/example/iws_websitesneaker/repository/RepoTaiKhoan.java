@@ -22,7 +22,7 @@ public interface RepoTaiKhoan extends JpaRepository<TaiKhoan, Integer> {
     void deleteAccountOrders(@Param("accountId") Integer accountId);
 
     /**
-     * XÃ³a chi tiáº¿t Ä‘Æ¡n hÃ ng cá»§a tÃ i khoáº£n
+     * Xóa chi tiết đơn hàng của tài khoản
      */
     @Modifying
     @Transactional
@@ -35,7 +35,7 @@ public interface RepoTaiKhoan extends JpaRepository<TaiKhoan, Integer> {
     void deleteAccountOrderDetails(@Param("accountId") Integer accountId);
 
     /**
-     * Kiá»ƒm tra xem tÃ i khoáº£n cÃ³ dá»¯ liá»‡u liÃªn quan khÃ´ng
+     * Kiểm tra xem tài khoản có dữ liệu liên quan không
      */
     @Query(value = """
     SELECT COUNT(*) FROM (
@@ -53,7 +53,7 @@ public interface RepoTaiKhoan extends JpaRepository<TaiKhoan, Integer> {
     int countRelatedData(@Param("accountId") Integer accountId);
 
     /**
-     * Láº¥y danh sÃ¡ch cÃ¡c báº£ng cÃ³ dá»¯ liá»‡u liÃªn quan
+     * Lấy danh sách các bảng có dữ liệu liên quan
      */
     @Query(value = """
     SELECT table_name FROM (

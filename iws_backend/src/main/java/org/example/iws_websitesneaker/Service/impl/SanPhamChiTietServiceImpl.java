@@ -37,7 +37,7 @@ public class SanPhamChiTietServiceImpl implements SanPhamChiTietService {
     @Override
     @Transactional(readOnly = true)
     public ChiTietSanPham getById(Integer id) {
-        // Sá»¬A: Sá»­ dá»¥ng method cÃ³ JOIN FETCH
+        // SỬA: Sử dụng method có JOIN FETCH
         return chiTietSanPhamRepository.findByIdWithDetails(id).orElse(null);
     }
 
@@ -82,47 +82,47 @@ public class SanPhamChiTietServiceImpl implements SanPhamChiTietService {
         return false;
     }
 
-    // Sá»¬A: Method chÃ­nh vá»›i transaction vÃ  debug logging
+    // SỬA: Method chính với transaction và debug logging
     @Override
     @Transactional(readOnly = true)
     public List<ChiTietSanPham> getBySanPhamId(Integer sanPhamId) {
         try {
-            System.out.println("ðŸ” Service: Loading chi tiáº¿t sáº£n pháº©m cho sanPhamId: " + sanPhamId);
+            System.out.println("🔍 Service: Loading chi tiết sản phẩm cho sanPhamId: " + sanPhamId);
 
             List<ChiTietSanPham> chiTietSanPhams = chiTietSanPhamRepository.findBySanPhamId(sanPhamId);
 
-            System.out.println("ðŸ“¦ Repository tráº£ vá» " + chiTietSanPhams.size() + " records");
+            System.out.println("📦 Repository trả về " + chiTietSanPhams.size() + " records");
 
-            // Force load vÃ  debug hÃ¬nh áº£nh
+            // Force load và debug hình ảnh
             for (ChiTietSanPham ctsp : chiTietSanPhams) {
                 // Force load basic info
                 String maChiTiet = ctsp.getMaChiTiet();
                 String mauSac = ctsp.getMauSac() != null ? ctsp.getMauSac().getTenMauSac() : "NULL";
                 String kichCo = ctsp.getKichCo() != null ? ctsp.getKichCo().getTenKichCo() : "NULL";
 
-                // QUAN TRá»ŒNG: Force load hÃ¬nh áº£nh
+                // QUAN TRỌNG: Force load hình ảnh
                 String hinhAnh = "NULL";
                 if (ctsp.getHinhAnh() != null) {
                     try {
-                        // Force load hÃ¬nh áº£nh properties
+                        // Force load hình ảnh properties
                         hinhAnh = ctsp.getHinhAnh().getTenHinhAnh();
                         String duongDan = ctsp.getHinhAnh().getDuongDan();
                         Integer trangThai = ctsp.getHinhAnh().getTrangThai();
-                        System.out.println("   ðŸ–¼ï¸ HÃ¬nh áº£nh: " + hinhAnh + " | ÄÆ°á»ng dáº«n: " + duongDan + " | Tráº¡ng thÃ¡i: " + trangThai);
+                        System.out.println("   🖼️ Hình ảnh: " + hinhAnh + " | Đường dẫn: " + duongDan + " | Trạng thái: " + trangThai);
                     } catch (Exception e) {
-                        System.err.println("   âŒ Lá»—i force load hÃ¬nh áº£nh: " + e.getMessage());
+                        System.err.println("   ❌ Lỗi force load hình ảnh: " + e.getMessage());
                     }
                 }
 
-                System.out.println("   âœ… " + maChiTiet + " | MÃ u: " + mauSac + " | Size: " + kichCo + " | HÃ¬nh: " + hinhAnh);
+                System.out.println("   ✅ " + maChiTiet + " | Màu: " + mauSac + " | Size: " + kichCo + " | Hình: " + hinhAnh);
             }
 
             return chiTietSanPhams;
 
         } catch (Exception e) {
-            System.err.println("âŒ Lá»—i trong getBySanPhamId service: " + e.getMessage());
+            System.err.println("❌ Lỗi trong getBySanPhamId service: " + e.getMessage());
             e.printStackTrace();
-            throw new RuntimeException("KhÃ´ng thá»ƒ táº£i chi tiáº¿t sáº£n pháº©m cho ID: " + sanPhamId, e);
+            throw new RuntimeException("Không thể tải chi tiết sản phẩm cho ID: " + sanPhamId, e);
         }
     }
 }

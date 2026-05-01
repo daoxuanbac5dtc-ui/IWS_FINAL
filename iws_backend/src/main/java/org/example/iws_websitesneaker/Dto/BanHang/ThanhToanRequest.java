@@ -12,7 +12,7 @@ public class ThanhToanRequest {
     private Integer khachHangId;
     private Integer voucherId;
 
-    @NotNull(message = "PhÆ°Æ¡ng thá»©c thanh toÃ¡n khÃ´ng Ä‘Æ°á»£c trá»‘ng")
+    @NotNull(message = "Phương thức thanh toán không được trống")
     private String phuongThucThanhToan; // TIEN_MAT, CHUYEN_KHOAN, KET_HOP
 
     private BigDecimal tienMat;
@@ -23,6 +23,6 @@ public class ThanhToanRequest {
     private String sdtNguoiNhan;
     private String diaChiGiaoHang;
 
-    @NotNull(message = "Loáº¡i hÃ³a Ä‘Æ¡n khÃ´ng Ä‘Æ°á»£c trá»‘ng")
+    @NotNull(message = "Loại hóa đơn không được trống")
     private String loaiHoaDon = "OFFLINE"; // OFFLINE, ONLINE
 }

@@ -365,27 +365,27 @@ const loadOrdersSafe = async () => {
         const token = getAuthToken();
         const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
 
-        console.log('đŸ”‘ Auth token:', token ? 'Present' : 'Missing');
-        console.log('đŸ‘¤ User info:', userInfo);
-        console.log('đŸŒ API URL:', `${API_BASE_URL}/hoa-don/my-orders`);
+        console.log('🔑 Auth token:', token ? 'Present' : 'Missing');
+        console.log('👤 User info:', userInfo);
+        console.log('API URL:', `${API_BASE_URL}/hoa-don/my-orders`);
 
         const response = await fetchWithErrorHandling(`${API_BASE_URL}/hoa-don/my-orders`);
-        console.log('đŸ“¦ API Response:', response);
+        console.log('📦 API Response:', response);
 
         if (Array.isArray(response)) {
             orders.value = response;
-            console.log('âœ… Orders loaded (array):', response.length);
+            console.log('✅ Orders loaded (array):', response.length);
         } else if (response.data && Array.isArray(response.data)) {
             orders.value = response.data;
-            console.log('âœ… Orders loaded (data):', response.data.length);
+            console.log('✅ Orders loaded (data):', response.data.length);
         } else {
             orders.value = [];
-            console.log('â ï¸ No orders found');
+            console.log('⚠️ No orders found');
         }
 
-        console.log('đŸ“‹ Final orders:', orders.value);
+        console.log('📋 Final orders:', orders.value);
     } catch (error) {
-        console.error('âŒ Error loading orders:', error);
+        console.error('❌ Error loading orders:', error);
         handleApiError(error);
     } finally {
         isLoading.value = false;

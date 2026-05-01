@@ -13,13 +13,13 @@ import lombok.Setter;
 @AllArgsConstructor
 public class HinhAnhDto {
     private Integer id;
-    @NotBlank(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng mÃ£ chi tiáº¿t sáº£n pháº©m! ")
+    @NotBlank(message = "Không được để trống mã chi tiết sản phẩm! ")
     private String maChiTiet;
-    @NotBlank(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng mÃ£ hÃ¬nh áº£nh!")
+    @NotBlank(message = "Không được để trống mã hình ảnh!")
     private String maHinhAnh;
-    @NotBlank(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng tÃªn hÃ¬nh áº£nh!")
+    @NotBlank(message = "Không được để trống tên hình ảnh!")
     private String tenHinhAnh;
-    @NotNull(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng tráº¡ng thÃ¡i  hÃ¬nh áº£nh!")
+    @NotNull(message = "Không được để trống trạng thái  hình ảnh!")
     private Integer trangThai;
 
 }

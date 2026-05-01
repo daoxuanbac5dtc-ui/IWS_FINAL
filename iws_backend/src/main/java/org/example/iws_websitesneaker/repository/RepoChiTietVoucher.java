@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface RepoChiTietVoucher extends JpaRepository<ChiTietVoucher,Integer> {
     void deleteByHoaDonId(Integer id);
-    // XÃ³a voucher - sá»­a id voucher trong báº£ng ctsp vá» null
+    // Xóa voucher - sửa id voucher trong bảng ctsp về null
     @Modifying
     @Transactional
     @Query("UPDATE ChiTietVoucher ctv SET ctv.voucher = NULL WHERE ctv.voucher.id = :id")

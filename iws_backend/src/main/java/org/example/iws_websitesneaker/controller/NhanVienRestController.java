@@ -36,7 +36,7 @@ public class NhanVienRestController {
     // ===== CRUD OPERATIONS =====
 
     /**
-     * Láº¥y danh sÃ¡ch nhÃ¢n viÃªn vá»›i phÃ¢n trang vÃ  tÃ¬m kiáº¿m
+     * Lấy danh sách nhân viên với phân trang và tìm kiếm
      */
     @GetMapping
     public ResponseEntity<?> getAllEmployees(
@@ -50,7 +50,7 @@ public class NhanVienRestController {
             // Validate pagination parameters
             if (page < 0 || size <= 0 || size > 100) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Tham sá»‘ phÃ¢n trang khÃ´ng há»£p lá»‡", "INVALID_PAGINATION"));
+                        .body(createErrorResponse("Tham số phân trang không hợp lệ", "INVALID_PAGINATION"));
             }
 
             List<NhanVien> allEmployees;
@@ -78,12 +78,12 @@ public class NhanVienRestController {
         } catch (Exception e) {
             System.err.println("Error getting employees: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi táº£i danh sÃ¡ch nhÃ¢n viÃªn", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi tải danh sách nhân viên", "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * API riÃªng cho láº¥y táº¥t cáº£ (khÃ´ng phÃ¢n trang) - cho export
+     * API riêng cho lấy tất cả (không phân trang) - cho export
      */
     @GetMapping("/all")
     public ResponseEntity<List<NhanVienDto>> getAllNhanVienForExport() {
@@ -100,59 +100,59 @@ public class NhanVienRestController {
     }
 
     /**
-     * Láº¥y nhÃ¢n viÃªn theo ID
+     * Lấy nhân viên theo ID
      */
     @GetMapping("/{id}")
     public ResponseEntity<?> getEmployeeById(@PathVariable Integer id) {
         try {
             if (id == null || id <= 0) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("ID khÃ´ng há»£p lá»‡", "INVALID_ID"));
+                        .body(createErrorResponse("ID không hợp lệ", "INVALID_ID"));
             }
 
             Optional<NhanVien> employee = nhanVienService.getNhanVienById(id);
             if (employee.isPresent()) {
                 NhanVienDto dto = convertToDto(employee.get());
-                return ResponseEntity.ok(createSuccessResponse("Láº¥y thÃ´ng tin nhÃ¢n viÃªn thÃ nh cÃ´ng", dto));
+                return ResponseEntity.ok(createSuccessResponse("Lấy thông tin nhân viên thành công", dto));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(createErrorResponse("KhÃ´ng tÃ¬m tháº¥y nhÃ¢n viÃªn vá»›i ID: " + id, "NOT_FOUND"));
+                        .body(createErrorResponse("Không tìm thấy nhân viên với ID: " + id, "NOT_FOUND"));
             }
         } catch (Exception e) {
             System.err.println("Error getting employee by ID: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi táº£i thÃ´ng tin nhÃ¢n viÃªn", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi tải thông tin nhân viên", "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * Láº¥y nhÃ¢n viÃªn theo ID tÃ i khoáº£n
+     * Lấy nhân viên theo ID tài khoản
      */
     @GetMapping("/tai-khoan/{taiKhoanId}")
     public ResponseEntity<?> getEmployeeByAccountId(@PathVariable Integer taiKhoanId) {
         try {
             if (taiKhoanId == null || taiKhoanId <= 0) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("ID tÃ i khoáº£n khÃ´ng há»£p lá»‡", "INVALID_ACCOUNT_ID"));
+                        .body(createErrorResponse("ID tài khoản không hợp lệ", "INVALID_ACCOUNT_ID"));
             }
 
             Optional<NhanVien> employee = nhanVienService.findByTaiKhoanId(taiKhoanId);
             if (employee.isPresent()) {
                 NhanVienDto dto = convertToDto(employee.get());
-                return ResponseEntity.ok(createSuccessResponse("Láº¥y thÃ´ng tin nhÃ¢n viÃªn thÃ nh cÃ´ng", dto));
+                return ResponseEntity.ok(createSuccessResponse("Lấy thông tin nhân viên thành công", dto));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(createErrorResponse("KhÃ´ng tÃ¬m tháº¥y nhÃ¢n viÃªn vá»›i ID tÃ i khoáº£n: " + taiKhoanId, "NOT_FOUND"));
+                        .body(createErrorResponse("Không tìm thấy nhân viên với ID tài khoản: " + taiKhoanId, "NOT_FOUND"));
             }
         } catch (Exception e) {
             System.err.println("Error getting employee by account ID: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi táº£i thÃ´ng tin nhÃ¢n viÃªn", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi tải thông tin nhân viên", "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * ThÃªm nhÃ¢n viÃªn má»›i (chá»‰ tá»« admin)
+     * Thêm nhân viên mới (chỉ từ admin)
      */
     @PostMapping
     public ResponseEntity<?> createNhanVien(@RequestBody @Validated NhanVienDto dto) {
@@ -160,32 +160,32 @@ public class NhanVienRestController {
             // Log admin action
             logAdminAction("CREATE_EMPLOYEE", Map.of("data", dto));
 
-            // Validate dá»¯ liá»‡u
+            // Validate dữ liệu
             Map<String, String> errors = validateNhanVienDto(dto);
             if (!errors.isEmpty()) {
-                return ResponseEntity.badRequest().body(createErrorResponse("Dá»¯ liá»‡u khÃ´ng há»£p lá»‡", "VALIDATION_ERROR", errors));
+                return ResponseEntity.badRequest().body(createErrorResponse("Dữ liệu không hợp lệ", "VALIDATION_ERROR", errors));
             }
 
-            // Kiá»ƒm tra tÃ i khoáº£n tá»“n táº¡i
+            // Kiểm tra tài khoản tồn tại
             if (dto.getIdTaiKhoan() != null) {
                 Optional<TaiKhoan> taiKhoan = taiKhoanService.findById(dto.getIdTaiKhoan());
                 if (taiKhoan.isEmpty()) {
                     return ResponseEntity.badRequest()
-                            .body(createErrorResponse("KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n vá»›i ID: " + dto.getIdTaiKhoan(), "ACCOUNT_NOT_FOUND"));
+                            .body(createErrorResponse("Không tìm thấy tài khoản với ID: " + dto.getIdTaiKhoan(), "ACCOUNT_NOT_FOUND"));
                 }
 
-                // Kiá»ƒm tra tÃ i khoáº£n Ä‘Ã£ cÃ³ nhÃ¢n viÃªn chÆ°a
+                // Kiểm tra tài khoản đã có nhân viên chưa
                 Optional<NhanVien> existingNV = nhanVienService.findByTaiKhoanId(dto.getIdTaiKhoan());
                 if (existingNV.isPresent()) {
                     return ResponseEntity.badRequest()
-                            .body(createErrorResponse("TÃ i khoáº£n nÃ y Ä‘Ã£ Ä‘Æ°á»£c liÃªn káº¿t vá»›i nhÃ¢n viÃªn khÃ¡c", "ACCOUNT_LINKED"));
+                            .body(createErrorResponse("Tài khoản này đã được liên kết với nhân viên khác", "ACCOUNT_LINKED"));
                 }
             }
 
-            // Kiá»ƒm tra mÃ£ nhÃ¢n viÃªn Ä‘Ã£ tá»“n táº¡i
+            // Kiểm tra mã nhân viên đã tồn tại
             if (dto.getMaNhanVien() != null && nhanVienService.existsByMaNhanVien(dto.getMaNhanVien())) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("MÃ£ nhÃ¢n viÃªn Ä‘Ã£ tá»“n táº¡i", "EMPLOYEE_CODE_EXISTS"));
+                        .body(createErrorResponse("Mã nhân viên đã tồn tại", "EMPLOYEE_CODE_EXISTS"));
             }
 
             NhanVien entity = convertToEntity(dto);
@@ -194,20 +194,20 @@ public class NhanVienRestController {
 
             nhanVienService.addNhanVien(entity);
 
-            // Láº¥y láº¡i entity vá»«a táº¡o Ä‘á»ƒ tráº£ vá»
+            // Lấy lại entity vừa tạo để trả về
             Optional<NhanVien> savedOpt = nhanVienService.getNhanVienById(entity.getId());
             NhanVienDto savedDto = savedOpt.map(this::convertToDto).orElse(convertToDto(entity));
 
-            return ResponseEntity.ok(createSuccessResponse("ThÃªm nhÃ¢n viÃªn thÃ nh cÃ´ng!", savedDto));
+            return ResponseEntity.ok(createSuccessResponse("Thêm nhân viên thành công!", savedDto));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi thÃªm nhÃ¢n viÃªn: " + e.getMessage(), "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi thêm nhân viên: " + e.getMessage(), "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * Cáº­p nháº­t thÃ´ng tin nhÃ¢n viÃªn (chá»‰ cho ADMIN hoáº·c chÃ­nh nhÃ¢n viÃªn Ä‘Ã³)
+     * Cập nhật thông tin nhân viên (chỉ cho ADMIN hoặc chính nhân viên đó)
      */
     @PutMapping("/{id}")
     @Transactional
@@ -219,21 +219,21 @@ public class NhanVienRestController {
             // Validate ID
             if (id == null || id <= 0) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("ID khÃ´ng há»£p lá»‡", "INVALID_ID"));
+                        .body(createErrorResponse("ID không hợp lệ", "INVALID_ID"));
             }
 
             // Check if employee exists
             Optional<NhanVien> existingOpt = nhanVienService.getNhanVienById(id);
             if (existingOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(createErrorResponse("KhÃ´ng tÃ¬m tháº¥y nhÃ¢n viÃªn vá»›i ID: " + id, "NOT_FOUND"));
+                        .body(createErrorResponse("Không tìm thấy nhân viên với ID: " + id, "NOT_FOUND"));
             }
 
             // Validate DTO
             Map<String, String> validationErrors = validateEmployeeDto(dto, id);
             if (!validationErrors.isEmpty()) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Dá»¯ liá»‡u khÃ´ng há»£p lá»‡", "VALIDATION_ERROR", validationErrors));
+                        .body(createErrorResponse("Dữ liệu không hợp lệ", "VALIDATION_ERROR", validationErrors));
             }
 
             NhanVien existing = existingOpt.get();
@@ -242,14 +242,14 @@ public class NhanVienRestController {
             if (dto.getIdTaiKhoan() != null && existing.getTaiKhoan() != null &&
                     !dto.getIdTaiKhoan().equals(existing.getTaiKhoan().getId())) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("KhÃ´ng Ä‘Æ°á»£c phÃ©p thay Ä‘á»•i tÃ i khoáº£n liÃªn káº¿t", "ACCOUNT_CHANGE_FORBIDDEN"));
+                        .body(createErrorResponse("Không được phép thay đổi tài khoản liên kết", "ACCOUNT_CHANGE_FORBIDDEN"));
             }
 
             // Check employee code conflict
             if (dto.getMaNhanVien() != null && !dto.getMaNhanVien().equals(existing.getMaNhanVien())) {
                 if (nhanVienService.existsByMaNhanVien(dto.getMaNhanVien())) {
                     return ResponseEntity.status(HttpStatus.CONFLICT)
-                            .body(createErrorResponse("MÃ£ nhÃ¢n viÃªn Ä‘Ã£ tá»“n táº¡i", "EMPLOYEE_CODE_EXISTS"));
+                            .body(createErrorResponse("Mã nhân viên đã tồn tại", "EMPLOYEE_CODE_EXISTS"));
                 }
             }
 
@@ -257,7 +257,7 @@ public class NhanVienRestController {
             if (dto.getSdt() != null && !dto.getSdt().equals(existing.getSdt())) {
                 if (nhanVienService.isPhoneNumberUsed(dto.getSdt(), id)) {
                     return ResponseEntity.status(HttpStatus.CONFLICT)
-                            .body(createErrorResponse("Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng", "PHONE_EXISTS"));
+                            .body(createErrorResponse("Số điện thoại đã được sử dụng", "PHONE_EXISTS"));
                 }
             }
 
@@ -285,67 +285,75 @@ public class NhanVienRestController {
             NhanVien updated = updatedOpt.orElse(existing);
             NhanVienDto updatedDto = convertToDto(updated);
 
-            return ResponseEntity.ok(createSuccessResponse("Cáº­p nháº­t nhÃ¢n viÃªn thÃ nh cÃ´ng", updatedDto));
+            return ResponseEntity.ok(createSuccessResponse("Cập nhật nhân viên thành công", updatedDto));
 
         } catch (Exception e) {
             System.err.println("Error updating employee: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi cáº­p nháº­t nhÃ¢n viÃªn", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi cập nhật nhân viên", "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * Thay Ä‘á»•i tráº¡ng thÃ¡i nhÃ¢n viÃªn (chá»‰ ADMIN)
+     * Thay đổi trạng thái nhân viên (chỉ ADMIN)
      */
     @PatchMapping("/{id}/status")
     public ResponseEntity<?> changeStatus(@PathVariable Integer id, @RequestBody Map<String, Integer> request) {
         try {
-            // Log admin action
             logAdminAction("CHANGE_EMPLOYEE_STATUS", Map.of("id", id, "newStatus", request.get("trangThai")));
 
             if (id == null || id <= 0) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("ID khÃ´ng há»£p lá»‡", "INVALID_ID"));
+                        .body(createErrorResponse("ID không hợp lệ", "INVALID_ID"));
             }
 
             Integer newStatus = request.get("trangThai");
             if (newStatus == null || (newStatus != 0 && newStatus != 1)) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Tráº¡ng thÃ¡i khÃ´ng há»£p lá»‡ (0 hoáº·c 1)", "INVALID_STATUS"));
+                        .body(createErrorResponse("Trạng thái không hợp lệ (0 hoặc 1)", "INVALID_STATUS"));
             }
 
             Optional<NhanVien> employeeOpt = nhanVienService.getNhanVienById(id);
             if (employeeOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(createErrorResponse("KhÃ´ng tÃ¬m tháº¥y nhÃ¢n viÃªn", "NOT_FOUND"));
+                        .body(createErrorResponse("Không tìm thấy nhân viên", "NOT_FOUND"));
             }
 
             NhanVien employee = employeeOpt.get();
-            if (employee.getTrangThai().equals(newStatus)) {
-                return ResponseEntity.badRequest()
-                        .body(createErrorResponse("NhÃ¢n viÃªn Ä‘Ã£ á»Ÿ tráº¡ng thÃ¡i nÃ y", "SAME_STATUS"));
+            if (Objects.equals(employee.getTrangThai(), newStatus)) {
+                syncLinkedAccountStatus(employee, newStatus);
+                return ResponseEntity.ok(createSuccessResponse("Trạng thái nhân viên đã được đồng bộ", convertToDto(employee)));
             }
 
             nhanVienService.toggleTrangThai(id);
 
-            // Get updated data with address
             Optional<NhanVien> updatedOpt = nhanVienService.getNhanVienById(id);
             NhanVien updated = updatedOpt.orElse(employee);
+            syncLinkedAccountStatus(updated, newStatus);
             NhanVienDto updatedDto = convertToDto(updated);
 
-            String statusText = newStatus == 1 ? "kÃ­ch hoáº¡t" : "cho nghá»‰ viá»‡c";
-            return ResponseEntity.ok(createSuccessResponse("ÄÃ£ " + statusText + " nhÃ¢n viÃªn thÃ nh cÃ´ng", updatedDto));
+            String statusText = newStatus == 1 ? "kích hoạt" : "cho nghỉ việc";
+            return ResponseEntity.ok(createSuccessResponse("Đã " + statusText + " nhân viên thành công", updatedDto));
 
         } catch (Exception e) {
             System.err.println("Error changing employee status: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi thay Ä‘á»•i tráº¡ng thÃ¡i", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi thay đổi trạng thái", "INTERNAL_ERROR"));
         }
     }
 
-    /**
-     * XÃ³a nhÃ¢n viÃªn (soft delete - chá»‰ ADMIN)
-     */
+    private void syncLinkedAccountStatus(NhanVien employee, Integer newStatus) {
+        if (employee == null || employee.getTaiKhoan() == null || newStatus == null) {
+            return;
+        }
+
+        TaiKhoan linkedAccount = employee.getTaiKhoan();
+        if (!Objects.equals(linkedAccount.getTrangThai(), newStatus)) {
+            linkedAccount.setTrangThai(newStatus);
+            taiKhoanService.save(linkedAccount);
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteEmployee(@PathVariable Integer id) {
         try {
@@ -354,39 +362,39 @@ public class NhanVienRestController {
 
             if (id == null || id <= 0) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("ID khÃ´ng há»£p lá»‡", "INVALID_ID"));
+                        .body(createErrorResponse("ID không hợp lệ", "INVALID_ID"));
             }
 
             Optional<NhanVien> employeeOpt = nhanVienService.getNhanVienById(id);
             if (employeeOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(createErrorResponse("KhÃ´ng tÃ¬m tháº¥y nhÃ¢n viÃªn", "NOT_FOUND"));
+                        .body(createErrorResponse("Không tìm thấy nhân viên", "NOT_FOUND"));
             }
 
             NhanVien employee = employeeOpt.get();
             if (employee.getTrangThai() == 0) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("NhÃ¢n viÃªn Ä‘Ã£ nghá»‰ viá»‡c", "ALREADY_INACTIVE"));
+                        .body(createErrorResponse("Nhân viên đã nghỉ việc", "ALREADY_INACTIVE"));
             }
 
             if (!nhanVienService.canDeleteNhanVien(id)) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("KhÃ´ng thá»ƒ cho nghá»‰ viá»‡c nhÃ¢n viÃªn nÃ y do cÃ²n dá»¯ liá»‡u liÃªn quan", "DELETE_FORBIDDEN"));
+                        .body(createErrorResponse("Không thể cho nghỉ việc nhân viên này do còn dữ liệu liên quan", "DELETE_FORBIDDEN"));
             }
 
             nhanVienService.deleteNhanVien(id); // Soft delete
 
-            return ResponseEntity.ok(createSuccessResponse("ÄÃ£ cho nhÃ¢n viÃªn nghá»‰ viá»‡c thÃ nh cÃ´ng", null));
+            return ResponseEntity.ok(createSuccessResponse("Đã cho nhân viên nghỉ việc thành công", null));
 
         } catch (Exception e) {
             System.err.println("Error deleting employee: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi xÃ³a nhÃ¢n viÃªn", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi xóa nhân viên", "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * XÃ³a nhiá»u nhÃ¢n viÃªn (batch delete - chá»‰ ADMIN)
+     * Xóa nhiều nhân viên (batch delete - chỉ ADMIN)
      */
     @DeleteMapping("/batch")
     public ResponseEntity<?> deleteMultipleEmployees(@RequestBody List<Integer> ids) {
@@ -396,7 +404,7 @@ public class NhanVienRestController {
 
             if (ids == null || ids.isEmpty()) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Danh sÃ¡ch ID khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng", "EMPTY_ID_LIST"));
+                        .body(createErrorResponse("Danh sách ID không được để trống", "EMPTY_ID_LIST"));
             }
 
             List<Integer> successIds = new ArrayList<>();
@@ -408,7 +416,7 @@ public class NhanVienRestController {
                     if (employeeOpt.isPresent()) {
                         NhanVien employee = employeeOpt.get();
                         if (employee.getTrangThai() == 0) {
-                            errors.add("NhÃ¢n viÃªn ID " + id + " Ä‘Ã£ nghá»‰ viá»‡c");
+                            errors.add("Nhân viên ID " + id + " đã nghỉ việc");
                             continue;
                         }
 
@@ -416,37 +424,37 @@ public class NhanVienRestController {
                             nhanVienService.deleteNhanVien(id);
                             successIds.add(id);
                         } else {
-                            errors.add("KhÃ´ng thá»ƒ cho nghá»‰ viá»‡c nhÃ¢n viÃªn ID " + id + " do cÃ²n dá»¯ liá»‡u liÃªn quan");
+                            errors.add("Không thể cho nghỉ việc nhân viên ID " + id + " do còn dữ liệu liên quan");
                         }
                     } else {
-                        errors.add("KhÃ´ng tÃ¬m tháº¥y nhÃ¢n viÃªn vá»›i ID: " + id);
+                        errors.add("Không tìm thấy nhân viên với ID: " + id);
                     }
                 } catch (Exception e) {
-                    errors.add("Lá»—i khi xá»­ lÃ½ nhÃ¢n viÃªn ID " + id + ": " + e.getMessage());
+                    errors.add("Lỗi khi xử lý nhân viên ID " + id + ": " + e.getMessage());
                 }
             }
 
             Map<String, Object> result = new HashMap<>();
             result.put("successCount", successIds.size());
             result.put("successIds", successIds);
-            result.put("message", "ÄÃ£ cho " + successIds.size() + " nhÃ¢n viÃªn nghá»‰ viá»‡c");
+            result.put("message", "Đã cho " + successIds.size() + " nhân viên nghỉ việc");
             if (!errors.isEmpty()) {
                 result.put("errors", errors);
             }
 
-            return ResponseEntity.ok(createSuccessResponse("XÃ³a nhÃ¢n viÃªn hoÃ n táº¥t", result));
+            return ResponseEntity.ok(createSuccessResponse("Xóa nhân viên hoàn tất", result));
 
         } catch (Exception e) {
             System.err.println("Error batch deleting employees: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi xÃ³a nhÃ¢n viÃªn", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi xóa nhân viên", "INTERNAL_ERROR"));
         }
     }
 
     // ===== SEARCH OPERATIONS =====
 
     /**
-     * TÃ¬m kiáº¿m nÃ¢ng cao nhÃ¢n viÃªn
+     * Tìm kiếm nâng cao nhân viên
      */
     @GetMapping("/search")
     public ResponseEntity<?> searchEmployees(
@@ -466,7 +474,7 @@ public class NhanVienRestController {
             // Validate search parameters
             if (!nhanVienService.isValidNhanVienSearchParams(hoTen, email, sdt, maNhanVien)) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Tham sá»‘ tÃ¬m kiáº¿m khÃ´ng há»£p lá»‡", "INVALID_SEARCH_PARAMS"));
+                        .body(createErrorResponse("Tham số tìm kiếm không hợp lệ", "INVALID_SEARCH_PARAMS"));
             }
 
             List<NhanVien> results;
@@ -491,44 +499,44 @@ public class NhanVienRestController {
         } catch (Exception e) {
             System.err.println("Error searching employees: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi tÃ¬m kiáº¿m nhÃ¢n viÃªn", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi tìm kiếm nhân viên", "INTERNAL_ERROR"));
         }
     }
 
     // ===== ADMIN DASHBOARD OPERATIONS =====
 
     /**
-     * Láº¥y thá»‘ng kÃª dashboard cho ADMIN
+     * Lấy thống kê dashboard cho ADMIN
      */
     @GetMapping("/admin/dashboard-stats")
     public ResponseEntity<?> getAdminDashboardStats() {
         try {
             Map<String, Object> stats = nhanVienService.getAdminDashboardStats();
-            return ResponseEntity.ok(createSuccessResponse("Láº¥y thá»‘ng kÃª dashboard thÃ nh cÃ´ng", stats));
+            return ResponseEntity.ok(createSuccessResponse("Lấy thống kê dashboard thành công", stats));
         } catch (Exception e) {
             System.err.println("Error getting admin dashboard stats: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi láº¥y thá»‘ng kÃª dashboard", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi lấy thống kê dashboard", "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * Láº¥y hoáº¡t Ä‘á»™ng gáº§n Ä‘Ã¢y cho ADMIN
+     * Lấy hoạt động gần đây cho ADMIN
      */
     @GetMapping("/admin/recent-activities")
     public ResponseEntity<?> getRecentActivities() {
         try {
             List<Map<String, Object>> activities = nhanVienService.getRecentActivities();
-            return ResponseEntity.ok(createSuccessResponse("Láº¥y hoáº¡t Ä‘á»™ng gáº§n Ä‘Ã¢y thÃ nh cÃ´ng", activities));
+            return ResponseEntity.ok(createSuccessResponse("Lấy hoạt động gần đây thành công", activities));
         } catch (Exception e) {
             System.err.println("Error getting recent activities: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi láº¥y hoáº¡t Ä‘á»™ng gáº§n Ä‘Ã¢y", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi lấy hoạt động gần đây", "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * Láº¥y nhÃ¢n viÃªn theo bá»™ lá»c nhanh
+     * Lấy nhân viên theo bộ lọc nhanh
      */
     @GetMapping("/admin/quick-filters")
     public ResponseEntity<?> getQuickFilters(
@@ -553,7 +561,7 @@ public class NhanVienRestController {
                     break;
                 default:
                     return ResponseEntity.badRequest()
-                            .body(createErrorResponse("Loáº¡i filter khÃ´ng há»£p lá»‡", "INVALID_FILTER_TYPE"));
+                            .body(createErrorResponse("Loại filter không hợp lệ", "INVALID_FILTER_TYPE"));
             }
 
             PageResponse<NhanVienDto> response = createPagedResponse(filteredEmployees, page, size);
@@ -562,29 +570,29 @@ public class NhanVienRestController {
         } catch (Exception e) {
             System.err.println("Error in quick filters: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi táº£i bá»™ lá»c nhanh", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi tải bộ lọc nhanh", "INTERNAL_ERROR"));
         }
     }
 
     // ===== STATISTICS =====
 
     /**
-     * Láº¥y thá»‘ng kÃª nhÃ¢n viÃªn
+     * Lấy thống kê nhân viên
      */
     @GetMapping("/statistics")
     public ResponseEntity<?> getStatistics() {
         try {
             Map<String, Long> stats = nhanVienService.getEmployeeStatistics();
-            return ResponseEntity.ok(createSuccessResponse("Láº¥y thá»‘ng kÃª thÃ nh cÃ´ng", stats));
+            return ResponseEntity.ok(createSuccessResponse("Lấy thống kê thành công", stats));
         } catch (Exception e) {
             System.err.println("Error getting statistics: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi láº¥y thá»‘ng kÃª", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi lấy thống kê", "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * Láº¥y nhÃ¢n viÃªn active
+     * Lấy nhân viên active
      */
     @GetMapping("/active")
     public ResponseEntity<?> getActiveEmployees() {
@@ -593,34 +601,34 @@ public class NhanVienRestController {
             List<NhanVienDto> activeEmployeeDtos = activeEmployees.stream()
                     .map(this::convertToDto)
                     .collect(Collectors.toList());
-            return ResponseEntity.ok(createSuccessResponse("Láº¥y nhÃ¢n viÃªn hoáº¡t Ä‘á»™ng thÃ nh cÃ´ng", activeEmployeeDtos));
+            return ResponseEntity.ok(createSuccessResponse("Lấy nhân viên hoạt động thành công", activeEmployeeDtos));
         } catch (Exception e) {
             System.err.println("Error getting active employees: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi láº¥y nhÃ¢n viÃªn hoáº¡t Ä‘á»™ng", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi lấy nhân viên hoạt động", "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * Láº¥y nhÃ¢n viÃªn má»›i gáº§n Ä‘Ã¢y
+     * Lấy nhân viên mới gần đây
      */
     @GetMapping("/recent")
     public ResponseEntity<?> getRecentEmployees(@RequestParam(defaultValue = "7") int days) {
         try {
             if (days <= 0 || days > 365) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Sá»‘ ngÃ y pháº£i trong khoáº£ng 1-365", "INVALID_DAYS"));
+                        .body(createErrorResponse("Số ngày phải trong khoảng 1-365", "INVALID_DAYS"));
             }
 
             List<NhanVien> recentEmployees = nhanVienService.getNewEmployees(days);
             List<NhanVienDto> recentEmployeeDtos = recentEmployees.stream()
                     .map(this::convertToDto)
                     .collect(Collectors.toList());
-            return ResponseEntity.ok(createSuccessResponse("Láº¥y nhÃ¢n viÃªn má»›i thÃ nh cÃ´ng", recentEmployeeDtos));
+            return ResponseEntity.ok(createSuccessResponse("Lấy nhân viên mới thành công", recentEmployeeDtos));
         } catch (Exception e) {
             System.err.println("Error getting recent employees: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi láº¥y nhÃ¢n viÃªn má»›i", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi lấy nhân viên mới", "INTERNAL_ERROR"));
         }
     }
 
@@ -637,17 +645,17 @@ public class NhanVienRestController {
         Map<String, String> errors = new HashMap<>();
 
         if (dto.getHoTen() == null || dto.getHoTen().trim().isEmpty()) {
-            errors.put("hoTen", "Há» tÃªn khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            errors.put("hoTen", "Họ tên không được để trống");
         }
 
         if (dto.getSdt() == null || dto.getSdt().trim().isEmpty()) {
-            errors.put("sdt", "Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            errors.put("sdt", "Số điện thoại không được để trống");
         } else if (!dto.getSdt().matches("^[0-9]{10}$")) {
-            errors.put("sdt", "Sá»‘ Ä‘iá»‡n thoáº¡i pháº£i cÃ³ 10 chá»¯ sá»‘");
+            errors.put("sdt", "Số điện thoại phải có 10 chữ số");
         }
 
         if (dto.getTrangThai() == null || (dto.getTrangThai() != 0 && dto.getTrangThai() != 1)) {
-            errors.put("trangThai", "Tráº¡ng thÃ¡i khÃ´ng há»£p lá»‡");
+            errors.put("trangThai", "Trạng thái không hợp lệ");
         }
 
         return errors;
@@ -658,35 +666,35 @@ public class NhanVienRestController {
 
         if (dto.getHoTen() != null && !dto.getHoTen().trim().isEmpty()) {
             if (dto.getHoTen().length() > 225) {
-                errors.put("hoTen", "Há» tÃªn khÃ´ng Ä‘Æ°á»£c quÃ¡ 225 kÃ½ tá»±");
+                errors.put("hoTen", "Họ tên không được quá 225 ký tự");
             } else if (!isValidName(dto.getHoTen())) {
-                errors.put("hoTen", "Há» tÃªn chá»‰ chá»©a chá»¯ cÃ¡i vÃ  khoáº£ng tráº¯ng");
+                errors.put("hoTen", "Họ tên chỉ chứa chữ cái và khoảng trắng");
             }
         }
 
         if (dto.getSdt() != null && !dto.getSdt().trim().isEmpty()) {
             if (!isValidPhoneNumber(dto.getSdt())) {
-                errors.put("sdt", "Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng Ä‘Ãºng Ä‘á»‹nh dáº¡ng (10-11 sá»‘, báº¯t Ä‘áº§u báº±ng 0)");
+                errors.put("sdt", "Số điện thoại không đúng định dạng (10-11 số, bắt đầu bằng 0)");
             }
         }
 
         if (dto.getMaNhanVien() != null && !dto.getMaNhanVien().trim().isEmpty()) {
             if (dto.getMaNhanVien().length() > 25) {
-                errors.put("maNhanVien", "MÃ£ nhÃ¢n viÃªn khÃ´ng Ä‘Æ°á»£c quÃ¡ 25 kÃ½ tá»±");
+                errors.put("maNhanVien", "Mã nhân viên không được quá 25 ký tự");
             } else if (!dto.getMaNhanVien().matches("^[A-Za-z0-9]+$")) {
-                errors.put("maNhanVien", "MÃ£ nhÃ¢n viÃªn chá»‰ chá»©a chá»¯ cÃ¡i vÃ  sá»‘");
+                errors.put("maNhanVien", "Mã nhân viên chỉ chứa chữ cái và số");
             }
         }
 
         if (dto.getTrangThai() != null && dto.getTrangThai() != 0 && dto.getTrangThai() != 1) {
-            errors.put("trangThai", "Tráº¡ng thÃ¡i pháº£i lÃ  0 hoáº·c 1");
+            errors.put("trangThai", "Trạng thái phải là 0 hoặc 1");
         }
 
         return errors;
     }
 
     private boolean isValidName(String name) {
-        return name != null && name.matches("^[a-zA-ZÃ€ÃÃ‚ÃƒÃˆÃ‰ÃŠÃŒÃÃ’Ã“Ã”Ã•Ã™ÃšÄ‚ÄÄ¨Å¨Æ Ã Ã¡Ã¢Ã£Ã¨Ã©ÃªÃ¬Ã­Ã²Ã³Ã´ÃµÃ¹ÃºÄƒÄ‘Ä©Å©Æ¡Æ¯Ä‚áº áº¢áº¤áº¦áº¨áºªáº¬áº®áº°áº²áº´áº¶áº¸áººáº¼á»€á»€á»‚Æ°Äƒáº¡áº£áº¥áº§áº©áº«áº­áº¯áº±áº³áºµáº·áº¹áº»áº½á»áº¿á»ƒá»„á»†á»ˆá»Šá»Œá»Žá»á»’á»”á»–á»˜á»šá»œá»žá» á»¢á»¤á»¦á»¨á»ªá»…á»‡á»‰á»‹á»á»á»‘á»“á»•á»—á»™á»›á»á»Ÿá»¡á»£á»¥á»§á»©á»«á»¬á»®á»°á»²á»´Ãá»¶á»¸á»­á»¯á»±á»³á»µÃ½á»·á»¹\\s]+$");
+        return name != null && name.matches("^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềếểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵýỷỹ\\s]+$");
     }
 
     private boolean isValidPhoneNumber(String phone) {
@@ -694,7 +702,7 @@ public class NhanVienRestController {
     }
 
     private void updateRelationships(NhanVien existing, NhanVienDto dto) {
-        // Cáº­p nháº­t tÃ i khoáº£n
+        // Cập nhật tài khoản
         if (dto.getIdTaiKhoan() != null) {
             if (existing.getTaiKhoan() == null || !dto.getIdTaiKhoan().equals(existing.getTaiKhoan().getId())) {
                 Optional<TaiKhoan> taiKhoanOpt = taiKhoanService.findById(dto.getIdTaiKhoan());
@@ -774,10 +782,10 @@ public class NhanVienRestController {
                 dto.setIdTaiKhoan(entity.getTaiKhoan().getId());
 
                 try {
-                    // Láº¥y thÃ´ng tin Ä‘á»‹a chá»‰
+                    // Lấy thông tin địa chỉ
                     List<DiaChi> addresses = diaChiService.findByTaiKhoanId(entity.getTaiKhoan().getId());
                     if (!addresses.isEmpty()) {
-                        // Convert Ä‘á»‹a chá»‰ sang DTO format
+                        // Convert địa chỉ sang DTO format
                         List<NhanVienDto.DiaChiInfo> diaChiInfos = addresses.stream()
                                 .filter(Objects::nonNull)
                                 .map(this::convertAddressToInfo)
@@ -785,7 +793,7 @@ public class NhanVienRestController {
                                 .collect(Collectors.toList());
                         dto.setDanhSachDiaChi(diaChiInfos);
 
-                        // Set Ä‘á»‹a chá»‰ máº·c Ä‘á»‹nh
+                        // Set địa chỉ mặc định
                         NhanVienDto.DiaChiInfo defaultAddr = diaChiInfos.stream()
                                 .filter(addr -> addr.getIsDefault() != null && addr.getIsDefault())
                                 .findFirst()
@@ -829,7 +837,7 @@ public class NhanVienRestController {
             info.setIsDefault(diaChi.getIsDefault());
             info.setTrangThai(diaChi.getTrangThai());
 
-            // Táº¡o Ä‘á»‹a chá»‰ Ä‘áº§y Ä‘á»§ (2-level addressing - bá» quáº­n/huyá»‡n)
+            // Tạo địa chỉ đầy đủ (2-level addressing - bỏ quận/huyện)
             List<String> parts = new ArrayList<>();
             if (diaChi.getDiaChiChiTiet() != null && !diaChi.getDiaChiChiTiet().trim().isEmpty()) {
                 parts.add(diaChi.getDiaChiChiTiet().trim());
@@ -841,7 +849,7 @@ public class NhanVienRestController {
                 parts.add(diaChi.getTenTinh().trim());
             }
 
-            String fullAddressStr = parts.isEmpty() ? "ChÆ°a cÃ³ Ä‘á»‹a chá»‰" : String.join(", ", parts);
+            String fullAddressStr = parts.isEmpty() ? "Chưa có địa chỉ" : String.join(", ", parts);
             info.setDiaChiDayDu(fullAddressStr);
 
             return info;
@@ -862,13 +870,13 @@ public class NhanVienRestController {
             entity.setNgayTao(dto.getNgayTao());
             entity.setNgayCapNhat(dto.getNgayCapNhat());
 
-            // Set tÃ i khoáº£n
+            // Set tài khoản
             if (dto.getIdTaiKhoan() != null) {
                 Optional<TaiKhoan> taiKhoanOpt = taiKhoanService.findById(dto.getIdTaiKhoan());
                 if (taiKhoanOpt.isPresent()) {
                     entity.setTaiKhoan(taiKhoanOpt.get());
                 } else {
-                    // Táº¡o reference object náº¿u khÃ´ng tÃ¬m tháº¥y
+                    // Tạo reference object nếu không tìm thấy
                     TaiKhoan taiKhoan = new TaiKhoan();
                     taiKhoan.setId(dto.getIdTaiKhoan());
                     entity.setTaiKhoan(taiKhoan);
@@ -878,7 +886,7 @@ public class NhanVienRestController {
             return entity;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("Lá»—i khi convert DTO to entity: " + e.getMessage());
+            throw new RuntimeException("Lỗi khi convert DTO to entity: " + e.getMessage());
         }
     }
 

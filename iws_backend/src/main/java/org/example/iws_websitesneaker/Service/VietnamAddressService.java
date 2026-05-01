@@ -20,7 +20,7 @@ public class VietnamAddressService {
     private final ObjectMapper objectMapper;
 
     // Cache configuration
-    private static final long CACHE_DURATION = 24 * 60 * 60 * 1000L; // 24 giá»
+    private static final long CACHE_DURATION = 24 * 60 * 60 * 1000L; // 24 giờ
 
     // Cache cho provinces
     private List<ProvinceApiDto> cachedProvinces = null;
@@ -36,10 +36,10 @@ public class VietnamAddressService {
     }
 
     /**
-     * Láº¥y táº¥t cáº£ tá»‰nh/thÃ nh phá»‘ tá»« API bÃªn ngoÃ i
+     * Lấy tất cả tỉnh/thành phố từ API bên ngoài
      */
     public List<ProvinceApiDto> getAllProvinces() {
-        // Kiá»ƒm tra cache
+        // Kiểm tra cache
         if (cachedProvinces != null &&
                 (System.currentTimeMillis() - lastProvincesFetch) < CACHE_DURATION) {
             return cachedProvinces;
@@ -60,23 +60,23 @@ public class VietnamAddressService {
                 provinces.add(province);
             }
 
-            // Cáº­p nháº­t cache
+            // Cập nhật cache
             cachedProvinces = provinces;
             lastProvincesFetch = System.currentTimeMillis();
 
             return provinces;
 
         } catch (Exception e) {
-            System.err.println("Lá»—i khi gá»i API tá»‰nh thÃ nh: " + e.getMessage());
+            System.err.println("Lỗi khi gọi API tỉnh thành: " + e.getMessage());
             return new ArrayList<>();
         }
     }
 
     /**
-     * Láº¥y danh sÃ¡ch wards theo mÃ£ tá»‰nh vá»›i caching
+     * Lấy danh sách wards theo mã tỉnh với caching
      */
     public List<WardApiDto> getWardsByProvinceCode(Integer provinceCode) {
-        // Kiá»ƒm tra cache
+        // Kiểm tra cache
         if (wardsCache.containsKey(provinceCode) &&
                 (System.currentTimeMillis() - wardsCacheTime.getOrDefault(provinceCode, 0L)) < CACHE_DURATION) {
             return wardsCache.get(provinceCode);
@@ -90,20 +90,20 @@ public class VietnamAddressService {
                 return new ArrayList<>();
             }
 
-            // Xá»­ lÃ½ response vÃ  cache káº¿t quáº£
+            // Xử lý response và cache kết quả
             List<WardApiDto> wards = processWardsResponse(response);
             wardsCache.put(provinceCode, wards);
             wardsCacheTime.put(provinceCode, System.currentTimeMillis());
 
             return wards;
         } catch (Exception e) {
-            System.err.println("Lá»—i khi láº¥y wards cho tá»‰nh " + provinceCode + ": " + e.getMessage());
+            System.err.println("Lỗi khi lấy wards cho tỉnh " + provinceCode + ": " + e.getMessage());
             return new ArrayList<>();
         }
     }
 
     /**
-     * Xá»­ lÃ½ response tá»« API vÃ  trÃ­ch xuáº¥t danh sÃ¡ch wards
+     * Xử lý response từ API và trích xuất danh sách wards
      */
     private List<WardApiDto> processWardsResponse(String response) {
         List<WardApiDto> wards = new ArrayList<>();
@@ -127,60 +127,60 @@ public class VietnamAddressService {
                 }
             }
 
-            // Sáº¯p xáº¿p theo tÃªn
+            // Sắp xếp theo tên
             wards.sort((w1, w2) -> w1.getName().compareToIgnoreCase(w2.getName()));
 
         } catch (Exception e) {
-            System.err.println("Lá»—i khi xá»­ lÃ½ response wards: " + e.getMessage());
+            System.err.println("Lỗi khi xử lý response wards: " + e.getMessage());
         }
 
         return wards;
     }
 
     /**
-     * Láº¥y táº¥t cáº£ xÃ£/phÆ°á»ng trÃªn toÃ n quá»‘c (method gá»‘c giá»¯ nguyÃªn)
+     * Lấy tất cả xã/phường trên toàn quốc (method gốc giữ nguyên)
      */
     public List<WardApiDto> getAllWardsInVietnam() {
         List<WardApiDto> allWards = new ArrayList<>();
 
         try {
-            // Láº¥y táº¥t cáº£ provinces
+            // Lấy tất cả provinces
             List<ProvinceApiDto> provinces = getAllProvinces();
 
             for (ProvinceApiDto province : provinces) {
                 try {
                     List<WardApiDto> provinceWards = getWardsByProvinceCode(province.getCode());
 
-                    // ThÃªm thÃ´ng tin tá»‰nh vÃ o tÃªn ward Ä‘á»ƒ phÃ¢n biá»‡t
+                    // Thêm thông tin tỉnh vào tên ward để phân biệt
                     for (WardApiDto ward : provinceWards) {
                         ward.setName(ward.getName() + " (" + province.getName() + ")");
                     }
 
                     allWards.addAll(provinceWards);
                 } catch (Exception e) {
-                    System.err.println("Lá»—i khi láº¥y wards cho tá»‰nh " + province.getName() + ": " + e.getMessage());
+                    System.err.println("Lỗi khi lấy wards cho tỉnh " + province.getName() + ": " + e.getMessage());
                 }
             }
 
-            // Sáº¯p xáº¿p theo tÃªn
+            // Sắp xếp theo tên
             return allWards.stream()
                     .sorted((w1, w2) -> w1.getName().compareToIgnoreCase(w2.getName()))
                     .collect(Collectors.toList());
 
         } catch (Exception e) {
-            System.err.println("Lá»—i khi láº¥y toÃ n bá»™ wards: " + e.getMessage());
+            System.err.println("Lỗi khi lấy toàn bộ wards: " + e.getMessage());
             return new ArrayList<>();
         }
     }
 
     /**
-     * Clear cache - Ä‘á»ƒ test hoáº·c refresh data
+     * Clear cache - để test hoặc refresh data
      */
     public void clearCache() {
         cachedProvinces = null;
         lastProvincesFetch = 0;
         wardsCache.clear();
         wardsCacheTime.clear();
-        System.out.println("Cache Ä‘Ã£ Ä‘Æ°á»£c xÃ³a");
+        System.out.println("Cache đã được xóa");
     }
 }

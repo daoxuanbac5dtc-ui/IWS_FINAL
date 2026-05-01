@@ -209,6 +209,38 @@ const AUTH_API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080
 
 const router = useRouter();
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const postLogin = async () => {
+    let lastError = null;
+
+    for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+            return await fetch(`${AUTH_API_BASE_URL}/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    email: email.value,
+                    matKhau: password.value
+                }),
+                credentials: 'include'
+            });
+        } catch (error) {
+            lastError = error;
+
+            if (attempt < 2) {
+                await sleep(1500);
+            }
+        }
+    }
+
+    throw lastError;
+};
+
 // Kiểm tra nếu user đã đăng nhập (từ localStorage hoặc session)
 onMounted(() => {
     const token = localStorage.getItem('auth_token');
@@ -261,19 +293,7 @@ const login = async () => {
         console.log('🔄 Attempting login...');
 
         // Gọi API backend để đăng nhập
-        const response = await fetch(`${AUTH_API_BASE_URL}/auth/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({
-                email: email.value,
-                matKhau: password.value
-            }),
-            credentials: 'include'
-        });
+        const response = await postLogin();
 
         const data = await response.json();
         console.log('📝 Login response:', data);
@@ -341,7 +361,7 @@ const login = async () => {
         console.error('❌ Login error:', error);
         const rawMessage = error instanceof Error ? error.message : String(error);
         errorMessage.value = rawMessage.includes('Failed to fetch')
-            ? 'Khong the ket noi backend. Hay mo frontend bang http://localhost:5173 va kiem tra backend dang chay.'
+            ? 'Backend chua san sang hoac chua chay. Hay doi vai giay roi thu lai, neu van loi thi chay run-backend.ps1.'
             : 'An error occurred. Please try again.';
         setTimeout(() => {
             errorMessage.value = '';

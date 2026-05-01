@@ -6,13 +6,13 @@ import lombok.Data;
 
 @Data
 public class ThemSanPhamRequest {
-    @NotNull(message = "Chi tiáº¿t sáº£n pháº©m ID khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
+    @NotNull(message = "Chi tiết sản phẩm ID không được để trống")
     private Integer chiTietSanPhamId;
 
-    @NotNull(message = "Sá»‘ lÆ°á»£ng khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
-    @Min(value = 1, message = "Sá»‘ lÆ°á»£ng pháº£i lá»›n hÆ¡n 0")
+    @NotNull(message = "Số lượng không được để trống")
+    @Min(value = 1, message = "Số lượng phải lớn hơn 0")
     private Integer soLuong;
 
-    private Double donGia; // Náº¿u muá»‘n override giÃ¡
+    private Double donGia; // Nếu muốn override giá
 }
 

@@ -9,5 +9,5 @@ public class InvoiceStatusUpdateRequest {
     private String lyDoHuy;
     private Integer nhanVienId;
 
-    // Constructors, getters vÃ  setters
+    // Constructors, getters và setters
 }

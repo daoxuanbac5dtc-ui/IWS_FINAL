@@ -658,6 +658,7 @@ function getCustomerName(hoaDon) {
 }
 
 function getStatusLabel(status) {
+    const normalizedStatus = normalizeStatus(status);
     if (!status) return 'Không xác định';
     const statusMap = {
         PENDING: 'Chờ xác nhận',
@@ -668,11 +669,19 @@ function getStatusLabel(status) {
         CANCELLED: 'Đã hủy',
         RETURNED: 'Hoàn trả'
     };
-    return statusMap[status.toUpperCase()] || statusMap[status] || status;
+    return statusMap[normalizedStatus] || statusMap[status.toUpperCase()] || statusMap[status] || status;
 }
 
 function getStatusSeverity(status) {
     if (!status) return 'secondary';
+    const normalizedStatus = normalizeStatus(status);
+    if (normalizedStatus === 'PENDING') return 'warning';
+    if (normalizedStatus === 'CONFIRMED') return 'info';
+    if (normalizedStatus === 'SHIPPING') return null;
+    if (normalizedStatus === 'DELIVERED') return 'info';
+    if (normalizedStatus === 'COMPLETED') return 'success';
+    if (normalizedStatus === 'CANCELLED') return 'danger';
+    if (normalizedStatus === 'RETURNED') return 'help';
     const statusLower = status.toString().toLowerCase();
 
     if (statusLower.includes('pending') || statusLower.includes('chờ')) {
@@ -694,6 +703,19 @@ function getStatusSeverity(status) {
 
 function getStatusIcon(status) {
     if (!status) return 'pi pi-question-circle';
+    const normalizedStatus = normalizeStatus(status);
+    const normalizedIconMap = {
+        PENDING: 'pi pi-clock',
+        CONFIRMED: 'pi pi-check-circle',
+        SHIPPING: 'pi pi-truck',
+        DELIVERED: 'pi pi-home',
+        COMPLETED: 'pi pi-verified',
+        CANCELLED: 'pi pi-times-circle',
+        RETURNED: 'pi pi-undo'
+    };
+    if (normalizedIconMap[normalizedStatus]) {
+        return normalizedIconMap[normalizedStatus];
+    }
     const statusLower = status.toString().toLowerCase();
 
     if (statusLower.includes('pending') || statusLower.includes('chờ')) {
@@ -793,18 +815,26 @@ function getStepLabel(step) {
 function normalizeStatus(status) {
     if (!status) return '';
     const statusStr = status.toString().trim().toUpperCase();
+    const asciiStatus = statusStr
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\u0110/g, 'D')
+        .replace(/[^A-Z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
 
     const vietnameseToEnglish = {
+        CHO: 'PENDING',
         CHO_XAC_NHAN: 'PENDING',
         DA_XAC_NHAN: 'CONFIRMED',
         DANG_GIAO: 'SHIPPING',
         DA_GIAO: 'DELIVERED',
         HOAN_THANH: 'COMPLETED',
+        DA_THANH_TOAN: 'COMPLETED',
         DA_HUY: 'CANCELLED',
         HOAN_TRA: 'RETURNED'
     };
 
-    return vietnameseToEnglish[statusStr] || statusStr;
+    return vietnameseToEnglish[statusStr] || vietnameseToEnglish[asciiStatus] || statusStr;
 }
 
 //Voucher detail
@@ -1136,9 +1166,9 @@ function createSampleData() {
         {
             id: 1,
             maHoaDon: 'HD001',
-            tenKhachHang: 'Nguyễn Văn A',
+            tenKhachHang: 'Nguyễn Văn An',
             sdt: '0912345671',
-            email: 'user1@example.com',
+            email: 'nguyenvanan@gmail.com',
             tongTien: 2400000.0,
             trangThaiHoaDon: 'COMPLETED',
             loaiHoaDon: 'ONLINE',
@@ -1149,9 +1179,9 @@ function createSampleData() {
         {
             id: 2,
             maHoaDon: 'HD002',
-            tenKhachHang: 'Trần Văn B',
+            tenKhachHang: 'Nguyễn Văn Bình',
             sdt: '0912345672',
-            email: 'user2@example.com',
+            email: 'nguyenvanbinh@gmail.com',
             tongTien: 900000.0,
             trangThaiHoaDon: 'PENDING',
             loaiHoaDon: 'ONLINE',
@@ -1162,7 +1192,7 @@ function createSampleData() {
         {
             id: 3,
             maHoaDon: 'HD003',
-            tenKhachHang: 'Lê Văn C',
+            tenKhachHang: 'Nguyễn Văn Cường',
             sdt: '0912345673',
             tongTien: 1200000.0,
             trangThaiHoaDon: 'COMPLETED',
@@ -1458,13 +1488,19 @@ const onlineInvoices = computed(() => {
     });
 });
 
+function getInvoiceRevenueAmount(hoaDon) {
+    const paidAmount = parseFloat(hoaDon?.tongThanhToan ?? hoaDon?.tongTien ?? 0) || 0;
+    const returnedAmount = parseFloat(hoaDon?.tongTienTraHang ?? 0) || 0;
+    return Math.max(paidAmount - returnedAmount, 0);
+}
+
 const totalRevenue = computed(() => {
     return hoaDons.value
         .filter((hd) => {
             const status = normalizeStatus(hd.trangThaiHoaDon);
             return status === 'COMPLETED';
         })
-        .reduce((sum, hd) => sum + (parseFloat(hd.tongTien) || 0), 0);
+        .reduce((sum, hd) => sum + getInvoiceRevenueAmount(hd), 0);
 });
 
 const posRevenue = computed(() => {
@@ -1473,7 +1509,7 @@ const posRevenue = computed(() => {
             const status = normalizeStatus(hd.trangThaiHoaDon);
             return status === 'COMPLETED';
         })
-        .reduce((sum, hd) => sum + (parseFloat(hd.tongTien) || 0), 0);
+        .reduce((sum, hd) => sum + getInvoiceRevenueAmount(hd), 0);
 });
 
 const onlineRevenue = computed(() => {
@@ -1482,7 +1518,7 @@ const onlineRevenue = computed(() => {
             const status = normalizeStatus(hd.trangThaiHoaDon);
             return status === 'COMPLETED';
         })
-        .reduce((sum, hd) => sum + (parseFloat(hd.tongTien) || 0), 0);
+        .reduce((sum, hd) => sum + getInvoiceRevenueAmount(hd), 0);
 });
 
 const completedInvoices = computed(() => {

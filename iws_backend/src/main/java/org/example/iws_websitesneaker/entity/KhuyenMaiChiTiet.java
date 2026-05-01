@@ -27,11 +27,11 @@ public class KhuyenMaiChiTiet {
     private Date ngayCapNhat;
 
     @ManyToOne
-    @JoinColumn(name = "id_chi_tiet", nullable = true) // chuyáº¿n vá» null
+    @JoinColumn(name = "id_chi_tiet", nullable = true) // chuyến về null
     private ChiTietSanPham chiTietSanPham;
 
     @ManyToOne
-    @JoinColumn(name = "id_khuyen_mai", nullable = true) // chuyáº¿n vá» null
+    @JoinColumn(name = "id_khuyen_mai", nullable = true) // chuyến về null
     private KhuyenMai khuyenMai;
 
     public KhuyenMaiChiTiet(Integer id, Integer trangThai, Date ngayTao, Date ngayCapNhat, ChiTietSanPham chiTietSanPham, KhuyenMai khuyenMai) {

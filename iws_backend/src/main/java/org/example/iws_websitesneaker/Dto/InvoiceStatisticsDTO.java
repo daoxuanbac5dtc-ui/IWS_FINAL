@@ -20,5 +20,5 @@ public class InvoiceStatisticsDTO {
     private BigDecimal doanhThuThangNay;
     private BigDecimal doanhThuHomNay;
 
-    // Constructors, getters vÃ  setters
+    // Constructors, getters và setters
 }

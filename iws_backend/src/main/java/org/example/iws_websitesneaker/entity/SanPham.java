@@ -36,11 +36,11 @@ public class SanPham {
     private Date ngayCapNhat;
 
     @ManyToOne
-    @JoinColumn(name = "id_chat_lieu" ,nullable = true) // chuyáº¿n vá» null
+    @JoinColumn(name = "id_chat_lieu" ,nullable = true) // chuyến về null
     private ChatLieu chatLieu;
 
     @ManyToOne
-    @JoinColumn(name = "id_de_giay" , nullable = true) // chuyáº¿n vá» null
+    @JoinColumn(name = "id_de_giay" , nullable = true) // chuyến về null
     private DeGiay deGiay;
 
     @ManyToOne

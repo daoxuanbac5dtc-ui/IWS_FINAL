@@ -15,10 +15,10 @@ import java.util.Optional;
 @Repository
 public interface RepoKhachHang extends JpaRepository<KhachHang, Integer> {
 
-    // ===== QUERIES Má»šI Vá»šI JOIN FETCH Äá»‚ TRÃNH LazyInitializationException =====
+    // ===== QUERIES MỚI VỚI JOIN FETCH ĐỂ TRÁNH LazyInitializationException =====
 
     /**
-     * Láº¥y táº¥t cáº£ khÃ¡ch hÃ ng vá»›i TaiKhoan Ä‘Æ°á»£c JOIN FETCH
+     * Lấy tất cả khách hàng với TaiKhoan được JOIN FETCH
      */
     @Query("SELECT DISTINCT kh FROM KhachHang kh " +
             "LEFT JOIN FETCH kh.taiKhoan tk " +
@@ -27,7 +27,7 @@ public interface RepoKhachHang extends JpaRepository<KhachHang, Integer> {
     List<KhachHang> findAllWithTaiKhoan();
 
     /**
-     * TÃ¬m kiáº¿m khÃ¡ch hÃ ng vá»›i TaiKhoan Ä‘Æ°á»£c JOIN FETCH
+     * Tìm kiếm khách hàng với TaiKhoan được JOIN FETCH
      */
     @Query("SELECT DISTINCT kh FROM KhachHang kh " +
             "LEFT JOIN FETCH kh.taiKhoan tk " +
@@ -45,7 +45,7 @@ public interface RepoKhachHang extends JpaRepository<KhachHang, Integer> {
     );
 
     /**
-     * Láº¥y má»™t khÃ¡ch hÃ ng theo ID vá»›i TaiKhoan Ä‘Æ°á»£c JOIN FETCH
+     * Lấy một khách hàng theo ID với TaiKhoan được JOIN FETCH
      */
     @Query("SELECT kh FROM KhachHang kh " +
             "LEFT JOIN FETCH kh.taiKhoan tk " +
@@ -53,7 +53,7 @@ public interface RepoKhachHang extends JpaRepository<KhachHang, Integer> {
     Optional<KhachHang> findByIdWithTaiKhoan(@Param("id") Integer id);
 
     /**
-     * Query phÃ¢n trang vá»›i JOIN FETCH
+     * Query phân trang với JOIN FETCH
      */
     @Query(value = "SELECT DISTINCT kh FROM KhachHang kh " +
             "LEFT JOIN FETCH kh.taiKhoan tk " +
@@ -62,7 +62,7 @@ public interface RepoKhachHang extends JpaRepository<KhachHang, Integer> {
     Page<KhachHang> findAllWithTaiKhoan(Pageable pageable);
 
     /**
-     * TÃ¬m kiáº¿m nÃ¢ng cao vá»›i nhiá»u Ä‘iá»u kiá»‡n
+     * Tìm kiếm nâng cao với nhiều điều kiện
      */
     @Query("SELECT DISTINCT kh FROM KhachHang kh " +
             "LEFT JOIN FETCH kh.taiKhoan tk " +
@@ -81,36 +81,36 @@ public interface RepoKhachHang extends JpaRepository<KhachHang, Integer> {
             @Param("trangThai") Integer trangThai
     );
 
-    // ===== QUERIES CÅ¨ GIá»® NGUYÃŠN =====
+    // ===== QUERIES CŨ GIỮ NGUYÊN =====
 
     /**
-     * Kiá»ƒm tra sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ tá»“n táº¡i
+     * Kiểm tra số điện thoại đã tồn tại
      */
     boolean existsBySdt(String sdt);
     boolean existsByTaiKhoanId(Integer taiKhoanId);
     /**
-     * TÃ¬m khÃ¡ch hÃ ng theo mÃ£ khÃ¡ch hÃ ng
+     * Tìm khách hàng theo mã khách hàng
      */
     Optional<KhachHang> findByMaKhachHang(String maKhachHang);
 
     /**
-     * TÃ¬m khÃ¡ch hÃ ng theo ID tÃ i khoáº£n (method chÃ­nh)
+     * Tìm khách hàng theo ID tài khoản (method chính)
      */
     Optional<KhachHang> findByTaiKhoan_Id(Integer taiKhoanId);
 
     /**
-     * TÃ¬m khÃ¡ch hÃ ng theo ID tÃ i khoáº£n (method thay tháº¿)
+     * Tìm khách hàng theo ID tài khoản (method thay thế)
      */
     @Query("SELECT k FROM KhachHang k WHERE k.taiKhoan.id = :taiKhoanId")
     Optional<KhachHang> findByTaiKhoanId(@Param("taiKhoanId") Integer taiKhoanId);
 
     /**
-     * TÃ¬m khÃ¡ch hÃ ng theo há» tÃªn vÃ  sá»‘ Ä‘iá»‡n thoáº¡i
+     * Tìm khách hàng theo họ tên và số điện thoại
      */
     KhachHang findByHoTenAndSdt(String hoTen, String sdt);
 
     /**
-     * TÃ¬m kiáº¿m khÃ¡ch hÃ ng theo tá»« khÃ³a vá»›i phÃ¢n trang (khÃ´ng dÃ¹ng JOIN FETCH Ä‘á»ƒ trÃ¡nh duplicate)
+     * Tìm kiếm khách hàng theo từ khóa với phân trang (không dùng JOIN FETCH để tránh duplicate)
      */
     @Query("SELECT k FROM KhachHang k LEFT JOIN k.taiKhoan tk WHERE " +
             "LOWER(k.hoTen) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
@@ -120,7 +120,7 @@ public interface RepoKhachHang extends JpaRepository<KhachHang, Integer> {
     Page<KhachHang> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     /**
-     * TÃ¬m kiáº¿m khÃ¡ch hÃ ng theo tá»« khÃ³a (khÃ´ng phÃ¢n trang)
+     * Tìm kiếm khách hàng theo từ khóa (không phân trang)
      */
     @Query("SELECT kh FROM KhachHang kh " +
             "LEFT JOIN kh.taiKhoan tk " +
@@ -132,27 +132,27 @@ public interface RepoKhachHang extends JpaRepository<KhachHang, Integer> {
     List<KhachHang> searchByKeyword(@Param("keyword") String keyword);
 
     /**
-     * Äáº¿m sá»‘ khÃ¡ch hÃ ng theo khoáº£ng thá»i gian táº¡o
+     * Đếm số khách hàng theo khoảng thời gian tạo
      */
     Long countByNgayTaoBetween(Date startDate, Date endDate);
 
     /**
-     * Äáº¿m sá»‘ khÃ¡ch hÃ ng theo tráº¡ng thÃ¡i
+     * Đếm số khách hàng theo trạng thái
      */
     long countByTrangThai(Integer trangThai);
 
     /**
-     * Láº¥y khÃ¡ch hÃ ng theo tráº¡ng thÃ¡i
+     * Lấy khách hàng theo trạng thái
      */
     List<KhachHang> findByTrangThai(Integer trangThai);
 
     /**
-     * Láº¥y khÃ¡ch hÃ ng theo khoáº£ng thá»i gian táº¡o
+     * Lấy khách hàng theo khoảng thời gian tạo
      */
     List<KhachHang> findByNgayTaoBetween(Date startDate, Date endDate);
 
     /**
-     * Láº¥y khÃ¡ch hÃ ng theo tráº¡ng thÃ¡i vÃ  khoáº£ng thá»i gian
+     * Lấy khách hàng theo trạng thái và khoảng thời gian
      */
     @Query("SELECT kh FROM KhachHang kh WHERE " +
             "(:trangThai IS NULL OR kh.trangThai = :trangThai) " +
@@ -166,7 +166,7 @@ public interface RepoKhachHang extends JpaRepository<KhachHang, Integer> {
     );
 
     /**
-     * Kiá»ƒm tra khÃ¡ch hÃ ng cÃ³ email cá»¥ thá»ƒ (thÃ´ng qua tÃ i khoáº£n)
+     * Kiểm tra khách hàng có email cụ thể (thông qua tài khoản)
      */
     @Query("SELECT COUNT(kh) > 0 FROM KhachHang kh " +
             "LEFT JOIN kh.taiKhoan tk " +
@@ -174,7 +174,7 @@ public interface RepoKhachHang extends JpaRepository<KhachHang, Integer> {
     boolean existsByEmail(@Param("email") String email);
 
     /**
-     * TÃ¬m khÃ¡ch hÃ ng theo email (thÃ´ng qua tÃ i khoáº£n)
+     * Tìm khách hàng theo email (thông qua tài khoản)
      */
     @Query("SELECT kh FROM KhachHang kh " +
             "LEFT JOIN FETCH kh.taiKhoan tk " +
@@ -182,7 +182,7 @@ public interface RepoKhachHang extends JpaRepository<KhachHang, Integer> {
     Optional<KhachHang> findByEmail(@Param("email") String email);
 
     /**
-     * Láº¥y danh sÃ¡ch khÃ¡ch hÃ ng cÃ³ tÃ i khoáº£n (Ä‘Ã£ Ä‘Äƒng kÃ½ online)
+     * Lấy danh sách khách hàng có tài khoản (đã đăng ký online)
      */
     @Query("SELECT kh FROM KhachHang kh " +
             "LEFT JOIN FETCH kh.taiKhoan tk " +
@@ -192,7 +192,7 @@ public interface RepoKhachHang extends JpaRepository<KhachHang, Integer> {
     List<KhachHang> findAllWithAccount();
 
     /**
-     * Láº¥y danh sÃ¡ch khÃ¡ch hÃ ng khÃ´ng cÃ³ tÃ i khoáº£n (táº¡o tá»« admin/offline)
+     * Lấy danh sách khách hàng không có tài khoản (tạo từ admin/offline)
      */
     @Query("SELECT kh FROM KhachHang kh " +
             "WHERE kh.taiKhoan IS NULL " +

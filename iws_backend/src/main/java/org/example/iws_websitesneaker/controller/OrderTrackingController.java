@@ -20,7 +20,7 @@ public class OrderTrackingController {
             System.out.println("=== TRACK ORDER ===");
             System.out.println("Email: " + email + ", Order Code: " + orderCode);
 
-            // Service tá»± xá»­ lÃ½ tÃ¬m Ä‘Æ¡n + convert sang DTO
+            // Service tự xử lý tìm đơn + convert sang DTO
             OrderTrackingResponse response = hoaDonService.getTrackingResponse(email, orderCode);
 
             if (response == null) {
@@ -34,7 +34,7 @@ public class OrderTrackingController {
         } catch (Exception e) {
             System.err.println("Error tracking order: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.status(500).body("Lá»—i tra cá»©u Ä‘Æ¡n hÃ ng");
+            return ResponseEntity.status(500).body("Lỗi tra cứu đơn hàng");
         }
     }
 }

@@ -12,12 +12,12 @@ import lombok.NoArgsConstructor;
 public class ThuongHieuDto {
 
     private  Integer id ;
-    @NotBlank(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng mÃ£ thÆ°Æ¡ng hiá»‡u")
+    @NotBlank(message = "Không được để trống mã thương hiệu")
     private  String maThuongHieu ;
-    @NotBlank(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng tÃªn thÆ°Æ¡ng hiá»‡u")
+    @NotBlank(message = "Không được để trống tên thương hiệu")
     private  String tenThuongHieu ;
     // NotNull
-    @NotNull(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng tráº¡ng thÃ¡i thÆ°Æ¡ng hiá»‡u")
+    @NotNull(message = "Không được để trống trạng thái thương hiệu")
     private  Integer trangThai ;
 }
 

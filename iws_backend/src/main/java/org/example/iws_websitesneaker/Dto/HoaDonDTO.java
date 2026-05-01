@@ -17,21 +17,21 @@ public class HoaDonDTO {
     private String email;
     private String diaChi;
 
-    // ThÃ´ng tin tiá»n báº¡c chi tiáº¿t
-    private BigDecimal tongTienGoc;        // Tá»•ng tiá»n trÆ°á»›c giáº£m giÃ¡
-    private BigDecimal tongTienGiamGia;    // Tá»•ng sá»‘ tiá»n Ä‘Æ°á»£c giáº£m
-    private BigDecimal tongTienVoucher;    // Tiá»n giáº£m tá»« voucher
-    private BigDecimal tienDiem;           // Tiá»n tá»« Ä‘iá»ƒm
-    private BigDecimal phiVanChuyen;       // PhÃ­ váº­n chuyá»ƒn
-    private BigDecimal tongTien;           // Tá»•ng tiá»n cuá»‘i cÃ¹ng
-    private BigDecimal tongThanhToan;      // Tiá»n thá»±c táº¿ pháº£i tráº£
+    // Thông tin tiền bạc chi tiết
+    private BigDecimal tongTienGoc;        // Tổng tiền trước giảm giá
+    private BigDecimal tongTienGiamGia;    // Tổng số tiền được giảm
+    private BigDecimal tongTienVoucher;    // Tiền giảm từ voucher
+    private BigDecimal tienDiem;           // Tiền từ điểm
+    private BigDecimal phiVanChuyen;       // Phí vận chuyển
+    private BigDecimal tongTien;           // Tổng tiền cuối cùng
+    private BigDecimal tongThanhToan;      // Tiền thực tế phải trả
 
-    // ThÃ´ng tin tráº¡ng thÃ¡i vÃ  loáº¡i
+    // Thông tin trạng thái và loại
     private String trangThaiHoaDon;
     private String loaiHoaDon;
     private String phuongThucThanhToan;
 
-    // ThÃ´ng tin thá»i gian
+    // Thông tin thời gian
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     private Date ngayTao;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
@@ -43,42 +43,42 @@ public class HoaDonDTO {
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     private Date ngayCapNhat;
 
-    // ThÃ´ng tin ngÆ°á»i dÃ¹ng
+    // Thông tin người dùng
     private String tenNhanVien;
     private Integer khachHangId;
     private Integer nhanVienId;
     private String ghiChu;
 
-    // ThÃ´ng tin voucher vÃ  Ä‘iá»ƒm (existing)
+    // Thông tin voucher và điểm (existing)
     private String tenVoucher;
     private String loaiVoucher;
     private BigDecimal giaTriVoucher;
     private Integer diemSuDung;
     private Double giaTriDiem;
 
-    // âœ… THÃŠM: ThÃ´ng tin voucher chi tiáº¿t
+    // ✅ THÊM: Thông tin voucher chi tiết
     private List<ChiTietVoucherDTO> chiTietVoucherList;
-    private BigDecimal tongTienVoucherChiTiet;      // Tá»•ng tiáº¿t kiá»‡m tá»« táº¥t cáº£ voucher
-    private String maVoucherDaApDung;               // MÃ£ voucher chÃ­nh Ä‘Ã£ Ã¡p dá»¥ng
-    private Integer soLuongVoucherDaApDung;         // Sá»‘ lÆ°á»£ng voucher Ä‘Ã£ Ã¡p dá»¥ng
-    private Double phanTramTietKiemVoucher;         // % tiáº¿t kiá»‡m tá»« voucher
-    private Map<String, Integer> thongKeVoucherTheoLoai; // Thá»‘ng kÃª voucher theo loáº¡i
+    private BigDecimal tongTienVoucherChiTiet;      // Tổng tiết kiệm từ tất cả voucher
+    private String maVoucherDaApDung;               // Mã voucher chính đã áp dụng
+    private Integer soLuongVoucherDaApDung;         // Số lượng voucher đã áp dụng
+    private Double phanTramTietKiemVoucher;         // % tiết kiệm từ voucher
+    private Map<String, Integer> thongKeVoucherTheoLoai; // Thống kê voucher theo loại
 
-    // Danh sÃ¡ch chi tiáº¿t sáº£n pháº©m
+    // Danh sách chi tiết sản phẩm
     private List<HoaDonChiTietDTO> chiTietList;
 
-    // Thá»‘ng kÃª
+    // Thống kê
     private Integer soLuongSanPham;
     private Integer tongSoLuong;
 
-    // Tráº¡ng thÃ¡i cÃ³ thá»ƒ thay Ä‘á»•i khÃ´ng
+    // Trạng thái có thể thay đổi không
     private Boolean coTheHuy;
     private Boolean coTheXacNhan;
     private Boolean coTheGiaoHang;
     private Boolean coTheHoanThanh;
     private List<ChiTietTraHangDTO> chiTietTraHangList;
 
-    // Thá»‘ng kÃª tráº£ hÃ ng
+    // Thống kê trả hàng
     private Integer tongSoLuongTraHang;
     private BigDecimal tongTienTraHang;
     private Integer soLoaiSanPhamTraHang;
@@ -86,7 +86,7 @@ public class HoaDonDTO {
     private Integer soLuongTraHangDaXuLy;
     private Integer soLuongTraHangTuChoi;
 
-    // Tráº¡ng thÃ¡i cÃ³ thá»ƒ tráº£ hÃ ng
+    // Trạng thái có thể trả hàng
     private Boolean coTheTraHang;
 
     public HoaDonDTO() {}
@@ -269,7 +269,7 @@ public class HoaDonDTO {
         this.coTheTraHang = coTheTraHang;
     }
 
-    // ===== âœ… THÃŠM: GETTERS & SETTERS CHO VOUCHER CHI TIáº¾T =====
+    // ===== ✅ THÊM: GETTERS & SETTERS CHO VOUCHER CHI TIẾT =====
 
     public List<ChiTietVoucherDTO> getChiTietVoucherList() {
         return chiTietVoucherList;
@@ -319,31 +319,31 @@ public class HoaDonDTO {
         this.thongKeVoucherTheoLoai = thongKeVoucherTheoLoai;
     }
 
-    // ===== âœ… THÃŠM: HELPER METHODS =====
+    // ===== ✅ THÊM: HELPER METHODS =====
 
     /**
-     * Kiá»ƒm tra cÃ³ voucher Ä‘Ã£ Ã¡p dá»¥ng khÃ´ng
+     * Kiểm tra có voucher đã áp dụng không
      */
     public boolean hasVoucher() {
         return chiTietVoucherList != null && !chiTietVoucherList.isEmpty();
     }
 
     /**
-     * Láº¥y tá»•ng sá»‘ voucher Ä‘Ã£ Ã¡p dá»¥ng
+     * Lấy tổng số voucher đã áp dụng
      */
     public int getTotalVouchersApplied() {
         return hasVoucher() ? chiTietVoucherList.size() : 0;
     }
 
     /**
-     * Láº¥y tá»•ng tiáº¿t kiá»‡m thá»±c táº¿ tá»« voucher
+     * Lấy tổng tiết kiệm thực tế từ voucher
      */
     public BigDecimal getActualVoucherSavings() {
         return tongTienVoucherChiTiet != null ? tongTienVoucherChiTiet : BigDecimal.ZERO;
     }
 
     /**
-     * Kiá»ƒm tra cÃ³ voucher theo loáº¡i khÃ´ng
+     * Kiểm tra có voucher theo loại không
      */
     public boolean hasVoucherOfType(String loaiGiamGia) {
         if (!hasVoucher()) return false;
@@ -352,7 +352,7 @@ public class HoaDonDTO {
     }
 
     /**
-     * Láº¥y sá»‘ lÆ°á»£ng voucher theo loáº¡i
+     * Lấy số lượng voucher theo loại
      */
     public int getVoucherCountByType(String loaiGiamGia) {
         if (!hasVoucher()) return 0;
@@ -362,7 +362,7 @@ public class HoaDonDTO {
     }
 
     /**
-     * Láº¥y voucher cÃ³ giÃ¡ trá»‹ giáº£m lá»›n nháº¥t
+     * Lấy voucher có giá trị giảm lớn nhất
      */
     public ChiTietVoucherDTO getLargestVoucher() {
         if (!hasVoucher()) return null;

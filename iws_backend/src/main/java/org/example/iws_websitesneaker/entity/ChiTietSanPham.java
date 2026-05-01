@@ -55,7 +55,7 @@ public class ChiTietSanPham {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_hinh_anh")
-    @JsonInclude(JsonInclude.Include.NON_NULL) // Chá»‰ serialize khi khÃ´ng null
+    @JsonInclude(JsonInclude.Include.NON_NULL) // Chỉ serialize khi không null
     private HinhAnh hinhAnh;
 
     public ChiTietSanPham() {}

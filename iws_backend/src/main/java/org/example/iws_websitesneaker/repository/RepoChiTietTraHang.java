@@ -16,61 +16,61 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
     // =================== BASIC FINDER METHODS ===================
 
     /**
-     * TÃ¬m chi tiáº¿t tráº£ hÃ ng theo ID chi tiáº¿t sáº£n pháº©m
+     * Tìm chi tiết trả hàng theo ID chi tiết sản phẩm
      */
     List<ChiTietTraHang> findByChiTietSanPhamId(Integer chiTietSanPhamId);
 
     /**
-     * TÃ¬m chi tiáº¿t tráº£ hÃ ng theo ID hÃ³a Ä‘Æ¡n
+     * Tìm chi tiết trả hàng theo ID hóa đơn
      */
     List<ChiTietTraHang> findByHoaDonId(Integer hoaDonId);
 
     /**
-     * TÃ¬m chi tiáº¿t tráº£ hÃ ng theo tráº¡ng thÃ¡i
+     * Tìm chi tiết trả hàng theo trạng thái
      */
     List<ChiTietTraHang> findByTrangThaiHoaDon(String trangThai);
 
     /**
-     * TÃ¬m theo hÃ³a Ä‘Æ¡n vÃ  tráº¡ng thÃ¡i
+     * Tìm theo hóa đơn và trạng thái
      */
     List<ChiTietTraHang> findByHoaDonIdAndTrangThaiHoaDon(Integer hoaDonId, String trangThai);
 
     /**
-     * TÃ¬m theo mÃ£ chi tiáº¿t tráº£ hÃ ng
+     * Tìm theo mã chi tiết trả hàng
      */
     List<ChiTietTraHang> findByMaChiTietTraHang(String maChiTietTraHang);
 
     /**
-     * TÃ¬m theo mÃ£ chi tiáº¿t tráº£ hÃ ng - unique
+     * Tìm theo mã chi tiết trả hàng - unique
      */
     Optional<ChiTietTraHang> findFirstByMaChiTietTraHang(String maChiTietTraHang);
 
     /**
-     * Äáº¿m theo tráº¡ng thÃ¡i
+     * Đếm theo trạng thái
      */
     Long countByTrangThaiHoaDon(String trangThai);
 
     /**
-     * Kiá»ƒm tra tá»“n táº¡i tráº£ hÃ ng cho chi tiáº¿t sáº£n pháº©m
+     * Kiểm tra tồn tại trả hàng cho chi tiết sản phẩm
      */
     Boolean existsByChiTietSanPhamId(Integer chiTietSanPhamId);
 
     /**
-     * Kiá»ƒm tra mÃ£ chi tiáº¿t tráº£ hÃ ng Ä‘Ã£ tá»“n táº¡i chÆ°a
+     * Kiểm tra mã chi tiết trả hàng đã tồn tại chưa
      */
     Boolean existsByMaChiTietTraHang(String maChiTietTraHang);
 
     // =================== SEARCH BY REASON AND IMAGE ===================
 
     /**
-     * TÃ¬m kiáº¿m theo lÃ½ do tráº£ hÃ ng (tÃ¬m kiáº¿m gáº§n Ä‘Ãºng)
+     * Tìm kiếm theo lý do trả hàng (tìm kiếm gần đúng)
      */
     @Query("SELECT ctt FROM ChiTietTraHang ctt " +
             "WHERE ctt.lyDo LIKE %:lyDo%")
     List<ChiTietTraHang> findByLyDoContaining(@Param("lyDo") String lyDo);
 
     /**
-     * TÃ¬m chi tiáº¿t tráº£ hÃ ng cÃ³ áº£nh minh chá»©ng
+     * Tìm chi tiết trả hàng có ảnh minh chứng
      */
     @Query("SELECT ctt FROM ChiTietTraHang ctt " +
             "WHERE ctt.duongDanAnh IS NOT NULL AND ctt.duongDanAnh != '' " +
@@ -78,7 +78,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
     List<ChiTietTraHang> findAllWithImages();
 
     /**
-     * TÃ¬m chi tiáº¿t tráº£ hÃ ng khÃ´ng cÃ³ áº£nh minh chá»©ng
+     * Tìm chi tiết trả hàng không có ảnh minh chứng
      */
     @Query("SELECT ctt FROM ChiTietTraHang ctt " +
             "WHERE ctt.duongDanAnh IS NULL OR ctt.duongDanAnh = '' " +
@@ -86,14 +86,14 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
     List<ChiTietTraHang> findAllWithoutImages();
 
     /**
-     * TÃ¬m theo lÃ½ do cá»¥ thá»ƒ (exact match)
+     * Tìm theo lý do cụ thể (exact match)
      */
     List<ChiTietTraHang> findByLyDo(String lyDo);
 
     // =================== COMPLEX QUERIES WITH JOINS ===================
 
     /**
-     * Láº¥y chi tiáº¿t tráº£ hÃ ng vá»›i Ä‘áº§y Ä‘á»§ thÃ´ng tin sáº£n pháº©m theo chi tiáº¿t sáº£n pháº©m
+     * Lấy chi tiết trả hàng với đầy đủ thông tin sản phẩm theo chi tiết sản phẩm
      */
     @Query("SELECT ctt FROM ChiTietTraHang ctt " +
             "LEFT JOIN FETCH ctt.chiTietSanPham ctsp " +
@@ -109,7 +109,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
     List<ChiTietTraHang> findByChiTietSanPhamIdWithFullInfo(@Param("chiTietSanPhamId") Integer chiTietSanPhamId);
 
     /**
-     * Láº¥y chi tiáº¿t tráº£ hÃ ng vá»›i Ä‘áº§y Ä‘á»§ thÃ´ng tin theo hÃ³a Ä‘Æ¡n
+     * Lấy chi tiết trả hàng với đầy đủ thông tin theo hóa đơn
      */
     @Query("SELECT ctt FROM ChiTietTraHang ctt " +
             "LEFT JOIN FETCH ctt.chiTietSanPham ctsp " +
@@ -125,7 +125,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
     List<ChiTietTraHang> findByHoaDonIdWithFullInfo(@Param("hoaDonId") Integer hoaDonId);
 
     /**
-     * Query fallback cho trÆ°á»ng há»£p relationship phá»©c táº¡p
+     * Query fallback cho trường hợp relationship phức tạp
      */
     @Query("SELECT ctt FROM ChiTietTraHang ctt " +
             "LEFT JOIN FETCH ctt.chiTietSanPham ctsp " +
@@ -142,7 +142,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
     List<ChiTietTraHang> findByHoaDonIdWithFullInfoFallback(@Param("hoaDonId") Integer hoaDonId);
 
     /**
-     * Láº¥y táº¥t cáº£ vá»›i thÃ´ng tin Ä‘áº§y Ä‘á»§
+     * Lấy tất cả với thông tin đầy đủ
      */
     @Query("SELECT ctt FROM ChiTietTraHang ctt " +
             "LEFT JOIN FETCH ctt.chiTietSanPham ctsp " +
@@ -156,10 +156,10 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
             "ORDER BY ctt.ngayTaoTraHang DESC")
     List<ChiTietTraHang> findAllWithFullInfo();
 
-    // =================== ADVANCED SEARCH (AN TOÃ€N) ===================
+    // =================== ADVANCED SEARCH (AN TOÀN) ===================
 
     /**
-     * TÃ¬m kiáº¿m nÃ¢ng cao vá»›i nhiá»u tiÃªu chÃ­ - Version Ä‘Æ¡n giáº£n vÃ  an toÃ n
+     * Tìm kiếm nâng cao với nhiều tiêu chí - Version đơn giản và an toàn
      */
     @Query("SELECT ctt FROM ChiTietTraHang ctt " +
             "WHERE (:lyDo IS NULL OR ctt.lyDo LIKE %:lyDo%) " +
@@ -171,7 +171,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
                                               @Param("hoaDonId") Integer hoaDonId);
 
     /**
-     * TÃ¬m kiáº¿m theo khoáº£ng thá»i gian - AN TOÃ€N
+     * Tìm kiếm theo khoảng thời gian - AN TOÀN
      */
     @Query("SELECT ctt FROM ChiTietTraHang ctt " +
             "WHERE ctt.ngayTaoTraHang >= :startDate AND ctt.ngayTaoTraHang < :endDate " +
@@ -179,7 +179,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
     List<ChiTietTraHang> findByDateRange(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
     /**
-     * TÃ¬m kiáº¿m theo khÃ¡ch hÃ ng (qua hÃ³a Ä‘Æ¡n)
+     * Tìm kiếm theo khách hàng (qua hóa đơn)
      */
     @Query("SELECT ctt FROM ChiTietTraHang ctt " +
             "LEFT JOIN ctt.hoaDon hd " +
@@ -189,7 +189,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
     List<ChiTietTraHang> findByKhachHangId(@Param("khachHangId") Integer khachHangId);
 
     /**
-     * TÃ¬m kiáº¿m theo nhÃ¢n viÃªn xá»­ lÃ½ (náº¿u cÃ³ trÆ°á»ng trong entity)
+     * Tìm kiếm theo nhân viên xử lý (nếu có trường trong entity)
      */
     @Query("SELECT ctt FROM ChiTietTraHang ctt " +
             "LEFT JOIN ctt.hoaDon hd " +
@@ -201,7 +201,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
     // =================== STATISTICAL QUERIES ===================
 
     /**
-     * Äáº¿m tá»•ng sá»‘ lÆ°á»£ng Ä‘Ã£ tráº£ theo chi tiáº¿t sáº£n pháº©m (chá»‰ tÃ­nh APPROVED)
+     * Đếm tổng số lượng đã trả theo chi tiết sản phẩm (chỉ tính APPROVED)
      */
     @Query("SELECT COALESCE(SUM(ctt.soLuong), 0) FROM ChiTietTraHang ctt " +
             "WHERE ctt.chiTietSanPham.id = :chiTietSanPhamId " +
@@ -209,7 +209,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
     Integer getTotalReturnedQuantity(@Param("chiTietSanPhamId") Integer chiTietSanPhamId);
 
     /**
-     * Äáº¿m tá»•ng sá»‘ lÆ°á»£ng Ä‘Ã£ tráº£ theo hÃ³a Ä‘Æ¡n
+     * Đếm tổng số lượng đã trả theo hóa đơn
      */
     @Query("SELECT COALESCE(SUM(ctt.soLuong), 0) FROM ChiTietTraHang ctt " +
             "WHERE ctt.hoaDon.id = :hoaDonId " +
@@ -217,7 +217,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
     Integer getTotalReturnedQuantityByInvoice(@Param("hoaDonId") Integer hoaDonId);
 
     /**
-     * TÃ­nh tá»•ng giÃ¡ trá»‹ tráº£ hÃ ng Ä‘Ã£ Ä‘Æ°á»£c cháº¥p nháº­n
+     * Tính tổng giá trị trả hàng đã được chấp nhận
      */
     @Query("SELECT COALESCE(SUM(ctt.soLuong * ctsp.giaGoc), 0.0) FROM ChiTietTraHang ctt " +
             "JOIN ctt.chiTietSanPham ctsp " +
@@ -225,7 +225,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
     Double getTotalReturnValue();
 
     /**
-     * TÃ­nh tá»•ng giÃ¡ trá»‹ tráº£ hÃ ng theo hÃ³a Ä‘Æ¡n
+     * Tính tổng giá trị trả hàng theo hóa đơn
      */
     @Query("SELECT COALESCE(SUM(ctt.soLuong * ctsp.giaGoc), 0.0) FROM ChiTietTraHang ctt " +
             "JOIN ctt.chiTietSanPham ctsp " +
@@ -234,7 +234,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
     Double getTotalReturnValueByInvoice(@Param("hoaDonId") Integer hoaDonId);
 
     /**
-     * Äáº¿m sá»‘ lÆ°á»£ng theo tráº¡ng thÃ¡i vÃ  hÃ³a Ä‘Æ¡n
+     * Đếm số lượng theo trạng thái và hóa đơn
      */
     @Query("SELECT COUNT(ctt) FROM ChiTietTraHang ctt " +
             "WHERE ctt.hoaDon.id = :hoaDonId " +
@@ -242,7 +242,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
     Long countByHoaDonIdAndTrangThai(@Param("hoaDonId") Integer hoaDonId, @Param("trangThai") String trangThai);
 
     /**
-     * Kiá»ƒm tra tá»“n táº¡i tráº£ hÃ ng cho hÃ³a Ä‘Æ¡n
+     * Kiểm tra tồn tại trả hàng cho hóa đơn
      */
     @Query("SELECT CASE WHEN COUNT(ctt) > 0 THEN true ELSE false END FROM ChiTietTraHang ctt " +
             "WHERE ctt.hoaDon.id = :hoaDonId")
@@ -251,7 +251,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
     // =================== REASON STATISTICS ===================
 
     /**
-     * Thá»‘ng kÃª theo lÃ½ do tráº£ hÃ ng
+     * Thống kê theo lý do trả hàng
      */
     @Query("SELECT ctt.lyDo, COUNT(ctt) FROM ChiTietTraHang ctt " +
             "WHERE ctt.lyDo IS NOT NULL AND ctt.lyDo != '' " +
@@ -260,7 +260,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
     List<Object[]> getReturnReasonStatistics();
 
     /**
-     * Thá»‘ng kÃª theo lÃ½ do tráº£ hÃ ng trong khoáº£ng thá»i gian
+     * Thống kê theo lý do trả hàng trong khoảng thời gian
      */
     @Query("SELECT ctt.lyDo, COUNT(ctt) FROM ChiTietTraHang ctt " +
             "WHERE ctt.lyDo IS NOT NULL AND ctt.lyDo != '' " +
@@ -270,21 +270,21 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
     List<Object[]> getReturnReasonStatisticsByDateRange(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
     /**
-     * Äáº¿m sá»‘ lÆ°á»£ng tráº£ hÃ ng cÃ³ áº£nh minh chá»©ng
+     * Đếm số lượng trả hàng có ảnh minh chứng
      */
     @Query("SELECT COUNT(ctt) FROM ChiTietTraHang ctt " +
             "WHERE ctt.duongDanAnh IS NOT NULL AND ctt.duongDanAnh != ''")
     Long countReturnsWithImages();
 
     /**
-     * Äáº¿m sá»‘ lÆ°á»£ng tráº£ hÃ ng theo lÃ½ do cá»¥ thá»ƒ
+     * Đếm số lượng trả hàng theo lý do cụ thể
      */
     @Query("SELECT COUNT(ctt) FROM ChiTietTraHang ctt " +
             "WHERE ctt.lyDo = :lyDo")
     Long countByLyDo(@Param("lyDo") String lyDo);
 
     /**
-     * Láº¥y top N lÃ½ do tráº£ hÃ ng phá»• biáº¿n nháº¥t
+     * Lấy top N lý do trả hàng phổ biến nhất
      */
     @Query("SELECT ctt.lyDo, COUNT(ctt) FROM ChiTietTraHang ctt " +
             "WHERE ctt.lyDo IS NOT NULL AND ctt.lyDo != '' " +
@@ -295,7 +295,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
     // =================== VALIDATION QUERIES ===================
 
     /**
-     * Láº¥y chi tiáº¿t tráº£ hÃ ng cÃ¹ng sáº£n pháº©m trong cÃ¹ng hÃ³a Ä‘Æ¡n
+     * Lấy chi tiết trả hàng cùng sản phẩm trong cùng hóa đơn
      */
     @Query("SELECT ctt FROM ChiTietTraHang ctt " +
             "WHERE ctt.hoaDon.id = :hoaDonId " +
@@ -305,7 +305,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
                                                        @Param("chiTietSanPhamId") Integer chiTietSanPhamId);
 
     /**
-     * Kiá»ƒm tra sá»‘ lÆ°á»£ng cÃ³ thá»ƒ tráº£ - AN TOÃ€N
+     * Kiểm tra số lượng có thể trả - AN TOÀN
      */
     @Query("SELECT COALESCE(" +
             "   (SELECT SUM(hdct.soLuong) FROM HoaDonChiTiet hdct WHERE hdct.chiTietSanPham.id = :chiTietSanPhamId), 0) - " +
@@ -314,10 +314,10 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
             "        WHERE ctt.chiTietSanPham.id = :chiTietSanPhamId AND ctt.trangThaiHoaDon = 'APPROVED'), 0)")
     Integer getAvailableReturnQuantity(@Param("chiTietSanPhamId") Integer chiTietSanPhamId);
 
-    // =================== TIME-BASED QUERIES (AN TOÃ€N Vá»šI PARAMETERS) ===================
+    // =================== TIME-BASED QUERIES (AN TOÀN VỚI PARAMETERS) ===================
 
     /**
-     * Láº¥y chi tiáº¿t tráº£ hÃ ng trong ngÃ y cá»¥ thá»ƒ
+     * Lấy chi tiết trả hàng trong ngày cụ thể
      */
     @Query("SELECT ctt FROM ChiTietTraHang ctt " +
             "WHERE ctt.ngayTaoTraHang >= :startOfDay " +
@@ -327,7 +327,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
                                           @Param("endOfDay") Date endOfDay);
 
     /**
-     * Láº¥y chi tiáº¿t tráº£ hÃ ng trong tuáº§n cá»¥ thá»ƒ
+     * Lấy chi tiết trả hàng trong tuần cụ thể
      */
     @Query("SELECT ctt FROM ChiTietTraHang ctt " +
             "WHERE ctt.ngayTaoTraHang >= :startOfWeek " +
@@ -337,7 +337,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
                                            @Param("endOfWeek") Date endOfWeek);
 
     /**
-     * Láº¥y chi tiáº¿t tráº£ hÃ ng trong thÃ¡ng cá»¥ thá»ƒ
+     * Lấy chi tiết trả hàng trong tháng cụ thể
      */
     @Query("SELECT ctt FROM ChiTietTraHang ctt " +
             "WHERE ctt.ngayTaoTraHang >= :startOfMonth " +
@@ -346,10 +346,10 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
     List<ChiTietTraHang> findReturnsByMonth(@Param("startOfMonth") Date startOfMonth,
                                             @Param("endOfMonth") Date endOfMonth);
 
-    // =================== BULK OPERATIONS (AN TOÃ€N) ===================
+    // =================== BULK OPERATIONS (AN TOÀN) ===================
 
     /**
-     * Cáº­p nháº­t tráº¡ng thÃ¡i hÃ ng loáº¡t - Sá»­ dá»¥ng @Modifying trong Service
+     * Cập nhật trạng thái hàng loạt - Sử dụng @Modifying trong Service
      */
     @Query("SELECT ctt FROM ChiTietTraHang ctt " +
             "WHERE ctt.id IN :ids AND ctt.trangThaiHoaDon = :currentStatus")
@@ -357,7 +357,7 @@ public interface RepoChiTietTraHang extends JpaRepository<ChiTietTraHang, Intege
                                                    @Param("currentStatus") String currentStatus);
 
     /**
-     * TÃ¬m cÃ¡c chi tiáº¿t tráº£ hÃ ng cÃ³ áº£nh Ä‘á»ƒ xÃ³a áº£nh hÃ ng loáº¡t
+     * Tìm các chi tiết trả hàng có ảnh để xóa ảnh hàng loạt
      */
     @Query("SELECT ctt FROM ChiTietTraHang ctt " +
             "WHERE ctt.id IN :ids AND ctt.duongDanAnh IS NOT NULL")

@@ -33,14 +33,14 @@ public class GioHangRestController {
     @Autowired
     private HoaDonChiTietService hoaDonChiTietService;
 
-    // Láº¥y giá» hÃ ng cá»§a user hiá»‡n táº¡i
+    // Lấy giỏ hàng của user hiện tại
     @GetMapping("/current")
     public ResponseEntity<?> getCurrentUserOrGuestCart(HttpServletRequest request,
                                                        @RequestParam(required = false) String sessionId) {
         try {
             System.out.println("=== GET CURRENT CART (USER OR GUEST) ===");
 
-            // 1. Thá»­ láº¥y user ID tá»« JWT
+            // 1. Thử lấy user ID từ JWT
             Integer userId = null;
             try {
                 userId = getUserIdFromRequest(request);
@@ -48,13 +48,13 @@ public class GioHangRestController {
                 System.out.println("No JWT user found, fallback to guest.");
             }
 
-            // 2. Náº¿u cÃ³ user -> tráº£ vá» giá» hÃ ng DB
+            // 2. Nếu có user -> trả về giỏ hàng DB
             if (userId != null) {
                 List<CartItemResponse> cartItems = gioHangService.getCartByUserId(userId);
                 return ResponseEntity.ok(cartItems);
             }
 
-            // 3. Náº¿u khÃ´ng cÃ³ user -> dÃ¹ng sessionId (guest)
+            // 3. Nếu không có user -> dùng sessionId (guest)
             if (sessionId != null) {
                 List<GuestCartItem> guestItems = guestCarts.getOrDefault(sessionId, new ArrayList<>());
 
@@ -69,7 +69,7 @@ public class GioHangRestController {
                 return ResponseEntity.ok(cartItems);
             }
 
-            // 4. KhÃ´ng cÃ³ user, khÃ´ng cÃ³ sessionId -> giá» trá»‘ng
+            // 4. Không có user, không có sessionId -> giỏ trống
             return ResponseEntity.ok(Collections.emptyList());
 
         } catch (Exception e) {
@@ -78,13 +78,13 @@ public class GioHangRestController {
     }
 
 
-    // ThÃªm sáº£n pháº©m vÃ o giá» hÃ ng
+    // Thêm sản phẩm vào giỏ hàng
     @PostMapping("/add")
     public ResponseEntity<?> addToCart(@RequestBody AddToCartRequest request, HttpServletRequest httpRequest) {
         try {
             System.out.println("=== ADD TO CART CONTROLLER DEBUG ===");
 
-            // âœ… Sá»¬A: Láº¥y user ID tá»« JWT Filter attributes
+            // ✅ SỬA: Lấy user ID từ JWT Filter attributes
             Integer userId = getUserIdFromRequest(httpRequest);
             System.out.println("User ID from JWT: " + userId);
             System.out.println("Request: " + request);
@@ -98,13 +98,13 @@ public class GioHangRestController {
         }
     }
 
-    // Cáº­p nháº­t sá»‘ lÆ°á»£ng
+    // Cập nhật số lượng
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateCartItem(@PathVariable Integer id, @RequestBody UpdateCartRequest request, HttpServletRequest httpRequest) {
         try {
             System.out.println("=== UPDATE CART ITEM DEBUG ===");
 
-            // CÃ³ thá»ƒ cáº§n verify ownership cá»§a cart item
+            // Có thể cần verify ownership của cart item
             Integer userId = getUserIdFromRequest(httpRequest);
             System.out.println("User ID: " + userId + ", Item ID: " + id + ", New quantity: " + request.getSoLuong());
 
@@ -117,13 +117,13 @@ public class GioHangRestController {
         }
     }
 
-    // XÃ³a sáº£n pháº©m
+    // Xóa sản phẩm
     @DeleteMapping("/remove/{id}")
     public ResponseEntity<?> removeCartItem(@PathVariable Integer id, HttpServletRequest httpRequest) {
         try {
             System.out.println("=== REMOVE CART ITEM DEBUG ===");
 
-            // CÃ³ thá»ƒ cáº§n verify ownership cá»§a cart item
+            // Có thể cần verify ownership của cart item
             Integer userId = getUserIdFromRequest(httpRequest);
             System.out.println("User ID: " + userId + ", Removing item ID: " + id);
 
@@ -136,13 +136,13 @@ public class GioHangRestController {
         }
     }
 
-    // XÃ³a toÃ n bá»™ giá» hÃ ng
+    // Xóa toàn bộ giỏ hàng
     @DeleteMapping("/clear")
     public ResponseEntity<?> clearCart(HttpServletRequest request) {
         try {
             System.out.println("=== CLEAR CART DEBUG ===");
 
-            // âœ… Sá»¬A: Láº¥y user ID tá»« JWT Filter attributes
+            // ✅ SỬA: Lấy user ID từ JWT Filter attributes
             Integer userId = getUserIdFromRequest(request);
             System.out.println("User ID: " + userId);
 
@@ -156,27 +156,27 @@ public class GioHangRestController {
     }
 
     /**
-     * âœ… Sá»¬A: Láº¥y User ID tá»« JWT Filter attributes thay vÃ¬ decode JWT
-     * JWT Filter Ä‘Ã£ lÃ m viá»‡c nÃ y vÃ  Ä‘áº·t thÃ´ng tin vÃ o request attributes
+     * ✅ SỬA: Lấy User ID từ JWT Filter attributes thay vì decode JWT
+     * JWT Filter đã làm việc này và đặt thông tin vào request attributes
      */
     private Integer getUserIdFromRequest(HttpServletRequest request) {
         try {
-            // Láº¥y tá»« attributes Ä‘Æ°á»£c set bá»Ÿi JWT Filter
+            // Lấy từ attributes được set bởi JWT Filter
             Integer userId = (Integer) request.getAttribute("currentUserId");
             if (userId != null) {
-                System.out.println("âœ… User ID from JWT Filter attributes: " + userId);
+                System.out.println("✅ User ID from JWT Filter attributes: " + userId);
                 return userId;
             }
 
-            // Láº¥y user object vÃ  extract ID
+            // Lấy user object và extract ID
             TaiKhoan currentUser = (TaiKhoan) request.getAttribute("currentUser");
             if (currentUser != null) {
-                System.out.println("âœ… User ID from user object: " + currentUser.getId());
+                System.out.println("✅ User ID from user object: " + currentUser.getId());
                 return currentUser.getId();
             }
 
-            // Fallback: log thÃ´ng tin debug
-            System.err.println("âŒ No user info found in request attributes");
+            // Fallback: log thông tin debug
+            System.err.println("❌ No user info found in request attributes");
             System.err.println("Available attributes:");
             request.getAttributeNames().asIterator().forEachRemaining(name -> {
                 System.err.println("  - " + name + ": " + request.getAttribute(name));
@@ -185,7 +185,7 @@ public class GioHangRestController {
             throw new RuntimeException("User not authenticated - no user info in request");
 
         } catch (Exception e) {
-            System.err.println("âŒ Error getting user ID from request: " + e.getMessage());
+            System.err.println("❌ Error getting user ID from request: " + e.getMessage());
             throw new RuntimeException("Unable to get user information: " + e.getMessage());
         }
     }
@@ -225,20 +225,20 @@ public class GioHangRestController {
 
             List<GuestCartItem> cart = guestCarts.computeIfAbsent(sessionId, k -> new ArrayList<>());
 
-            // TÃ¬m xem sáº£n pháº©m Ä‘Ã£ cÃ³ chÆ°a
+            // Tìm xem sản phẩm đã có chưa
             Optional<GuestCartItem> existingItem = cart.stream()
                     .filter(item -> item.getProductDetailId().equals(request.getProductDetailId()))
                     .findFirst();
 
             if (existingItem.isPresent()) {
-                // Cáº­p nháº­t sá»‘ lÆ°á»£ng
+                // Cập nhật số lượng
                 existingItem.get().setQuantity(existingItem.get().getQuantity() + request.getSoLuong());
             } else {
-                // ThÃªm má»›i
+                // Thêm mới
                 cart.add(new GuestCartItem(request.getProductDetailId(), request.getSoLuong()));
             }
 
-            // Convert vÃ  return response
+            // Convert và return response
             GuestCartItem itemToReturn = existingItem.orElse(cart.get(cart.size() - 1));
             CartItemResponse response = convertGuestItemToResponse(itemToReturn);
 
@@ -323,17 +323,17 @@ public class GioHangRestController {
                 return ResponseEntity.badRequest().body("Cart is empty");
             }
 
-            // Táº¡o Ä‘Æ¡n hÃ ng guest
+            // Tạo đơn hàng guest
             HoaDon order = createGuestOrder(request, cart);
 
-            // XÃ³a guest cart
+            // Xóa guest cart
             guestCarts.remove(sessionId);
 
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "orderId", order.getId(),
                     "orderCode", order.getMaHoaDon(),
-                    "message", "Äáº·t hÃ ng thÃ nh cÃ´ng! MÃ£ Ä‘Æ¡n hÃ ng: " + order.getMaHoaDon()
+                    "message", "Đặt hàng thành công! Mã đơn hàng: " + order.getMaHoaDon()
             ));
 
         } catch (Exception e) {
@@ -343,7 +343,7 @@ public class GioHangRestController {
     }
     private CartItemResponse convertGuestItemToResponse(GuestCartItem guestItem) {
         try {
-            // Láº¥y thÃ´ng tin chi tiáº¿t sáº£n pháº©m tá»« database
+            // Lấy thông tin chi tiết sản phẩm từ database
             ChiTietSanPham chiTiet = chiTietSanPhamService.getById(guestItem.getProductDetailId());
             if (chiTiet == null) return null;
 
@@ -352,17 +352,17 @@ public class GioHangRestController {
             response.setProductDetailId(guestItem.getProductDetailId());
             response.setQuantity(guestItem.getQuantity());
 
-            // GiÃ¡
+            // Giá
             response.setPrice(chiTiet.getGiaBan());
             response.setTotalPrice(chiTiet.getGiaBan() * guestItem.getQuantity());
 
-            // ThÃ´ng tin sáº£n pháº©m
+            // Thông tin sản phẩm
             if (chiTiet.getSanPham() != null) {
                 response.setName(chiTiet.getSanPham().getTenSanPham());
                 response.setCode(chiTiet.getSanPham().getMaSanPham());
             }
 
-            // áº¢nh sáº£n pháº©m
+            // Ảnh sản phẩm
             if (chiTiet.getHinhAnh() != null) {
                 response.setImage(chiTiet.getHinhAnh().getDuongDan());
             }
@@ -372,7 +372,7 @@ public class GioHangRestController {
                 response.setSize(chiTiet.getKichCo().getTenKichCo());
             }
 
-            // MÃ u (String thÃ´i)
+            // Màu (String thôi)
             if (chiTiet.getMauSac() != null) {
                 response.setColor(chiTiet.getMauSac().getTenMauSac());
             }
@@ -389,15 +389,15 @@ public class GioHangRestController {
 
 
     private HoaDon createGuestOrder(GuestCheckoutRequest request, List<GuestCartItem> cart) {
-        // Láº¥y khÃ¡ch láº» máº·c Ä‘á»‹nh (id = 10)
+        // Lấy khách lẻ mặc định (id = 10)
         KhachHang khachLe = new KhachHang();
         khachLe.setId(10);
 
         HoaDon order = new HoaDon();
-        order.setKhachHang(khachLe); // GÃ¡n khÃ¡ch láº»
+        order.setKhachHang(khachLe); // Gán khách lẻ
         order.setMaHoaDon("HD" + System.currentTimeMillis());
 
-        // ThÃ´ng tin checkout (ghi Ä‘Ã¨ tá»« form ngÆ°á»i dÃ¹ng nháº­p)
+        // Thông tin checkout (ghi đè từ form người dùng nhập)
         order.setEmail(request.getEmail());
         order.setTenNguoiDung(request.getTenNguoiDung());
         order.setSdt(request.getSdt());
@@ -408,7 +408,7 @@ public class GioHangRestController {
         order.setPhiVanChuyen(new BigDecimal(request.getPhiVanChuyen()));
         order.setNgayTao(new Date());
 
-        // TÃ­nh tá»•ng tiá»n
+        // Tính tổng tiền
         BigDecimal tongTien = cart.stream()
                 .map(item -> {
                     ChiTietSanPham ctsp = chiTietSanPhamService.getById(item.getProductDetailId());
@@ -419,10 +419,10 @@ public class GioHangRestController {
         order.setTongTien(tongTien);
         order.setTongThanhToan(tongTien.add(order.getPhiVanChuyen()));
 
-        // LÆ°u Ä‘Æ¡n hÃ ng
+        // Lưu đơn hàng
         HoaDon savedOrder = hoaDonService.save(order);
 
-        // Táº¡o chi tiáº¿t Ä‘Æ¡n hÃ ng
+        // Tạo chi tiết đơn hàng
         for (GuestCartItem item : cart) {
             ChiTietSanPham ctsp = chiTietSanPhamService.getById(item.getProductDetailId());
 

@@ -14,7 +14,7 @@ public interface ChiTietVoucherService {
     ChiTietVoucherDTO update(Integer id, ChiTietVoucherDTO dto);
     void delete(Integer id);
 
-    // TÃ¬m kiáº¿m
+    // Tìm kiếm
     List<ChiTietVoucherDTO> searchByMaChiTietVoucher(String keyword);
     List<ChiTietVoucherDTO> searchByMaVoucher(String keyword);
     List<ChiTietVoucherDTO> searchByTenVoucher(String keyword);

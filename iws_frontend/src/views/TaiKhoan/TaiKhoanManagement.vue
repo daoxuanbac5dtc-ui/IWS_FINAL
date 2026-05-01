@@ -1060,8 +1060,8 @@ const fetchData = async () => {
     try {
         const [accountsResponse, customersResponse, employeesResponse] = await Promise.all([
             axios.get('http://localhost:8080/api/tai-khoan?size=1000'),
-            axios.get('http://localhost:8080/api/khach-hang').catch(() => ({ data: [] })),
-            axios.get('http://localhost:8080/api/nhan-vien').catch(() => ({ data: [] }))
+            axios.get('http://localhost:8080/api/khach-hang/all').catch(() => ({ data: [] })),
+            axios.get('http://localhost:8080/api/nhan-vien/all').catch(() => ({ data: [] }))
         ])
         
         if (Array.isArray(accountsResponse.data)) {
@@ -1568,11 +1568,14 @@ const handleChangeStatus = async (account) => {
         
         console.log(`🔄 Changing status for account ${account.email} to ${statusText}`)
         
-        const response = await axios.put(
-            `http://localhost:8080/api/tai-khoan/${account.id}`,
+        const response = await axios.patch(
+            `http://localhost:8080/api/tai-khoan/${account.id}/trang-thai`,
             { trangThai: newStatus },
             {
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
                 timeout: 10000
             }
         )

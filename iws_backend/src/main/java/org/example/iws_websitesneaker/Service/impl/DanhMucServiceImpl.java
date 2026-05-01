@@ -38,7 +38,7 @@ public class DanhMucServiceImpl implements DanhMucService {
 
     @Override
     public void deleteDanhMuc(int id) {
-        repoSanPham.removeDanhMucReference(id);// Gá»¡ rÃ ng buá»™c khÃ³a ngoáº¡i tá»« báº£ng san_pham
+        repoSanPham.removeDanhMucReference(id);// Gỡ ràng buộc khóa ngoại từ bảng san_pham
         repoDanhMuc.deleteById(id);
     }
 }

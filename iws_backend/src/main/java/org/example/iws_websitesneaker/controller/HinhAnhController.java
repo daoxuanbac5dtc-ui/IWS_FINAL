@@ -34,7 +34,7 @@ public class HinhAnhController {
     @Autowired
     private RepoChiTietSanPham repoChiTietSanPham;
 
-    // ThÆ° má»¥c lÆ°u file upload (cÃ³ thá»ƒ config trong application.properties)
+    // Thư mục lưu file upload (có thể config trong application.properties)
     @Value("${app.upload.dir:images}")
     private String uploadDir;
 
@@ -44,7 +44,7 @@ public class HinhAnhController {
             Optional<HinhAnh> hinhAnh = hinhAnhService.findByTenHinhAnh(tenHinhAnh);
             if (hinhAnh.isPresent()) {
                 String duongDan = hinhAnh.get().getDuongDan();
-                // Tráº£ vá» URL Ä‘áº§y Ä‘á»§ vá»›i domain
+                // Trả về URL đầy đủ với domain
                 System.out.println(duongDan);
                 String fullUrl = "http://localhost:8080" + duongDan;
                 return ResponseEntity.ok(fullUrl);
@@ -52,17 +52,17 @@ public class HinhAnhController {
                 return ResponseEntity.notFound().build();
             }
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Lá»—i: " + e.getMessage());
+            return ResponseEntity.status(500).body("Lỗi: " + e.getMessage());
         }
     }
 
     /**
-     * API láº¥y Ä‘Æ°á»ng dáº«n áº£nh theo ID - tráº£ vá» URL Ä‘áº§y Ä‘á»§
+     * API lấy đường dẫn ảnh theo ID - trả về URL đầy đủ
      * GET /hinh-anh/duong-dan/id/{idHinhAnh}
      */
-    // ========== API CÅ¨ GIá»® NGUYÃŠN ==========
+    // ========== API CŨ GIỮ NGUYÊN ==========
 
-    // Láº¥y táº¥t cáº£ dá»¯ liá»‡u báº£ng hÃ¬nh áº£nh
+    // Lấy tất cả dữ liệu bảng hình ảnh
     @GetMapping
     public List<HinhAnh> getHinhAnh() {
         return hinhAnhService.getAllHinhanh();
@@ -77,7 +77,7 @@ public class HinhAnhController {
     public ResponseEntity<String> addHinhAnh(@RequestBody HinhAnh hinhAnh) {
         hinhAnh.setNgayTao(new Date());
         hinhAnhService.addHinhAnh(hinhAnh);
-        return ResponseEntity.ok("ThÃªm thÃ nh cÃ´ng hÃ¬nh áº£nh");
+        return ResponseEntity.ok("Thêm thành công hình ảnh");
     }
 
     @PutMapping("/{id}")
@@ -99,11 +99,11 @@ public class HinhAnhController {
             return ResponseEntity.notFound().build();
         }
         hinhAnhService.deleteHinhAnh(id);
-        return ResponseEntity.ok("ÄÃ£ xÃ³a thÃ nh cÃ´ng hÃ¬nh áº£nh vá»›i id: " + id);
+        return ResponseEntity.ok("Đã xóa thành công hình ảnh với id: " + id);
     }
 
     /**
-     * API upload file hÃ¬nh áº£nh
+     * API upload file hình ảnh
      * POST /hinh-anh/upload
      */
     @PostMapping("/upload")
@@ -111,13 +111,13 @@ public class HinhAnhController {
         try {
             // ... existing validation code ...
 
-            // Táº¡o thÆ° má»¥c náº¿u chÆ°a cÃ³
+            // Tạo thư mục nếu chưa có
             Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
 
-            // Táº¡o tÃªn file unique
+            // Tạo tên file unique
             String originalFilename = file.getOriginalFilename();
             String fileExtension = "";
             if (originalFilename != null && originalFilename.contains(".")) {
@@ -125,15 +125,15 @@ public class HinhAnhController {
             }
             String newFilename = "img_" + System.currentTimeMillis() + fileExtension;
 
-            // LÆ°u file
+            // Lưu file
             Path filePath = uploadPath.resolve(newFilename);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            // Tráº£ vá» Ä‘Æ°á»ng dáº«n Ä‘Ãºng vá»›i endpoint serve
-            String relativePath = "/hinh-anh/images/" + newFilename;  // â† Thay Ä‘á»•i á»Ÿ Ä‘Ã¢y
+            // Trả về đường dẫn đúng với endpoint serve
+            String relativePath = "/hinh-anh/images/" + newFilename;  // ← Thay đổi ở đây
 
             return ResponseEntity.ok(Map.of(
-                    "success", "Upload thÃ nh cÃ´ng",
+                    "success", "Upload thành công",
                     "path", relativePath,
                     "filename", newFilename
             ));
@@ -141,23 +141,23 @@ public class HinhAnhController {
         } catch (IOException e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Lá»—i khi lÆ°u file: " + e.getMessage()));
+                    .body(Map.of("error", "Lỗi khi lưu file: " + e.getMessage()));
         }
     }
 
     /**
-     * API serve hÃ¬nh áº£nh static
-     * Truy cáº­p: GET /hinh-anh/images/{filename}
+     * API serve hình ảnh static
+     * Truy cập: GET /hinh-anh/images/{filename}
      */
     @GetMapping("/images/{filename:.+}")
     public ResponseEntity<Resource> serveImage(@PathVariable String filename) {
         try {
-            // ÄÆ°á»ng dáº«n Ä‘áº¿n file
+            // Đường dẫn đến file
             Path imagePath = Paths.get(uploadDir).resolve(filename);
             Resource resource = new UrlResource(imagePath.toUri());
 
             if (resource.exists() && resource.isReadable()) {
-                // XÃ¡c Ä‘á»‹nh content type
+                // Xác định content type
                 String contentType;
                 try {
                     contentType = Files.probeContentType(imagePath);
@@ -171,10 +171,10 @@ public class HinhAnhController {
 
                 return ResponseEntity.ok()
                         .contentType(MediaType.parseMediaType(contentType))
-                        .header(HttpHeaders.CACHE_CONTROL, "max-age=3600") // Cache 1 giá»
+                        .header(HttpHeaders.CACHE_CONTROL, "max-age=3600") // Cache 1 giờ
                         .body(resource);
             } else {
-                // Tráº£ vá» 404 náº¿u khÃ´ng tÃ¬m tháº¥y
+                // Trả về 404 nếu không tìm thấy
                 return ResponseEntity.notFound().build();
             }
 
@@ -184,21 +184,21 @@ public class HinhAnhController {
         }
     }
 
-    // ========== API CHO CHI TIáº¾T Sáº¢N PHáº¨M ==========
+    // ========== API CHO CHI TIẾT SẢN PHẨM ==========
 
     /**
-     * API mÃ  frontend Ä‘ang gá»i - Láº¥y hÃ¬nh áº£nh cá»§a chi tiáº¿t sáº£n pháº©m
-     * Frontend gá»i: GET /hinh-anh/chi-tiet-san-pham/{chiTietSanPhamId}
+     * API mà frontend đang gọi - Lấy hình ảnh của chi tiết sản phẩm
+     * Frontend gọi: GET /hinh-anh/chi-tiet-san-pham/{chiTietSanPhamId}
      */
     @GetMapping("/chi-tiet-san-pham/{chiTietSanPhamId}")
     public ResponseEntity<List<HinhAnh>> getHinhAnhByChiTietSanPham(@PathVariable Integer chiTietSanPhamId) {
         try {
-            // TÃ¬m chi tiáº¿t sáº£n pháº©m
+            // Tìm chi tiết sản phẩm
             Optional<ChiTietSanPham> chiTietOpt = repoChiTietSanPham.findById(chiTietSanPhamId);
 
             List<HinhAnh> result = new ArrayList<>();
             if (chiTietOpt.isPresent() && chiTietOpt.get().getHinhAnh() != null) {
-                // Náº¿u cÃ³ hÃ¬nh áº£nh, thÃªm vÃ o list
+                // Nếu có hình ảnh, thêm vào list
                 result.add(chiTietOpt.get().getHinhAnh());
             }
 
@@ -210,13 +210,13 @@ public class HinhAnhController {
     }
 
     /**
-     * API mÃ  frontend Ä‘ang gá»i - XÃ³a hÃ¬nh áº£nh khá»i chi tiáº¿t sáº£n pháº©m
-     * Frontend gá»i: DELETE /hinh-anh/chi-tiet-san-pham/{chiTietSanPhamId}/clear
+     * API mà frontend đang gọi - Xóa hình ảnh khỏi chi tiết sản phẩm
+     * Frontend gọi: DELETE /hinh-anh/chi-tiet-san-pham/{chiTietSanPhamId}/clear
      */
     @DeleteMapping("/chi-tiet-san-pham/{chiTietSanPhamId}/clear")
     public ResponseEntity<String> clearHinhAnhFromChiTietSanPham(@PathVariable Integer chiTietSanPhamId) {
         try {
-            // TÃ¬m chi tiáº¿t sáº£n pháº©m vÃ  set hÃ¬nh áº£nh = null
+            // Tìm chi tiết sản phẩm và set hình ảnh = null
             Optional<ChiTietSanPham> chiTietOpt = repoChiTietSanPham.findById(chiTietSanPhamId);
 
             if (chiTietOpt.isPresent()) {
@@ -224,7 +224,7 @@ public class HinhAnhController {
                 chiTiet.setHinhAnh(null);
                 chiTiet.setNgayCapNhat(new Date());
                 repoChiTietSanPham.save(chiTiet);
-                return ResponseEntity.ok("ÄÃ£ xÃ³a hÃ¬nh áº£nh khá»i chi tiáº¿t sáº£n pháº©m");
+                return ResponseEntity.ok("Đã xóa hình ảnh khỏi chi tiết sản phẩm");
             }
 
             return ResponseEntity.notFound().build();
@@ -235,8 +235,8 @@ public class HinhAnhController {
     }
 
     /**
-     * API mÃ  frontend Ä‘ang gá»i - ThÃªm hÃ¬nh áº£nh vÃ o chi tiáº¿t sáº£n pháº©m
-     * Frontend gá»i: POST /hinh-anh/chi-tiet-san-pham
+     * API mà frontend đang gọi - Thêm hình ảnh vào chi tiết sản phẩm
+     * Frontend gọi: POST /hinh-anh/chi-tiet-san-pham
      * Body: { "chiTietSanPhamId": 1, "hinhAnhId": 5 }
      */
     @PostMapping("/chi-tiet-san-pham")
@@ -245,25 +245,25 @@ public class HinhAnhController {
             Integer chiTietSanPhamId = (Integer) request.get("chiTietSanPhamId");
             Integer hinhAnhId = (Integer) request.get("hinhAnhId");
 
-            // TÃ¬m chi tiáº¿t sáº£n pháº©m
+            // Tìm chi tiết sản phẩm
             Optional<ChiTietSanPham> chiTietOpt = repoChiTietSanPham.findById(chiTietSanPhamId);
             if (chiTietOpt.isEmpty()) {
-                return ResponseEntity.badRequest().body("Chi tiáº¿t sáº£n pháº©m khÃ´ng tá»“n táº¡i");
+                return ResponseEntity.badRequest().body("Chi tiết sản phẩm không tồn tại");
             }
 
-            // TÃ¬m hÃ¬nh áº£nh
+            // Tìm hình ảnh
             Optional<HinhAnh> hinhAnhOpt = hinhAnhService.getHinhanhById(hinhAnhId);
             if (hinhAnhOpt.isEmpty()) {
-                return ResponseEntity.badRequest().body("HÃ¬nh áº£nh khÃ´ng tá»“n táº¡i");
+                return ResponseEntity.badRequest().body("Hình ảnh không tồn tại");
             }
 
-            // GÃ¡n hÃ¬nh áº£nh cho chi tiáº¿t sáº£n pháº©m
+            // Gán hình ảnh cho chi tiết sản phẩm
             ChiTietSanPham chiTiet = chiTietOpt.get();
             chiTiet.setHinhAnh(hinhAnhOpt.get());
             chiTiet.setNgayCapNhat(new Date());
             repoChiTietSanPham.save(chiTiet);
 
-            return ResponseEntity.ok("ThÃªm hÃ¬nh áº£nh vÃ o chi tiáº¿t sáº£n pháº©m thÃ nh cÃ´ng");
+            return ResponseEntity.ok("Thêm hình ảnh vào chi tiết sản phẩm thành công");
 
         } catch (Exception e) {
             e.printStackTrace();

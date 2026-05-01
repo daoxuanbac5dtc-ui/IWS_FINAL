@@ -13,7 +13,7 @@ public class KichCoResponse {
     private String maKichCo;
     private String tenKichCo;
     private Integer trangThai;
-    private Integer thuTu;          // â† THÃŠM field nÃ y (thá»© tá»± sáº¯p xáº¿p)
-    private Date ngayTao;           // â† THÃŠM field nÃ y
+    private Integer thuTu;          // ← THÊM field này (thứ tự sắp xếp)
+    private Date ngayTao;           // ← THÊM field này
     private Date ngayCapNhat;
 }

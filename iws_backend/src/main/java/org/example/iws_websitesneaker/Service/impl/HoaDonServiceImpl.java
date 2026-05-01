@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,7 +34,7 @@ public class HoaDonServiceImpl implements HoaDonService {
     @Autowired
     private ChiTietVoucherService chiTietVoucherService;
 
-    // CÃ¡c tráº¡ng thÃ¡i khÃ´ng thá»ƒ thay Ä‘á»•i
+    // Các trạng thái không thể thay đổi
     private static final Set<String> FINAL_STATUSES = Set.of("COMPLETED", "CANCELLED", "RETURNED");
     private static final Set<String> PROCESSING_STATUSES = Set.of("PENDING", "CONFIRMED", "SHIPPING");
 
@@ -45,7 +46,7 @@ public class HoaDonServiceImpl implements HoaDonService {
                     .map(this::convertToFullDTO)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            // Fallback náº¿u query custom khÃ´ng hoáº¡t Ä‘á»™ng
+            // Fallback nếu query custom không hoạt động
             return hoaDonRepository.findAll().stream()
                     .sorted((h1, h2) -> h2.getNgayTao().compareTo(h1.getNgayTao()))
                     .map(this::convertToFullDTO)
@@ -101,7 +102,7 @@ public class HoaDonServiceImpl implements HoaDonService {
     @Override
     public HoaDonDTO getHoaDonById(Integer id) {
         HoaDon hoaDon = hoaDonRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n vá»›i ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn với ID: " + id));
         return convertToFullDTO(hoaDon);
     }
 
@@ -112,7 +113,7 @@ public class HoaDonServiceImpl implements HoaDonService {
                     .map(this::convertToFullDTO)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            // Fallback tÃ¬m kiáº¿m Ä‘Æ¡n giáº£n
+            // Fallback tìm kiếm đơn giản
             return hoaDonRepository.findAll().stream()
                     .filter(h -> {
                         boolean keywordMatch = keyword == null || keyword.isEmpty() ||
@@ -138,9 +139,9 @@ public class HoaDonServiceImpl implements HoaDonService {
     @Override
     public HoaDonDTO updateStatus(Integer id, InvoiceStatusUpdateRequest request) {
         HoaDon hoaDon = hoaDonRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
-        // Kiá»ƒm tra logic chuyá»ƒn tráº¡ng thÃ¡i
+        // Kiểm tra logic chuyển trạng thái
         validateStatusTransition(hoaDon.getTrangThaiHoaDon(), request.getTrangThai());
 
         String oldStatus = hoaDon.getTrangThaiHoaDon();
@@ -148,12 +149,12 @@ public class HoaDonServiceImpl implements HoaDonService {
         hoaDon.setGhiChu(request.getGhiChu());
         hoaDon.setNgayCapNhat(new Date());
 
-        // Cáº­p nháº­t ngÃ y theo tráº¡ng thÃ¡i
+        // Cập nhật ngày theo trạng thái
         updateStatusDates(hoaDon, request.getTrangThai());
 
         HoaDon saved = hoaDonRepository.save(hoaDon);
 
-        // LÆ°u lá»‹ch sá»­ thay Ä‘á»•i
+        // Lưu lịch sử thay đổi
         saveStatusHistory(saved, oldStatus, request.getTrangThai(), request.getNhanVienId(), request.getGhiChu());
 
         return convertToFullDTO(saved);
@@ -162,10 +163,10 @@ public class HoaDonServiceImpl implements HoaDonService {
     @Override
     public HoaDonDTO confirmInvoice(Integer id, Integer nhanVienId) {
         HoaDon hoaDon = hoaDonRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
         if (!canConfirm(hoaDon.getTrangThaiHoaDon())) {
-            throw new RuntimeException("KhÃ´ng thá»ƒ xÃ¡c nháº­n hÃ³a Ä‘Æ¡n á»Ÿ tráº¡ng thÃ¡i: " + hoaDon.getTrangThaiHoaDon());
+            throw new RuntimeException("Không thể xác nhận hóa đơn ở trạng thái: " + hoaDon.getTrangThaiHoaDon());
         }
 
         String oldStatus = hoaDon.getTrangThaiHoaDon();
@@ -174,7 +175,7 @@ public class HoaDonServiceImpl implements HoaDonService {
         hoaDon.setNgayCapNhat(new Date());
 
         HoaDon saved = hoaDonRepository.save(hoaDon);
-        saveStatusHistory(saved, oldStatus, "CONFIRMED", nhanVienId, "XÃ¡c nháº­n Ä‘Æ¡n hÃ ng");
+        saveStatusHistory(saved, oldStatus, "CONFIRMED", nhanVienId, "Xác nhận đơn hàng");
 
         return convertToFullDTO(saved);
     }
@@ -182,10 +183,10 @@ public class HoaDonServiceImpl implements HoaDonService {
     @Override
     public HoaDonDTO cancelInvoice(Integer id, String lyDo, Integer nhanVienId) {
         HoaDon hoaDon = hoaDonRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
         if (!canCancel(hoaDon.getTrangThaiHoaDon())) {
-            throw new RuntimeException("KhÃ´ng thá»ƒ há»§y hÃ³a Ä‘Æ¡n á»Ÿ tráº¡ng thÃ¡i: " + hoaDon.getTrangThaiHoaDon());
+            throw new RuntimeException("Không thể hủy hóa đơn ở trạng thái: " + hoaDon.getTrangThaiHoaDon());
         }
 
         String oldStatus = hoaDon.getTrangThaiHoaDon();
@@ -193,7 +194,7 @@ public class HoaDonServiceImpl implements HoaDonService {
         hoaDon.setGhiChu(lyDo);
         hoaDon.setNgayCapNhat(new Date());
 
-        // HoÃ n láº¡i sá»‘ lÆ°á»£ng sáº£n pháº©m
+        // Hoàn lại số lượng sản phẩm
         restoreProductQuantity(hoaDon.getId());
 
         HoaDon saved = hoaDonRepository.save(hoaDon);
@@ -205,10 +206,10 @@ public class HoaDonServiceImpl implements HoaDonService {
     @Override
     public HoaDonDTO completeInvoice(Integer id, Integer nhanVienId) {
         HoaDon hoaDon = hoaDonRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
         if (!canComplete(hoaDon.getTrangThaiHoaDon())) {
-            throw new RuntimeException("KhÃ´ng thá»ƒ hoÃ n thÃ nh hÃ³a Ä‘Æ¡n á»Ÿ tráº¡ng thÃ¡i: " + hoaDon.getTrangThaiHoaDon());
+            throw new RuntimeException("Không thể hoàn thành hóa đơn ở trạng thái: " + hoaDon.getTrangThaiHoaDon());
         }
 
         String oldStatus = hoaDon.getTrangThaiHoaDon();
@@ -217,33 +218,33 @@ public class HoaDonServiceImpl implements HoaDonService {
         hoaDon.setNgayCapNhat(new Date());
 
         HoaDon saved = hoaDonRepository.save(hoaDon);
-        saveStatusHistory(saved, oldStatus, "COMPLETED", nhanVienId, "HoÃ n thÃ nh Ä‘Æ¡n hÃ ng");
+        saveStatusHistory(saved, oldStatus, "COMPLETED", nhanVienId, "Hoàn thành đơn hàng");
 
         return convertToFullDTO(saved);
     }
 
-    // Thay tháº¿ method getInvoiceStatistics() trong HoaDonServiceImpl
+    // Thay thế method getInvoiceStatistics() trong HoaDonServiceImpl
 
     @Override
     public Map<String, Object> getInvoiceStatistics() {
         try {
             Long totalInvoices = hoaDonRepository.count();
-            Long completedInvoices = hoaDonRepository.countByTrangThaiHoaDon("COMPLETED");
+            Long completedInvoices = hoaDonRepository.countCompletedInvoices();
             Long cancelledInvoices = hoaDonRepository.countByTrangThaiHoaDon("CANCELLED");
             Long pendingInvoices = hoaDonRepository.countByTrangThaiHoaDon("PENDING");
             Long confirmedInvoices = hoaDonRepository.countByTrangThaiHoaDon("CONFIRMED");
             Long shippingInvoices = hoaDonRepository.countByTrangThaiHoaDon("SHIPPING");
 
-            // Tá»•ng doanh thu tá»« Ä‘Æ¡n hÃ ng hoÃ n thÃ nh
+            // Tổng doanh thu từ đơn hàng hoàn thành
             Double totalRevenue = hoaDonRepository.sumTotalAmountByStatus("COMPLETED");
 
-            // Doanh thu thÃ¡ng nÃ y
+            // Doanh thu tháng này
             Calendar cal = Calendar.getInstance();
             int currentYear = cal.get(Calendar.YEAR);
             int currentMonth = cal.get(Calendar.MONTH) + 1;
             Double monthlyRevenue = hoaDonRepository.sumMonthlyRevenue(currentYear, currentMonth);
 
-            // âœ… Sá»¬A: Doanh thu hÃ´m nay sá»­ dá»¥ng startOfDay vÃ  endOfDay
+            // ✅ SỬA: Doanh thu hôm nay sử dụng startOfDay và endOfDay
             Double dailyRevenue = getDailyRevenueToday();
 
             return Map.of(
@@ -258,8 +259,8 @@ public class HoaDonServiceImpl implements HoaDonService {
                     "doanhThuHomNay", dailyRevenue != null ? dailyRevenue : 0.0
             );
         } catch (Exception e) {
-            // Log lá»—i Ä‘á»ƒ debug
-            System.err.println("Lá»—i khi tÃ­nh thá»‘ng kÃª: " + e.getMessage());
+            // Log lỗi để debug
+            System.err.println("Lỗi khi tính thống kê: " + e.getMessage());
             e.printStackTrace();
 
             // Fallback statistics
@@ -285,49 +286,49 @@ public class HoaDonServiceImpl implements HoaDonService {
         }
     }
 
-    // âœ… THÃŠM method helper Ä‘á»ƒ tÃ­nh doanh thu hÃ´m nay
+    // ✅ THÊM method helper để tính doanh thu hôm nay
     private Double getDailyRevenueToday() {
         try {
             Calendar cal = Calendar.getInstance();
 
-            // Äáº·t vá» Ä‘áº§u ngÃ y (00:00:00)
+            // Đặt về đầu ngày (00:00:00)
             cal.set(Calendar.HOUR_OF_DAY, 0);
             cal.set(Calendar.MINUTE, 0);
             cal.set(Calendar.SECOND, 0);
             cal.set(Calendar.MILLISECOND, 0);
             Date startOfDay = cal.getTime();
 
-            // Äáº·t vá» cuá»‘i ngÃ y (23:59:59) hoáº·c Ä‘áº§u ngÃ y hÃ´m sau
+            // Đặt về cuối ngày (23:59:59) hoặc đầu ngày hôm sau
             cal.add(Calendar.DAY_OF_MONTH, 1);
             Date endOfDay = cal.getTime();
 
             return hoaDonRepository.sumDailyRevenue(startOfDay, endOfDay);
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ­nh doanh thu hÃ´m nay: " + e.getMessage());
+            System.err.println("Lỗi tính doanh thu hôm nay: " + e.getMessage());
             return 0.0;
         }
     }
 
-    // âœ… THÃŠM method tiá»‡n Ã­ch Ä‘á»ƒ láº¥y doanh thu theo ngÃ y cá»¥ thá»ƒ
+    // ✅ THÊM method tiện ích để lấy doanh thu theo ngày cụ thể
     public Double getDailyRevenueByDate(Date date) {
         try {
             Calendar cal = Calendar.getInstance();
             cal.setTime(date);
 
-            // Äáº·t vá» Ä‘áº§u ngÃ y
+            // Đặt về đầu ngày
             cal.set(Calendar.HOUR_OF_DAY, 0);
             cal.set(Calendar.MINUTE, 0);
             cal.set(Calendar.SECOND, 0);
             cal.set(Calendar.MILLISECOND, 0);
             Date startOfDay = cal.getTime();
 
-            // Cuá»‘i ngÃ y
+            // Cuối ngày
             cal.add(Calendar.DAY_OF_MONTH, 1);
             Date endOfDay = cal.getTime();
 
             return hoaDonRepository.sumDailyRevenue(startOfDay, endOfDay);
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ­nh doanh thu ngÃ y " + date + ": " + e.getMessage());
+            System.err.println("Lỗi tính doanh thu ngày " + date + ": " + e.getMessage());
             return 0.0;
         }
     }
@@ -343,6 +344,24 @@ public class HoaDonServiceImpl implements HoaDonService {
     public Optional<HoaDon> findByEmailAndMaHoaDon(String email, String maHoaDon) {
         return hoaDonRepository.findByEmailAndMaHoaDon(email, maHoaDon);
     }
+
+    private String normalizeInvoiceStatus(String trangThai) {
+        if (trangThai == null || trangThai.isBlank()) {
+            return "";
+        }
+
+        String normalized = Normalizer.normalize(trangThai.trim().toUpperCase(), Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .replace('\u0110', 'D')
+                .replaceAll("[^A-Z0-9]+", "_")
+                .replaceAll("^_+|_+$", "");
+
+        return switch (normalized) {
+            case "DA_THANH_TOAN", "HOAN_THANH" -> "COMPLETED";
+            default -> normalized;
+        };
+    }
+
     @Override
     public OrderTrackingResponse getTrackingResponse(String email, String orderCode) {
         HoaDon order = hoaDonRepository.findByEmailAndMaHoaDon(email, orderCode)
@@ -357,33 +376,33 @@ public class HoaDonServiceImpl implements HoaDonService {
     @Override
     public HoaDon save(HoaDon hoaDon) {
         try {
-            // Validation cÆ¡ báº£n
+            // Validation cơ bản
             if (hoaDon.getTenNguoiDung() == null || hoaDon.getTenNguoiDung().trim().isEmpty()) {
-                throw new IllegalArgumentException("TÃªn ngÆ°á»i dÃ¹ng khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+                throw new IllegalArgumentException("Tên người dùng không được để trống");
             }
 
             if (hoaDon.getEmail() == null || hoaDon.getEmail().trim().isEmpty()) {
-                throw new IllegalArgumentException("Email khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+                throw new IllegalArgumentException("Email không được để trống");
             }
 
             if (hoaDon.getSdt() == null || hoaDon.getSdt().trim().isEmpty()) {
-                throw new IllegalArgumentException("Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+                throw new IllegalArgumentException("Số điện thoại không được để trống");
             }
 
             if (hoaDon.getDiaChi() == null || hoaDon.getDiaChi().trim().isEmpty()) {
-                throw new IllegalArgumentException("Äá»‹a chá»‰ khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+                throw new IllegalArgumentException("Địa chỉ không được để trống");
             }
 
-            // Náº¿u lÃ  táº¡o má»›i (id = null), set ngÃ y táº¡o
+            // Nếu là tạo mới (id = null), set ngày tạo
             if (hoaDon.getId() == null) {
                 hoaDon.setNgayTao(new Date());
             }
 
-            // LÆ°u vÃ o database
+            // Lưu vào database
             return hoaDonRepository.save(hoaDon);
 
         } catch (Exception e) {
-            throw new RuntimeException("Lá»—i khi lÆ°u hÃ³a Ä‘Æ¡n: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi khi lưu hóa đơn: " + e.getMessage(), e);
         }
     }
     // =================== PRIVATE HELPER METHODS ===================
@@ -428,7 +447,7 @@ public class HoaDonServiceImpl implements HoaDonService {
                     item.setCode(ctsp.getSanPham().getMaSanPham());
                 }
 
-                // Æ¯u tiÃªn láº¥y áº£nh tá»« ChiTietSanPham.hinhAnh
+                // Ưu tiên lấy ảnh từ ChiTietSanPham.hinhAnh
                 if (ctsp.getHinhAnh() != null) {
                     item.setImage(buildImageUrl(ctsp.getHinhAnh().getDuongDan()));
                 } else {
@@ -457,7 +476,7 @@ public class HoaDonServiceImpl implements HoaDonService {
         if (imagePath.startsWith("http")) {
             return imagePath;
         }
-        // DB lÆ°u kiá»ƒu: /hinh-anh/images/xxx.png
+        // DB lưu kiểu: /hinh-anh/images/xxx.png
         return "http://localhost:8080" + (imagePath.startsWith("/") ? "" : "/") + imagePath;
     }
 
@@ -465,7 +484,7 @@ public class HoaDonServiceImpl implements HoaDonService {
     private HoaDonDTO convertToFullDTO(HoaDon hoaDon) {
         HoaDonDTO dto = new HoaDonDTO();
 
-        // ThÃ´ng tin cÆ¡ báº£n (existing code)...
+        // Thông tin cơ bản (existing code)...
         dto.setId(hoaDon.getId());
         dto.setMaHoaDon(hoaDon.getMaHoaDon());
         dto.setTenKhachHang(hoaDon.getKhachHang() != null ?
@@ -478,31 +497,31 @@ public class HoaDonServiceImpl implements HoaDonService {
         dto.setPhuongThucThanhToan(hoaDon.getPhuongThucThanhToan());
         dto.setGhiChu(hoaDon.getGhiChu());
 
-        // ThÃ´ng tin thá»i gian (existing code)...
+        // Thông tin thời gian (existing code)...
         dto.setNgayTao(hoaDon.getNgayTao());
         dto.setNgayXacNhan(hoaDon.getNgayXacNhan());
         dto.setNgayGiaoHang(hoaDon.getNgayGiaoHang());
         dto.setNgayHoanThanh(hoaDon.getNgayHoanThanh());
         dto.setNgayCapNhat(hoaDon.getNgayCapNhat());
 
-        // Láº¥y chi tiáº¿t sáº£n pháº©m (existing code)...
+        // Lấy chi tiết sản phẩm (existing code)...
         List<HoaDonChiTietDTO> chiTietList = getChiTietList(hoaDon.getId());
         dto.setChiTietList(chiTietList);
 
-        // âœ… THÃŠM: Láº¥y vÃ  set thÃ´ng tin voucher chi tiáº¿t
+        // ✅ THÊM: Lấy và set thông tin voucher chi tiết
         loadDetailedVoucherInfo(dto, hoaDon);
 
-        // TÃ­nh toÃ¡n tiá»n (existing code)...
+        // Tính toán tiền (existing code)...
         calculateInvoiceAmounts(dto, hoaDon, chiTietList);
 
-        // Load thÃ´ng tin khÃ¡c (existing code)...
+        // Load thông tin khác (existing code)...
         loadReturnDetails(dto, hoaDon);
 
-        // Thá»‘ng kÃª (existing code)...
+        // Thống kê (existing code)...
         dto.setSoLuongSanPham(chiTietList.size());
         dto.setTongSoLuong(chiTietList.stream().mapToInt(HoaDonChiTietDTO::getSoLuong).sum());
 
-        // Tráº¡ng thÃ¡i cÃ³ thá»ƒ thay Ä‘á»•i (existing code)...
+        // Trạng thái có thể thay đổi (existing code)...
         setStatusChangeability(dto, hoaDon.getTrangThaiHoaDon());
 
         return dto;
@@ -510,12 +529,12 @@ public class HoaDonServiceImpl implements HoaDonService {
 
     private void loadDetailedVoucherInfo(HoaDonDTO dto, HoaDon hoaDon) {
         try {
-            // Láº¥y danh sÃ¡ch chi tiáº¿t voucher
+            // Lấy danh sách chi tiết voucher
             List<ChiTietVoucherDTO> chiTietVoucherList = chiTietVoucherService.findByHoaDonId(hoaDon.getId());
             dto.setChiTietVoucherList(chiTietVoucherList);
 
             if (!chiTietVoucherList.isEmpty()) {
-                // TÃ­nh tá»•ng tiáº¿t kiá»‡m tá»« táº¥t cáº£ voucher
+                // Tính tổng tiết kiệm từ tất cả voucher
                 BigDecimal tongTienVoucherChiTiet = chiTietVoucherList.stream()
                         .map(ChiTietVoucherDTO::getSoTienGiam)
                         .filter(Objects::nonNull)
@@ -523,7 +542,7 @@ public class HoaDonServiceImpl implements HoaDonService {
 
                 dto.setTongTienVoucherChiTiet(tongTienVoucherChiTiet);
 
-                // Set thÃ´ng tin voucher chÃ­nh (voucher Ä‘áº§u tiÃªn hoáº·c cÃ³ giÃ¡ trá»‹ lá»›n nháº¥t)
+                // Set thông tin voucher chính (voucher đầu tiên hoặc có giá trị lớn nhất)
                 ChiTietVoucherDTO voucherChinh = chiTietVoucherList.stream()
                         .max(Comparator.comparing(v -> v.getSoTienGiam() != null ? v.getSoTienGiam() : BigDecimal.ZERO))
                         .orElse(chiTietVoucherList.get(0));
@@ -533,10 +552,10 @@ public class HoaDonServiceImpl implements HoaDonService {
                 dto.setLoaiVoucher(voucherChinh.getLoaiGiamGia());
                 dto.setGiaTriVoucher(BigDecimal.valueOf(voucherChinh.getGiaTriGiam() != null ? voucherChinh.getGiaTriGiam() : 0));
 
-                // Thá»‘ng kÃª voucher
+                // Thống kê voucher
                 dto.setSoLuongVoucherDaApDung(chiTietVoucherList.size());
 
-                // PhÃ¢n loáº¡i voucher theo loáº¡i
+                // Phân loại voucher theo loại
                 Map<String, Integer> thongKeVoucherTheoLoai = chiTietVoucherList.stream()
                         .collect(Collectors.groupingBy(
                                 ChiTietVoucherDTO::getLoaiGiamGia,
@@ -544,7 +563,7 @@ public class HoaDonServiceImpl implements HoaDonService {
                         ));
                 dto.setThongKeVoucherTheoLoai(thongKeVoucherTheoLoai);
 
-                // TÃ­nh % tiáº¿t kiá»‡m tá»« voucher
+                // Tính % tiết kiệm từ voucher
                 if (dto.getTongTien() != null && dto.getTongTien().compareTo(BigDecimal.ZERO) > 0) {
                     double phanTramTietKiemVoucher = tongTienVoucherChiTiet
                             .divide(dto.getTongTien(), 4, RoundingMode.HALF_UP)
@@ -556,7 +575,7 @@ public class HoaDonServiceImpl implements HoaDonService {
                 }
 
             } else {
-                // KhÃ´ng cÃ³ voucher - set giÃ¡ trá»‹ máº·c Ä‘á»‹nh
+                // Không có voucher - set giá trị mặc định
                 dto.setChiTietVoucherList(new ArrayList<>());
                 dto.setTongTienVoucherChiTiet(BigDecimal.ZERO);
                 dto.setSoLuongVoucherDaApDung(0);
@@ -565,10 +584,10 @@ public class HoaDonServiceImpl implements HoaDonService {
             }
 
         } catch (Exception e) {
-            // Log lá»—i nhÆ°ng khÃ´ng lÃ m fail
-            System.err.println("Lá»—i load thÃ´ng tin voucher chi tiáº¿t cho hÃ³a Ä‘Æ¡n " + hoaDon.getId() + ": " + e.getMessage());
+            // Log lỗi nhưng không làm fail
+            System.err.println("Lỗi load thông tin voucher chi tiết cho hóa đơn " + hoaDon.getId() + ": " + e.getMessage());
 
-            // Set giÃ¡ trá»‹ máº·c Ä‘á»‹nh
+            // Set giá trị mặc định
             dto.setChiTietVoucherList(new ArrayList<>());
             dto.setTongTienVoucherChiTiet(BigDecimal.ZERO);
             dto.setSoLuongVoucherDaApDung(0);
@@ -619,59 +638,59 @@ public class HoaDonServiceImpl implements HoaDonService {
             dto.setKichThuoc(ctsp.getKichCo() != null ? ctsp.getKichCo().getTenKichCo() : "N/A");
         }
 
-        // TÃ­nh toÃ¡n cÃ¡c giÃ¡ trá»‹
+        // Tính toán các giá trị
         dto.calculateValues();
 
         return dto;
     }
 
     private void calculateInvoiceAmounts(HoaDonDTO dto, HoaDon hoaDon, List<HoaDonChiTietDTO> chiTietList) {
-        // TÃ­nh tá»•ng tiá»n gá»‘c (trÆ°á»›c khi cÃ³ báº¥t ká»³ giáº£m giÃ¡ nÃ o)
+        // Tính tổng tiền gốc (trước khi có bất kỳ giảm giá nào)
         BigDecimal tongTienGoc = chiTietList.stream()
                 .map(item -> BigDecimal.valueOf(item.getGiaGoc() != null ? item.getGiaGoc() : item.getGiaBan())
                         .multiply(BigDecimal.valueOf(item.getSoLuong())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Tá»•ng tiá»n hiá»‡n táº¡i (Ä‘Ã£ tÃ­nh khuyáº¿n mÃ£i sáº£n pháº©m)
+        // Tổng tiền hiện tại (đã tính khuyến mãi sản phẩm)
         BigDecimal tongTienHienTai = chiTietList.stream()
                 .map(HoaDonChiTietDTO::getThanhTien)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Tá»•ng tiá»n giáº£m tá»« khuyáº¿n mÃ£i sáº£n pháº©m
+        // Tổng tiền giảm từ khuyến mãi sản phẩm
         BigDecimal tongTienGiamGia = tongTienGoc.subtract(tongTienHienTai);
 
-        // Set phÃ­ váº­n chuyá»ƒn
+        // Set phí vận chuyển
         BigDecimal phiVanChuyen = hoaDon.getPhiVanChuyen() != null ? hoaDon.getPhiVanChuyen() : BigDecimal.ZERO;
 
         dto.setTongTienGoc(tongTienGoc);
         dto.setTongTienGiamGia(tongTienGiamGia);
         dto.setPhiVanChuyen(phiVanChuyen);
 
-        // TÃ­nh tá»•ng tiá»n = tiá»n sáº£n pháº©m + phÃ­ váº­n chuyá»ƒn
+        // Tính tổng tiền = tiền sản phẩm + phí vận chuyển
         BigDecimal tongTien = tongTienHienTai.add(phiVanChuyen);
         dto.setTongTien(hoaDon.getTongTien() != null ? hoaDon.getTongTien() : tongTien);
 
-        // TÃNH Tá»”NG THANH TOÃN (Tá»•ng tiá»n - Voucher - Äiá»ƒm)
+        // TÍNH TỔNG THANH TOÁN (Tổng tiền - Voucher - Điểm)
         BigDecimal tongThanhToan = dto.getTongTien();
 
-        // Trá»« voucher
+        // Trừ voucher
         if (dto.getTongTienVoucherChiTiet() != null && dto.getTongTienVoucherChiTiet().compareTo(BigDecimal.ZERO) > 0) {
             tongThanhToan = tongThanhToan.subtract(dto.getTongTienVoucherChiTiet());
         }
 
-        // Trá»« Ä‘iá»ƒm
+        // Trừ điểm
         BigDecimal giaTriDiem = BigDecimal.ZERO;
         if (hoaDon.getGiaTriDiem() != null && hoaDon.getGiaTriDiem() > 0) {
             giaTriDiem = BigDecimal.valueOf(hoaDon.getGiaTriDiem());
             tongThanhToan = tongThanhToan.subtract(giaTriDiem);
         }
 
-        // Äáº£m báº£o tá»•ng thanh toÃ¡n khÃ´ng Ã¢m
+        // Đảm bảo tổng thanh toán không âm
         if (tongThanhToan.compareTo(BigDecimal.ZERO) < 0) {
             tongThanhToan = BigDecimal.ZERO;
         }
 
-        // Set giÃ¡ trá»‹ cuá»‘i cÃ¹ng
+        // Set giá trị cuối cùng
         dto.setTongThanhToan(hoaDon.getTongThanhToan() != null ? hoaDon.getTongThanhToan() : tongThanhToan);
         dto.setTienDiem(giaTriDiem);
         dto.setGiaTriDiem(hoaDon.getGiaTriDiem());
@@ -679,7 +698,7 @@ public class HoaDonServiceImpl implements HoaDonService {
     }
 
     private void loadVoucherAndPointInfo(HoaDonDTO dto, HoaDon hoaDon) {
-        // ThÃ´ng tin voucher
+        // Thông tin voucher
         chiTietVoucherRepository.findByHoaDonId(hoaDon.getId()).stream().findFirst()
                 .ifPresent(ctv -> {
                     dto.setTenVoucher(ctv.getVoucher().getTenVoucher());
@@ -688,7 +707,7 @@ public class HoaDonServiceImpl implements HoaDonService {
                     dto.setTongTienVoucher(ctv.getThanhTien());
                 });
 
-        // ThÃ´ng tin Ä‘iá»ƒm
+        // Thông tin điểm
         dto.setDiemSuDung(hoaDon.getDiemSuDung() != null ? hoaDon.getDiemSuDung() : 0);
         dto.setTienDiem(hoaDon.getGiaTriDiem() != null ?
                 BigDecimal.valueOf(hoaDon.getGiaTriDiem()) : BigDecimal.ZERO);
@@ -704,12 +723,12 @@ public class HoaDonServiceImpl implements HoaDonService {
 
     private void validateStatusTransition(String fromStatus, String toStatus) {
         if (FINAL_STATUSES.contains(fromStatus)) {
-            throw new RuntimeException("KhÃ´ng thá»ƒ thay Ä‘á»•i tráº¡ng thÃ¡i tá»« " + fromStatus);
+            throw new RuntimeException("Không thể thay đổi trạng thái từ " + fromStatus);
         }
 
-        // Kiá»ƒm tra logic chuyá»ƒn tráº¡ng thÃ¡i há»£p lá»‡
+        // Kiểm tra logic chuyển trạng thái hợp lệ
         if (!isValidTransition(fromStatus, toStatus)) {
-            throw new RuntimeException("KhÃ´ng thá»ƒ chuyá»ƒn tá»« tráº¡ng thÃ¡i " + fromStatus + " sang " + toStatus);
+            throw new RuntimeException("Không thể chuyển từ trạng thái " + fromStatus + " sang " + toStatus);
         }
     }
 
@@ -750,7 +769,7 @@ public class HoaDonServiceImpl implements HoaDonService {
                 lichSu.setNhanVien(nhanVien);
             }
 
-            lichSu.setMoTaHanhDong(String.format("Chuyá»ƒn tá»« %s sang %s: %s",
+            lichSu.setMoTaHanhDong(String.format("Chuyển từ %s sang %s: %s",
                     oldStatus, newStatus, ghiChu != null ? ghiChu : ""));
             lichSu.setTrangThaiHoaDon(newStatus);
             lichSu.setNgayTao(new Date());
@@ -758,8 +777,8 @@ public class HoaDonServiceImpl implements HoaDonService {
 
             lichSuHoaDonRepository.save(lichSu);
         } catch (Exception e) {
-            // Log error nhÆ°ng khÃ´ng lÃ m fail transaction
-            System.err.println("Lá»—i lÆ°u lá»‹ch sá»­: " + e.getMessage());
+            // Log error nhưng không làm fail transaction
+            System.err.println("Lỗi lưu lịch sử: " + e.getMessage());
         }
     }
 
@@ -770,7 +789,7 @@ public class HoaDonServiceImpl implements HoaDonService {
                 ChiTietSanPham ctsp = chiTiet.getChiTietSanPham();
                 if (ctsp != null) {
                     ctsp.setSoLuong(ctsp.getSoLuong() + chiTiet.getSoLuong());
-                    // Cáº­p nháº­t tá»•ng sá»‘ lÆ°á»£ng sáº£n pháº©m
+                    // Cập nhật tổng số lượng sản phẩm
                     SanPham sanPham = ctsp.getSanPham();
                     if (sanPham != null) {
                         sanPham.setSoLuong(sanPham.getSoLuong() + chiTiet.getSoLuong());
@@ -778,7 +797,7 @@ public class HoaDonServiceImpl implements HoaDonService {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Lá»—i hoÃ n láº¡i sá»‘ lÆ°á»£ng: " + e.getMessage());
+            System.err.println("Lỗi hoàn lại số lượng: " + e.getMessage());
         }
     }
 
@@ -787,7 +806,7 @@ public class HoaDonServiceImpl implements HoaDonService {
         dto.setId(lichSu.getId());
         dto.setMoTaHanhDong(lichSu.getMoTaHanhDong());
         dto.setTrangThaiHoaDon(lichSu.getTrangThaiHoaDon());
-        dto.setTenNhanVien(lichSu.getNhanVien() != null ? lichSu.getNhanVien().getHoTen() : "Há»‡ thá»‘ng");
+        dto.setTenNhanVien(lichSu.getNhanVien() != null ? lichSu.getNhanVien().getHoTen() : "Hệ thống");
         dto.setNhanVienId(lichSu.getNhanVien() != null ? lichSu.getNhanVien().getId() : null);
         dto.setNgayTao(lichSu.getNgayTao());
         return dto;
@@ -819,7 +838,7 @@ public class HoaDonServiceImpl implements HoaDonService {
     @Override
     public HoaDonDTO updateStatus(Integer id, StatusUpdateRequest request) {
         HoaDon hoaDon = hoaDonRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
         hoaDon.setTrangThaiHoaDon(request.getTrangThai());
         hoaDon.setGhiChu(request.getGhiChu());
@@ -832,7 +851,7 @@ public class HoaDonServiceImpl implements HoaDonService {
     @Override
     public HoaDonDTO confirmInvoice(Integer id) {
         HoaDon hoaDon = hoaDonRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
         hoaDon.setTrangThaiHoaDon("CONFIRMED");
         hoaDon.setNgayXacNhan(new Date());
@@ -845,7 +864,7 @@ public class HoaDonServiceImpl implements HoaDonService {
     @Override
     public HoaDonDTO completeInvoice(Integer id) {
         HoaDon hoaDon = hoaDonRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
         hoaDon.setTrangThaiHoaDon("COMPLETED");
         hoaDon.setNgayHoanThanh(new Date());
@@ -858,7 +877,7 @@ public class HoaDonServiceImpl implements HoaDonService {
     @Override
     public HoaDonDTO cancelInvoice(Integer id, String lyDo) {
         HoaDon hoaDon = hoaDonRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
 
         hoaDon.setTrangThaiHoaDon("CANCELLED");
         hoaDon.setGhiChu(lyDo);
@@ -872,7 +891,7 @@ public class HoaDonServiceImpl implements HoaDonService {
     public List<HoaDonDTO> getHoaDonsByKhachHangId(Integer khachHangId) {
         return hoaDonRepository.findByKhachHangId(khachHangId).stream()
                 .map(this::convertToDTO)
-                .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // Sáº¯p xáº¿p má»›i nháº¥t trÆ°á»›c
+                .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // Sắp xếp mới nhất trước
                 .collect(Collectors.toList());
     }
 
@@ -891,10 +910,10 @@ public class HoaDonServiceImpl implements HoaDonService {
             // 1. Validate request data
             validateCreateHoaDonRequest(request);
 
-            // 2. Kiá»ƒm tra tá»“n kho TRÆ¯á»šC KHI táº¡o Ä‘Æ¡n
+            // 2. Kiểm tra tồn kho TRƯỚC KHI tạo đơn
             validateProductStock(request.getChiTietSanPham());
 
-            // 3. Validate vÃ  láº¥y voucher náº¿u cÃ³
+            // 3. Validate và lấy voucher nếu có
             Voucher voucher = null;
             if (request.getVoucherId() != null) {
                 voucher = validateAndGetVoucher(request.getVoucherId(), request.getTongTien());
@@ -902,10 +921,10 @@ public class HoaDonServiceImpl implements HoaDonService {
 
             HoaDon hoaDon = new HoaDon();
 
-            // 4. Set khÃ¡ch hÃ ng - Xá»­ lÃ½ cáº£ user vÃ  guest
+            // 4. Set khách hàng - Xử lý cả user và guest
             if (!isGuestOrder) {
                 KhachHang khachHang = khachHangRepository.findById(request.getKhachHangId())
-                        .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y khÃ¡ch hÃ ng"));
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
                 hoaDon.setKhachHang(khachHang);
                 System.out.println("Order for logged-in user: " + khachHang.getHoTen());
             } else {
@@ -913,14 +932,14 @@ public class HoaDonServiceImpl implements HoaDonService {
                 System.out.println("Guest order for: " + request.getTenNguoiDung());
             }
 
-            // 5. Generate mÃ£ hÃ³a Ä‘Æ¡n (phÃ¢n biá»‡t user vs guest)
+            // 5. Generate mã hóa đơn (phân biệt user vs guest)
             String maHoaDon = request.getMaHoaDon();
             if (maHoaDon == null || maHoaDon.isEmpty()) {
                 maHoaDon = generateMaHoaDon(!isGuestOrder);
             }
             hoaDon.setMaHoaDon(maHoaDon);
 
-            // 6. Set thÃ´ng tin cÆ¡ báº£n theo database columns
+            // 6. Set thông tin cơ bản theo database columns
             hoaDon.setTenNguoiDung(request.getTenNguoiDung());
             hoaDon.setEmail(request.getEmail());
             hoaDon.setSdt(request.getSdt());
@@ -930,35 +949,35 @@ public class HoaDonServiceImpl implements HoaDonService {
             hoaDon.setLoaiHoaDon(request.getLoaiHoaDon());
             hoaDon.setTrangThaiHoaDon(request.getTrangThaiHoaDon());
 
-            // Set Ä‘áº§y Ä‘á»§ thÃ´ng tin tiá»n
+            // Set đầy đủ thông tin tiền
             hoaDon.setTongTien(request.getTongTien());
             hoaDon.setPhiVanChuyen(request.getPhiVanChuyen() != null ? request.getPhiVanChuyen() : BigDecimal.ZERO);
             hoaDon.setTongThanhToan(request.getTongThanhToan());
             hoaDon.setDiemSuDung(request.getDiemSuDung() != null ? request.getDiemSuDung() : 0);
             hoaDon.setGiaTriDiem(request.getGiaTriDiem() != null ? request.getGiaTriDiem() : 0.0);
 
-            // Set ngÃ y
+            // Set ngày
             Date now = new Date();
             hoaDon.setNgayTao(now);
             hoaDon.setNgayCapNhat(now);
-            // CÃ¡c ngÃ y khÃ¡c Ä‘á»ƒ NULL: ngay_xac_nhan, ngay_giao_hang, etc.
+            // Các ngày khác để NULL: ngay_xac_nhan, ngay_giao_hang, etc.
 
-            // 9. LÆ°u hÃ³a Ä‘Æ¡n
+            // 9. Lưu hóa đơn
             HoaDon savedHoaDon = hoaDonRepository.save(hoaDon);
-            System.out.println("HÃ³a Ä‘Æ¡n saved with ID: " + savedHoaDon.getId());
+            System.out.println("Hóa đơn saved with ID: " + savedHoaDon.getId());
 
-            // 10. Táº¡o chi tiáº¿t hÃ³a Ä‘Æ¡n vÃ  trá»« tá»“n kho
+            // 10. Tạo chi tiết hóa đơn và trừ tồn kho
             if (request.getChiTietSanPham() != null && !request.getChiTietSanPham().isEmpty()) {
                 createHoaDonChiTiet(savedHoaDon, request.getChiTietSanPham(), now);
             }
 
-            // 11. Táº¡o chi_tiet_voucher náº¿u cÃ³ voucher (thay vÃ¬ set trá»±c tiáº¿p vÃ o hoa_don)
+            // 11. Tạo chi_tiet_voucher nếu có voucher (thay vì set trực tiếp vào hoa_don)
             if (voucher != null) {
                 createChiTietVoucher(savedHoaDon, voucher, request);
                 updateVoucherQuantity(voucher);
             }
 
-            // 12. LÆ°u lá»‹ch sá»­
+            // 12. Lưu lịch sử
             saveInitialStatusHistory(savedHoaDon, isGuestOrder ? "Guest" : "User");
 
             System.out.println("Order created successfully: " + savedHoaDon.getMaHoaDon());
@@ -966,30 +985,30 @@ public class HoaDonServiceImpl implements HoaDonService {
         } catch (Exception e) {
             System.err.println("Error creating order: " + e.getMessage());
             e.printStackTrace();
-            throw new RuntimeException("KhÃ´ng thá»ƒ táº¡o Ä‘Æ¡n hÃ ng: " + e.getMessage());
+            throw new RuntimeException("Không thể tạo đơn hàng: " + e.getMessage());
         }
     }
 
     private void validateCreateHoaDonRequest(CreateHoaDonRequest request) {
         if (request.getTenNguoiDung() == null || request.getTenNguoiDung().trim().isEmpty()) {
-            throw new IllegalArgumentException("TÃªn ngÆ°á»i dÃ¹ng khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            throw new IllegalArgumentException("Tên người dùng không được để trống");
         }
 
 
         if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
-            throw new IllegalArgumentException("Email khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            throw new IllegalArgumentException("Email không được để trống");
         }
 
         if (request.getSdt() == null || request.getSdt().trim().isEmpty()) {
-            throw new IllegalArgumentException("Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            throw new IllegalArgumentException("Số điện thoại không được để trống");
         }
 
         if (request.getDiaChi() == null || request.getDiaChi().trim().isEmpty()) {
-            throw new IllegalArgumentException("Äá»‹a chá»‰ khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            throw new IllegalArgumentException("Địa chỉ không được để trống");
         }
 
         if (request.getChiTietSanPham() == null || request.getChiTietSanPham().isEmpty()) {
-            throw new IllegalArgumentException("Giá» hÃ ng trá»‘ng");
+            throw new IllegalArgumentException("Giỏ hàng trống");
         }
     }
 
@@ -997,64 +1016,64 @@ public class HoaDonServiceImpl implements HoaDonService {
     private void validateProductStock(List<ChiTietHoaDonRequest> chiTietList) {
         for (ChiTietHoaDonRequest item : chiTietList) {
             ChiTietSanPham ctsp = chiTietSanPhamRepository.findById(item.getIdChiTietSanPham())
-                    .orElseThrow(() -> new RuntimeException("Sáº£n pháº©m khÃ´ng tá»“n táº¡i: " + item.getIdChiTietSanPham()));
+                    .orElseThrow(() -> new RuntimeException("Sản phẩm không tồn tại: " + item.getIdChiTietSanPham()));
 
             if (ctsp.getSoLuong() < item.getSoLuong()) {
-                String productName = ctsp.getSanPham() != null ? ctsp.getSanPham().getTenSanPham() : "Sáº£n pháº©m";
-                throw new RuntimeException(productName + " chá»‰ cÃ²n " + ctsp.getSoLuong() + " sáº£n pháº©m trong kho");
+                String productName = ctsp.getSanPham() != null ? ctsp.getSanPham().getTenSanPham() : "Sản phẩm";
+                throw new RuntimeException(productName + " chỉ còn " + ctsp.getSoLuong() + " sản phẩm trong kho");
             }
         }
     }
 
     private Voucher validateAndGetVoucher(Integer voucherId, BigDecimal tongTien) {
         Voucher voucher = voucherRepository.findById(voucherId)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y voucher"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy voucher"));
 
         Date now = new Date();
 
-        // Kiá»ƒm tra thá»i gian hiá»‡u lá»±c
+        // Kiểm tra thời gian hiệu lực
         if (voucher.getNgayBatDau().after(now)) {
-            throw new RuntimeException("Voucher chÆ°a cÃ³ hiá»‡u lá»±c");
+            throw new RuntimeException("Voucher chưa có hiệu lực");
         }
         if (voucher.getNgayKetThuc().before(now)) {
-            throw new RuntimeException("Voucher Ä‘Ã£ háº¿t háº¡n");
+            throw new RuntimeException("Voucher đã hết hạn");
         }
 
-        // Kiá»ƒm tra tráº¡ng thÃ¡i (1 = active theo database)
+        // Kiểm tra trạng thái (1 = active theo database)
         if (voucher.getTrangThai() != 1) {
-            throw new RuntimeException("Voucher khÃ´ng kháº£ dá»¥ng");
+            throw new RuntimeException("Voucher không khả dụng");
         }
 
-        // Kiá»ƒm tra sá»‘ lÆ°á»£ng
+        // Kiểm tra số lượng
         if (voucher.getSoLuong() <= 0) {
-            throw new RuntimeException("Voucher Ä‘Ã£ háº¿t lÆ°á»£t sá»­ dá»¥ng");
+            throw new RuntimeException("Voucher đã hết lượt sử dụng");
         }
 
-        // Kiá»ƒm tra giÃ¡ trá»‹ tá»‘i thiá»ƒu (FLOAT in database)
+        // Kiểm tra giá trị tối thiểu (FLOAT in database)
         if (tongTien.doubleValue() < voucher.getGiaTriGiamToiThieu()) {
-            throw new RuntimeException("ÄÆ¡n hÃ ng chÆ°a Ä‘áº¡t giÃ¡ trá»‹ tá»‘i thiá»ƒu: " + voucher.getGiaTriGiamToiThieu());
+            throw new RuntimeException("Đơn hàng chưa đạt giá trị tối thiểu: " + voucher.getGiaTriGiamToiThieu());
         }
 
         System.out.println("Voucher validation passed: " + voucher.getMaVoucher());
         return voucher;
     }
 
-    // Helper method: Táº¡o chi_tiet_voucher record
+    // Helper method: Tạo chi_tiet_voucher record
     // Simplified createChiTietVoucher method to match your actual entity
 
     private void createChiTietVoucher(HoaDon hoaDon, Voucher voucher, CreateHoaDonRequest request) {
         try {
             ChiTietVoucher chiTietVoucher = new ChiTietVoucher();
 
-            // Generate mÃ£ chi tiáº¿t voucher
+            // Generate mã chi tiết voucher
             String maChiTietVoucher = generateMaChiTietVoucher();
             chiTietVoucher.setMaChiTietVoucher(maChiTietVoucher);
 
-            // LiÃªn káº¿t vá»›i hÃ³a Ä‘Æ¡n vÃ  voucher
+            // Liên kết với hóa đơn và voucher
             chiTietVoucher.setHoaDon(hoaDon);
             chiTietVoucher.setVoucher(voucher);
 
-            // LÆ°u thÃ´ng tin voucher táº¡i thá»i Ä‘iá»ƒm Ã¡p dá»¥ng
+            // Lưu thông tin voucher tại thời điểm áp dụng
             chiTietVoucher.setMaVoucher(voucher.getMaVoucher());
             chiTietVoucher.setTenVoucher(voucher.getTenVoucher());
             chiTietVoucher.setLoaiGiamGia(voucher.getLoaiGiamGia());
@@ -1062,7 +1081,7 @@ public class HoaDonServiceImpl implements HoaDonService {
             chiTietVoucher.setGiaTriGiamToiDa(voucher.getGiaTriGiamToiDa());
             chiTietVoucher.setGiaTriGiamToiThieu(voucher.getGiaTriGiamToiThieu());
 
-            // ThÃ´ng tin tÃ­nh toÃ¡n
+            // Thông tin tính toán
             BigDecimal giaTriDonHang = request.getTongTien();
             BigDecimal soTienGiam = BigDecimal.valueOf(request.getGiaTriDiem() != null ? request.getGiaTriDiem() : 0);
             BigDecimal thanhTien = request.getTongThanhToan();
@@ -1071,20 +1090,20 @@ public class HoaDonServiceImpl implements HoaDonService {
             chiTietVoucher.setSoTienGiam(soTienGiam);
             chiTietVoucher.setThanhTien(thanhTien);
 
-            // Thá»i gian
+            // Thời gian
             Date now = new Date();
             chiTietVoucher.setNgayApDung(now);
             chiTietVoucher.setNgayTao(now);
             chiTietVoucher.setNgayCapNhat(now);
 
-            // LÆ°u vÃ o database
+            // Lưu vào database
             chiTietVoucherRepository.save(chiTietVoucher);
 
-            System.out.println("Chi tiáº¿t voucher Ä‘Ã£ Ä‘Æ°á»£c táº¡o vá»›i mÃ£: " + maChiTietVoucher);
+            System.out.println("Chi tiết voucher đã được tạo với mã: " + maChiTietVoucher);
 
         } catch (Exception e) {
-            System.err.println("Lá»—i khi táº¡o chi tiáº¿t voucher: " + e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ táº¡o chi tiáº¿t voucher");
+            System.err.println("Lỗi khi tạo chi tiết voucher: " + e.getMessage());
+            throw new RuntimeException("Không thể tạo chi tiết voucher");
         }
     }
 
@@ -1101,11 +1120,11 @@ public class HoaDonServiceImpl implements HoaDonService {
             System.out.println("Updated voucher quantity: " + voucher.getMaVoucher() + " -> " + voucher.getSoLuong());
         } catch (Exception e) {
             System.err.println("Error updating voucher: " + e.getMessage());
-            throw new RuntimeException("KhÃ´ng thá»ƒ cáº­p nháº­t voucher");
+            throw new RuntimeException("Không thể cập nhật voucher");
         }
     }
 
-    // Helper method: Generate mÃ£ hÃ³a Ä‘Æ¡n
+    // Helper method: Generate mã hóa đơn
     private String generateMaHoaDon(boolean isUserOrder) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyMMdd");
         String date = sdf.format(new Date());
@@ -1117,12 +1136,12 @@ public class HoaDonServiceImpl implements HoaDonService {
 
     private void createHoaDonChiTiet(HoaDon hoaDon, List<ChiTietHoaDonRequest> chiTietList, Date now) {
         for (ChiTietHoaDonRequest chiTiet : chiTietList) {
-            // Táº¡o chi tiáº¿t hÃ³a Ä‘Æ¡n
+            // Tạo chi tiết hóa đơn
             HoaDonChiTiet hdct = new HoaDonChiTiet();
             hdct.setHoaDon(hoaDon);
 
             ChiTietSanPham ctsp = chiTietSanPhamRepository.findById(chiTiet.getIdChiTietSanPham())
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y sáº£n pháº©m"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
             hdct.setChiTietSanPham(ctsp);
             hdct.setGia(chiTiet.getGiaBan());
             hdct.setSoLuong(chiTiet.getSoLuong());
@@ -1132,10 +1151,10 @@ public class HoaDonServiceImpl implements HoaDonService {
 
             hoaDonChiTietRepository.save(hdct);
 
-            // Trá»« tá»“n kho
+            // Trừ tồn kho
             updateProductStock(ctsp, chiTiet.getSoLuong());
 
-            System.out.println("âœ… Created detail for product: " + ctsp.getMaChiTiet() +
+            System.out.println("✅ Created detail for product: " + ctsp.getMaChiTiet() +
                     ", quantity: " + chiTiet.getSoLuong());
         }
     }
@@ -1145,16 +1164,16 @@ public class HoaDonServiceImpl implements HoaDonService {
             if (voucher.getSoLuong() > 0) {
                 voucher.setSoLuong(voucher.getSoLuong() - 1);
                 voucherRepository.save(voucher);
-                System.out.println("âœ… Updated voucher usage: " + voucher.getMaVoucher());
+                System.out.println("✅ Updated voucher usage: " + voucher.getMaVoucher());
             }
         } catch (Exception e) {
-            System.err.println("âš ï¸ Warning: Could not update voucher usage: " + e.getMessage());
+            System.err.println("⚠️ Warning: Could not update voucher usage: " + e.getMessage());
         }
     }
 
     private void saveInitialStatusHistory(HoaDon hoaDon, String orderType) {
         try {
-            String description = "Táº¡o Ä‘Æ¡n hÃ ng " + orderType + " - " + hoaDon.getTrangThaiHoaDon();
+            String description = "Tạo đơn hàng " + orderType + " - " + hoaDon.getTrangThaiHoaDon();
             saveStatusHistory(hoaDon, null, hoaDon.getTrangThaiHoaDon(), null, description);
         } catch (Exception e) {
             System.err.println("Warning: Could not save initial status history: " + e.getMessage());
@@ -1164,7 +1183,7 @@ public class HoaDonServiceImpl implements HoaDonService {
     private HoaDonDTO convertToDTO(HoaDon hoaDon) {
         HoaDonDTO dto = new HoaDonDTO();
 
-        // ThÃ´ng tin cÆ¡ báº£n
+        // Thông tin cơ bản
         dto.setId(hoaDon.getId());
         dto.setMaHoaDon(hoaDon.getMaHoaDon());
         dto.setTenKhachHang(hoaDon.getKhachHang() != null ? hoaDon.getKhachHang().getHoTen() : hoaDon.getTenNguoiDung());
@@ -1176,19 +1195,19 @@ public class HoaDonServiceImpl implements HoaDonService {
         dto.setPhuongThucThanhToan(hoaDon.getPhuongThucThanhToan());
         dto.setGhiChu(hoaDon.getGhiChu());
 
-        // ThÃ´ng tin thá»i gian
+        // Thông tin thời gian
         dto.setNgayTao(hoaDon.getNgayTao());
         dto.setNgayXacNhan(hoaDon.getNgayXacNhan());
         dto.setNgayGiaoHang(hoaDon.getNgayGiaoHang());
         dto.setNgayHoanThanh(hoaDon.getNgayHoanThanh());
         dto.setNgayCapNhat(hoaDon.getNgayCapNhat());
 
-        // ThÃ´ng tin liÃªn káº¿t
+        // Thông tin liên kết
         dto.setTenNhanVien(hoaDon.getNhanVien() != null ? hoaDon.getNhanVien().getHoTen() : null);
         dto.setKhachHangId(hoaDon.getKhachHang() != null ? hoaDon.getKhachHang().getId() : null);
         dto.setNhanVienId(hoaDon.getNhanVien() != null ? hoaDon.getNhanVien().getId() : null);
 
-        // ThÃ´ng tin tiá»n cÆ¡ báº£n tá»« entity
+        // Thông tin tiền cơ bản từ entity
         dto.setTongTien(hoaDon.getTongTien());
         dto.setPhiVanChuyen(hoaDon.getPhiVanChuyen() != null ? hoaDon.getPhiVanChuyen() : BigDecimal.ZERO);
         dto.setTongThanhToan(hoaDon.getTongThanhToan());
@@ -1196,7 +1215,7 @@ public class HoaDonServiceImpl implements HoaDonService {
         dto.setGiaTriDiem(hoaDon.getGiaTriDiem());
         dto.setTienDiem(hoaDon.getGiaTriDiem() != null ? BigDecimal.valueOf(hoaDon.getGiaTriDiem()) : BigDecimal.ZERO);
 
-        // Láº¥y chi tiáº¿t Ä‘á»ƒ cÃ³ Ä‘áº§y Ä‘á»§ thÃ´ng tin (optional - chá»‰ khi cáº§n)
+        // Lấy chi tiết để có đầy đủ thông tin (optional - chỉ khi cần)
         try {
             List<HoaDonChiTietDTO> chiTietList = getChiTietList(hoaDon.getId());
             if (chiTietList != null && !chiTietList.isEmpty()) {
@@ -1205,16 +1224,16 @@ public class HoaDonServiceImpl implements HoaDonService {
                 // Load voucher info
                 loadDetailedVoucherInfo(dto, hoaDon);
 
-                // TÃ­nh toÃ¡n láº¡i Ä‘áº§y Ä‘á»§
+                // Tính toán lại đầy đủ
                 calculateInvoiceAmounts(dto, hoaDon, chiTietList);
 
-                // Thá»‘ng kÃª
+                // Thống kê
                 dto.setSoLuongSanPham(chiTietList.size());
                 dto.setTongSoLuong(chiTietList.stream().mapToInt(HoaDonChiTietDTO::getSoLuong).sum());
             }
         } catch (Exception e) {
-            // Log nhÆ°ng khÃ´ng fail - dÃ¹ng thÃ´ng tin cÆ¡ báº£n
-            System.err.println("KhÃ´ng thá»ƒ load chi tiáº¿t cho hÃ³a Ä‘Æ¡n " + hoaDon.getId() + ": " + e.getMessage());
+            // Log nhưng không fail - dùng thông tin cơ bản
+            System.err.println("Không thể load chi tiết cho hóa đơn " + hoaDon.getId() + ": " + e.getMessage());
         }
 
         return dto;
@@ -1224,34 +1243,34 @@ public class HoaDonServiceImpl implements HoaDonService {
         Integer currentStock = ctsp.getSoLuong();
         if (currentStock < quantity) {
             String productName = ctsp.getSanPham() != null ? ctsp.getSanPham().getTenSanPham() : ctsp.getMaChiTiet();
-            throw new RuntimeException("Sáº£n pháº©m " + productName + " khÃ´ng Ä‘á»§ sá»‘ lÆ°á»£ng trong kho");
+            throw new RuntimeException("Sản phẩm " + productName + " không đủ số lượng trong kho");
         }
 
-        // Trá»« tá»“n kho chi tiáº¿t sáº£n pháº©m
+        // Trừ tồn kho chi tiết sản phẩm
         ctsp.setSoLuong(currentStock - quantity);
         chiTietSanPhamRepository.save(ctsp);
 
-        // Cáº­p nháº­t tá»•ng sá»‘ lÆ°á»£ng sáº£n pháº©m náº¿u cÃ³
+        // Cập nhật tổng số lượng sản phẩm nếu có
         if (ctsp.getSanPham() != null) {
             SanPham sanPham = ctsp.getSanPham();
             Integer currentTotalStock = sanPham.getSoLuong();
             if (currentTotalStock != null && currentTotalStock >= quantity) {
                 sanPham.setSoLuong(currentTotalStock - quantity);
-                // Note: Cáº§n inject SanPhamRepository náº¿u muá»‘n save
+                // Note: Cần inject SanPhamRepository nếu muốn save
             }
         }
 
-        System.out.println("âœ… Updated stock for " + ctsp.getMaChiTiet() +
+        System.out.println("✅ Updated stock for " + ctsp.getMaChiTiet() +
                 ": " + currentStock + " -> " + ctsp.getSoLuong());
     }
-    // Method má»›i Ä‘á»ƒ load thÃ´ng tin tráº£ hÃ ng
+    // Method mới để load thông tin trả hàng
     private void loadReturnDetails(HoaDonDTO dto, HoaDon hoaDon) {
         try {
-            // Láº¥y danh sÃ¡ch chi tiáº¿t tráº£ hÃ ng
+            // Lấy danh sách chi tiết trả hàng
             List<ChiTietTraHangDTO> chiTietTraHangList = chiTietTraHangService.getChiTietTraHangByHoaDon(hoaDon.getId());
             dto.setChiTietTraHangList(chiTietTraHangList);
 
-            // TÃ­nh thá»‘ng kÃª tráº£ hÃ ng
+            // Tính thống kê trả hàng
             if (!chiTietTraHangList.isEmpty()) {
                 Map<String, Object> returnStats = chiTietTraHangService.getReturnStatistics(hoaDon.getId());
 
@@ -1262,7 +1281,7 @@ public class HoaDonServiceImpl implements HoaDonService {
                 dto.setSoLuongTraHangDaXuLy(((Long) returnStats.get("soLuongDaXuLy")).intValue());
                 dto.setSoLuongTraHangTuChoi(((Long) returnStats.get("soLuongTuChoi")).intValue());
             } else {
-                // Khá»Ÿi táº¡o giÃ¡ trá»‹ máº·c Ä‘á»‹nh khi khÃ´ng cÃ³ tráº£ hÃ ng
+                // Khởi tạo giá trị mặc định khi không có trả hàng
                 dto.setSoLoaiSanPhamTraHang(0);
                 dto.setTongSoLuongTraHang(0);
                 dto.setTongTienTraHang(BigDecimal.ZERO);
@@ -1271,14 +1290,14 @@ public class HoaDonServiceImpl implements HoaDonService {
                 dto.setSoLuongTraHangTuChoi(0);
             }
 
-            // XÃ¡c Ä‘á»‹nh cÃ³ thá»ƒ tráº£ hÃ ng khÃ´ng
+            // Xác định có thể trả hàng không
             dto.setCoTheTraHang(canReturnInvoice(hoaDon.getTrangThaiHoaDon()));
 
         } catch (Exception e) {
-            // Log lá»—i nhÆ°ng khÃ´ng lÃ m fail
-            System.err.println("Lá»—i load thÃ´ng tin tráº£ hÃ ng cho hÃ³a Ä‘Æ¡n " + hoaDon.getId() + ": " + e.getMessage());
+            // Log lỗi nhưng không làm fail
+            System.err.println("Lỗi load thông tin trả hàng cho hóa đơn " + hoaDon.getId() + ": " + e.getMessage());
 
-            // Set giÃ¡ trá»‹ máº·c Ä‘á»‹nh
+            // Set giá trị mặc định
             dto.setChiTietTraHangList(new ArrayList<>());
             dto.setSoLoaiSanPhamTraHang(0);
             dto.setTongSoLuongTraHang(0);
@@ -1290,19 +1309,19 @@ public class HoaDonServiceImpl implements HoaDonService {
         }
     }
 
-    // Method kiá»ƒm tra cÃ³ thá»ƒ tráº£ hÃ ng khÃ´ng dá»±a trÃªn tráº¡ng thÃ¡i hÃ³a Ä‘Æ¡n
+    // Method kiểm tra có thể trả hàng không dựa trên trạng thái hóa đơn
     private boolean canReturnInvoice(String trangThai) {
-        // Chá»‰ cho phÃ©p tráº£ hÃ ng khi hÃ³a Ä‘Æ¡n Ä‘Ã£ hoÃ n thÃ nh
-        return "COMPLETED".equals(trangThai);
+        // Chỉ cho phép trả hàng khi hóa đơn đã hoàn thành
+        return "COMPLETED".equals(normalizeInvoiceStatus(trangThai));
     }
     @Override
     public HoaDonDTO cancelInvoiceByCustomer(Integer id, String lyDo, String customerEmail)
             throws IllegalAccessException, IllegalStateException, NoSuchElementException {
 
         HoaDon hoaDon = hoaDonRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n"));
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy hóa đơn"));
 
-        // Quyá»n sá»Ÿ há»¯u: KhachHangId hoáº·c email Ä‘Æ¡n
+        // Quyền sở hữu: KhachHangId hoặc email đơn
         boolean hasAccess = false;
 
         if (hoaDon.getKhachHang() != null) {
@@ -1320,13 +1339,13 @@ public class HoaDonServiceImpl implements HoaDonService {
         }
 
         if (!hasAccess) {
-            throw new IllegalAccessException("KhÃ´ng cÃ³ quyá»n há»§y Ä‘Æ¡n hÃ ng nÃ y");
+            throw new IllegalAccessException("Không có quyền hủy đơn hàng này");
         }
 
-        // Tráº¡ng thÃ¡i cho phÃ©p há»§y
+        // Trạng thái cho phép hủy
         String st = hoaDon.getTrangThaiHoaDon();
         if (!Set.of("CHO_XAC_NHAN", "PENDING").contains(st)) {
-            throw new IllegalStateException("KhÃ´ng thá»ƒ há»§y Ä‘Æ¡n hÃ ng á»Ÿ tráº¡ng thÃ¡i nÃ y");
+            throw new IllegalStateException("Không thể hủy đơn hàng ở trạng thái này");
         }
 
         hoaDon.setTrangThaiHoaDon("CANCELLED");

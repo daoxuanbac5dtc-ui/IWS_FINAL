@@ -17,60 +17,60 @@ public interface RepoDiaChi extends JpaRepository<DiaChi, Integer> {
     // ===== BASIC FIND METHODS =====
 
     /**
-     * TÃ¬m Ä‘á»‹a chá»‰ theo ID tÃ i khoáº£n (Spring Data JPA method)
+     * Tìm địa chỉ theo ID tài khoản (Spring Data JPA method)
      */
     List<DiaChi> findByTaiKhoan_Id(Integer taiKhoanId);
 
     /**
-     * TÃ¬m Ä‘á»‹a chá»‰ theo ID tÃ i khoáº£n vá»›i sáº¯p xáº¿p
+     * Tìm địa chỉ theo ID tài khoản với sắp xếp
      */
     @Query("SELECT d FROM DiaChi d WHERE d.taiKhoan.id = :taiKhoanId ORDER BY d.isDefault DESC, d.ngayTao DESC")
     List<DiaChi> findByTaiKhoanId(@Param("taiKhoanId") Integer taiKhoanId);
 
     /**
-     * TÃ¬m Ä‘á»‹a chá»‰ theo ID tÃ i khoáº£n vá»›i sáº¯p xáº¿p (JPA method name)
+     * Tìm địa chỉ theo ID tài khoản với sắp xếp (JPA method name)
      */
     List<DiaChi> findByTaiKhoanIdOrderByIsDefaultDescNgayTaoDesc(Integer taiKhoanId);
 
     /**
-     * TÃ¬m Ä‘á»‹a chá»‰ active theo ID tÃ i khoáº£n
+     * Tìm địa chỉ active theo ID tài khoản
      */
     @Query("SELECT d FROM DiaChi d WHERE d.taiKhoan.id = :taiKhoanId AND d.trangThai = 1 ORDER BY d.isDefault DESC, d.ngayTao DESC")
     List<DiaChi> findActiveByTaiKhoanId(@Param("taiKhoanId") Integer taiKhoanId);
 
     /**
-     * TÃ¬m Ä‘á»‹a chá»‰ Ä‘áº§u tiÃªn (cÃ³ thá»ƒ lÃ m máº·c Ä‘á»‹nh)
+     * Tìm địa chỉ đầu tiên (có thể làm mặc định)
      */
     @Query("SELECT d FROM DiaChi d WHERE d.taiKhoan.id = :taiKhoanId AND d.trangThai = 1 ORDER BY d.ngayTao ASC")
     Optional<DiaChi> findFirstByTaiKhoanId(@Param("taiKhoanId") Integer taiKhoanId);
 
     /**
-     * TÃ¬m Ä‘á»‹a chá»‰ máº·c Ä‘á»‹nh theo ID tÃ i khoáº£n
+     * Tìm địa chỉ mặc định theo ID tài khoản
      */
     @Query("SELECT d FROM DiaChi d WHERE d.taiKhoan.id = :taiKhoanId AND d.isDefault = true AND d.trangThai = 1")
     Optional<DiaChi> findByTaiKhoanIdAndIsDefaultTrue(@Param("taiKhoanId") Integer taiKhoanId);
 
     /**
-     * TÃ¬m Ä‘á»‹a chá»‰ máº·c Ä‘á»‹nh theo ID tÃ i khoáº£n (JPA method name)
+     * Tìm địa chỉ mặc định theo ID tài khoản (JPA method name)
      */
     DiaChi findByTaiKhoanIdAndIsDefault(Integer taiKhoanId, Boolean isDefault);
 
     /**
-     * Äáº¿m sá»‘ Ä‘á»‹a chá»‰ máº·c Ä‘á»‹nh cá»§a 1 tÃ i khoáº£n
+     * Đếm số địa chỉ mặc định của 1 tài khoản
      */
     int countByTaiKhoanIdAndIsDefault(Integer taiKhoanId, Boolean isDefault);
 
     /**
-     * TÃ¬m Ä‘á»‹a chá»‰ máº·c Ä‘á»‹nh (method tiá»‡n lá»£i)
+     * Tìm địa chỉ mặc định (method tiện lợi)
      */
     default DiaChi findDefaultByTaiKhoanId(Integer taiKhoanId) {
         return findByTaiKhoanIdAndIsDefault(taiKhoanId, true);
     }
 
-    // ===== SEARCH METHODS (2-level addressing: Tá»‰nh -> PhÆ°á»ng) =====
+    // ===== SEARCH METHODS (2-level addressing: Tỉnh -> Phường) =====
 
     /**
-     * TÃ¬m kiáº¿m Ä‘á»‹a chá»‰ kÃ¨m thÃ´ng tin ngÆ°á»i dÃ¹ng (2-level: Tá»‰nh -> PhÆ°á»ng)
+     * Tìm kiếm địa chỉ kèm thông tin người dùng (2-level: Tỉnh -> Phường)
      */
     @Query("""
     SELECT d FROM DiaChi d
@@ -89,7 +89,7 @@ public interface RepoDiaChi extends JpaRepository<DiaChi, Integer> {
     List<DiaChi> searchDiaChiWithHoTenNguoiDung(@Param("keyword") String keyword);
 
     /**
-     * TÃ¬m kiáº¿m Ä‘Æ¡n giáº£n theo tá»« khÃ³a
+     * Tìm kiếm đơn giản theo từ khóa
      */
     @Query("SELECT d FROM DiaChi d WHERE " +
             "LOWER(d.tenPhuong) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
@@ -97,27 +97,27 @@ public interface RepoDiaChi extends JpaRepository<DiaChi, Integer> {
             "LOWER(d.diaChiChiTiet) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<DiaChi> searchByKeyword(@Param("keyword") String keyword);
 
-    // ===== FIND BY LOCATION (2-level: Tá»‰nh/PhÆ°á»ng only) =====
+    // ===== FIND BY LOCATION (2-level: Tỉnh/Phường only) =====
 
     /**
-     * TÃ¬m theo tÃªn tá»‰nh
+     * Tìm theo tên tỉnh
      */
     List<DiaChi> findByTenTinhContainingIgnoreCase(String tenTinh);
 
     /**
-     * TÃ¬m theo mÃ£ tá»‰nh
+     * Tìm theo mã tỉnh
      */
     @Query("SELECT d FROM DiaChi d WHERE d.maTinh = :maTinh")
     List<DiaChi> findByMaTinh(@Param("maTinh") String maTinh);
 
     /**
-     * TÃ¬m theo tÃªn phÆ°á»ng
+     * Tìm theo tên phường
      */
     @Query("SELECT d FROM DiaChi d WHERE LOWER(d.tenPhuong) LIKE LOWER(CONCAT('%', :tenPhuong, '%'))")
     List<DiaChi> findByTenPhuongContainingIgnoreCase(@Param("tenPhuong") String tenPhuong);
 
     /**
-     * TÃ¬m theo mÃ£ phÆ°á»ng
+     * Tìm theo mã phường
      */
     @Query("SELECT d FROM DiaChi d WHERE d.maPhuong = :maPhuong")
     List<DiaChi> findByMaPhuong(@Param("maPhuong") String maPhuong);
@@ -125,7 +125,7 @@ public interface RepoDiaChi extends JpaRepository<DiaChi, Integer> {
     // ===== ADVANCED SEARCH =====
 
     /**
-     * TÃ¬m kiáº¿m nÃ¢ng cao theo tá»‰nh vÃ  phÆ°á»ng
+     * Tìm kiếm nâng cao theo tỉnh và phường
      */
     @Query("SELECT d FROM DiaChi d WHERE " +
             "(:maTinh IS NULL OR d.maTinh = :maTinh) AND " +
@@ -138,17 +138,17 @@ public interface RepoDiaChi extends JpaRepository<DiaChi, Integer> {
     // ===== STATUS MANAGEMENT =====
 
     /**
-     * TÃ¬m Ä‘á»‹a chá»‰ theo tráº¡ng thÃ¡i
+     * Tìm địa chỉ theo trạng thái
      */
     List<DiaChi> findByTrangThai(Integer trangThai);
 
     /**
-     * Äáº¿m Ä‘á»‹a chá»‰ theo tráº¡ng thÃ¡i
+     * Đếm địa chỉ theo trạng thái
      */
     long countByTrangThai(Integer trangThai);
 
     /**
-     * Äáº¿m Ä‘á»‹a chá»‰ theo tÃ i khoáº£n vÃ  tráº¡ng thÃ¡i
+     * Đếm địa chỉ theo tài khoản và trạng thái
      */
     @Query("SELECT COUNT(d) FROM DiaChi d WHERE d.taiKhoan.id = :taiKhoanId AND d.trangThai = :trangThai")
     long countByTaiKhoanIdAndTrangThai(@Param("taiKhoanId") Integer taiKhoanId, @Param("trangThai") Integer trangThai);
@@ -156,7 +156,7 @@ public interface RepoDiaChi extends JpaRepository<DiaChi, Integer> {
     // ===== DEFAULT ADDRESS MANAGEMENT =====
 
     /**
-     * Bá» táº¥t cáº£ Ä‘á»‹a chá»‰ máº·c Ä‘á»‹nh cá»§a má»™t tÃ i khoáº£n
+     * Bỏ tất cả địa chỉ mặc định của một tài khoản
      */
     @Modifying
     @Transactional
@@ -164,7 +164,7 @@ public interface RepoDiaChi extends JpaRepository<DiaChi, Integer> {
     void clearDefaultAddressByTaiKhoanId(@Param("taiKhoanId") Integer taiKhoanId);
 
     /**
-     * Äáº·t Ä‘á»‹a chá»‰ lÃ m máº·c Ä‘á»‹nh
+     * Đặt địa chỉ làm mặc định
      */
     @Modifying
     @Transactional
@@ -174,7 +174,7 @@ public interface RepoDiaChi extends JpaRepository<DiaChi, Integer> {
     // ===== DELETE OPERATIONS =====
 
     /**
-     * XÃ³a Ä‘á»‹a chá»‰ theo ID tÃ i khoáº£n (hard delete)
+     * Xóa địa chỉ theo ID tài khoản (hard delete)
      */
     @Modifying
     @Transactional
@@ -182,14 +182,14 @@ public interface RepoDiaChi extends JpaRepository<DiaChi, Integer> {
     void deleteByTaiKhoanIdQuery(@Param("taiKhoanId") Integer taiKhoanId);
 
     /**
-     * XÃ³a Ä‘á»‹a chá»‰ theo ID tÃ i khoáº£n (JPA method)
+     * Xóa địa chỉ theo ID tài khoản (JPA method)
      */
     @Modifying
     @Transactional
     void deleteByTaiKhoan_Id(Integer taiKhoanId);
 
     /**
-     * Soft delete - VÃ´ hiá»‡u hÃ³a Ä‘á»‹a chá»‰ theo ID tÃ i khoáº£n
+     * Soft delete - Vô hiệu hóa địa chỉ theo ID tài khoản
      */
     @Modifying
     @Transactional
@@ -199,13 +199,13 @@ public interface RepoDiaChi extends JpaRepository<DiaChi, Integer> {
     // ===== STATISTICS =====
 
     /**
-     * Thá»‘ng kÃª Ä‘á»‹a chá»‰ theo tá»‰nh
+     * Thống kê địa chỉ theo tỉnh
      */
     @Query("SELECT d.tenTinh, COUNT(d) FROM DiaChi d WHERE d.trangThai = 1 GROUP BY d.tenTinh ORDER BY COUNT(d) DESC")
     List<Object[]> getAddressStatisticsByProvince();
 
     /**
-     * Kiá»ƒm tra tÃ i khoáº£n cÃ³ Ä‘á»‹a chá»‰ khÃ´ng
+     * Kiểm tra tài khoản có địa chỉ không
      */
     @Query("SELECT CASE WHEN COUNT(d) > 0 THEN true ELSE false END FROM DiaChi d WHERE d.taiKhoan.id = :taiKhoanId AND d.trangThai = 1")
     boolean hasActiveAddressByTaiKhoanId(@Param("taiKhoanId") Integer taiKhoanId);
@@ -213,7 +213,7 @@ public interface RepoDiaChi extends JpaRepository<DiaChi, Integer> {
     // ===== VALIDATION =====
 
     /**
-     * Kiá»ƒm tra Ä‘á»‹a chá»‰ Ä‘Ã£ tá»“n táº¡i chÆ°a (trÃ¡nh trÃ¹ng láº·p)
+     * Kiểm tra địa chỉ đã tồn tại chưa (tránh trùng lặp)
      */
     @Query("SELECT CASE WHEN COUNT(d) > 0 THEN true ELSE false END FROM DiaChi d WHERE " +
             "d.taiKhoan.id = :taiKhoanId AND " +

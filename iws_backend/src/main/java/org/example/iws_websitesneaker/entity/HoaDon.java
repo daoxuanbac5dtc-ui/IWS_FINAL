@@ -2,6 +2,7 @@ package org.example.iws_websitesneaker.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.example.iws_websitesneaker.util.TextEncodingGuard;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -312,6 +313,13 @@ public class HoaDon {
 
     public void setPhuongThucThanhToan(String phuongThucThanhToan) {
         this.phuongThucThanhToan = phuongThucThanhToan;
+    }
+
+    @PrePersist
+    @PreUpdate
+    protected void normalizeAndValidateText() {
+        this.tenNguoiDung = TextEncodingGuard.normalizeAndRejectCorrupted("Tên người dùng trên hóa đơn", this.tenNguoiDung);
+        this.diaChi = TextEncodingGuard.normalizeAndRejectCorrupted("Địa chỉ hóa đơn", this.diaChi);
     }
 }
 

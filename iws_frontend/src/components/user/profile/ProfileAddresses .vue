@@ -512,7 +512,7 @@
       }
 
       const currentUser = mergeUserInfo(userInfo.value);
-      const defaultName = getUserDisplayName(currentUser) || 'KhĂ¡ch hĂ ng';
+      const defaultName = getUserDisplayName(currentUser) || 'Khách hàng';
       const defaultPhone = getUserPhone(currentUser) || '';
 
       addresses.value = rawAddresses
@@ -542,8 +542,8 @@
       if (error.response?.status === 401) {
         toast.add({
           severity: 'error',
-          summary: 'PhiĂªn Ä‘Äƒng nháº­p háº¿t háº¡n',
-          detail: 'Vui lĂ²ng Ä‘Äƒng nháº­p láº¡i',
+          summary: 'Phiên đăng nhập hết hạn',
+          detail: 'Vui lòng đăng nhập lại',
           life: 3000
         });
       } else if (error.response?.status !== 404) {

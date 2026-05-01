@@ -27,20 +27,20 @@ public class KichCoServiceImpl implements KichCoService {
     public Optional<KichCo> getKichCoById(int id) {
         return repoKichCo.findById(id);
     }
-    //ThÃªm
+    //Thêm
     @Override
     public void addKichCo(KichCo kichCo) {
         repoKichCo.save(kichCo);
     }
-    //Sá»­a
+    //Sửa
     @Override
     public void updateKichCo(KichCo kichCo) {
         repoKichCo.save(kichCo);
     }
-    //XÃ³a
+    //Xóa
     @Override
     public void deleteKichCo(int id) {
-        repoChiTietSanPham.removeKichCoReference(id);// Gá»¡ rÃ ng buá»™c khÃ³a ngoáº¡i tá»« báº£ng ctsp
+        repoChiTietSanPham.removeKichCoReference(id);// Gỡ ràng buộc khóa ngoại từ bảng ctsp
         repoKichCo.deleteById(id);
     }
 }

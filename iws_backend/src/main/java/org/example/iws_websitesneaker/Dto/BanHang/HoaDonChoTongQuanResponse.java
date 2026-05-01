@@ -23,17 +23,17 @@ public class HoaDonChoTongQuanResponse {
     private BigDecimal tongTietKiem;
     private Float phanTramGiamTongCong;
 
-    // ThÃ´ng tin voucher
+    // Thông tin voucher
     private VoucherResponse voucher;
     private Boolean daApDungVoucher;
 
-    // ThÃ´ng tin khÃ¡ch hÃ ng
+    // Thông tin khách hàng
     private KhachHangResponse khachHang;
 
-    // Danh sÃ¡ch sáº£n pháº©m
+    // Danh sách sản phẩm
     private List<HoaDonChoSanPhamResponse> danhSachSanPham;
 
-    // ThÃ´ng tin tÃ­nh toÃ¡n
+    // Thông tin tính toán
     private Date ngayCapNhat;
     private String trangThai;
 }

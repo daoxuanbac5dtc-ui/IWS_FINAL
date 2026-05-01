@@ -14,6 +14,9 @@ uploads/*
 !uploads/vans-old-skool-black-white.jpg
 !uploads/converse-chuck-taylor-red.jpg
 !uploads/puma-suede-classic-blue.jpg
+!uploads/new-balance-574-gray.jpg
+!uploads/jordan-1-high-red-black.jpg
+!uploads/under-armour-hovr-white.jpg
 
 ### STS ###
 .apt_generated

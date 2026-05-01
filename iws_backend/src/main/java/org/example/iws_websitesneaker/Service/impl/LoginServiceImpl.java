@@ -19,7 +19,7 @@ public class LoginServiceImpl implements LoginService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // XÃ¡c thá»±c ngÆ°á»i dÃ¹ng vá»›i email vÃ  password
+    // Xác thực người dùng với email và password
     @Override
     public TaiKhoan authenticate(String email, String rawPassword) {
         Optional<TaiKhoan> userOptional = userRepository.findByEmail(email.toLowerCase().trim());
@@ -27,22 +27,22 @@ public class LoginServiceImpl implements LoginService {
         if (userOptional.isPresent()) {
             TaiKhoan user = userOptional.get();
 
-            // So sÃ¡nh máº­t kháº©u ngÆ°á»i dÃ¹ng nháº­p vá»›i máº­t kháº©u Ä‘Ã£ mÃ£ hÃ³a trong DB
+            // So sánh mật khẩu người dùng nhập với mật khẩu đã mã hóa trong DB
             if (passwordEncoder.matches(rawPassword, user.getMatKhau())) {
-                return user; // Ä‘Ãºng máº­t kháº©u
+                return user; // đúng mật khẩu
             }
         }
 
-        return null; // sai email hoáº·c máº­t kháº©u
+        return null; // sai email hoặc mật khẩu
     }
 
-    // TÃ¬m tÃ i khoáº£n theo email
+    // Tìm tài khoản theo email
     @Override
     public TaiKhoan findByEmail(String email) {
         return userRepository.findByEmail(email).orElse(null);
     }
 
-    // // Cáº­p nháº­t thá»i gian Ä‘Äƒng nháº­p gáº§n nháº¥t
+    // // Cập nhật thời gian đăng nhập gần nhất
     // public void updateLastLogin(Integer userId) {
     // Optional<TaiKhoan> userOptional = userRepository.findById(userId);
     // if (userOptional.isPresent()) {
@@ -52,27 +52,27 @@ public class LoginServiceImpl implements LoginService {
     // }
     // }
 
-    // Kiá»ƒm tra quyá»n cá»§a tÃ i khoáº£n
+    // Kiểm tra quyền của tài khoản
     @Override
     public boolean hasPermission(TaiKhoan user, String permission) {
         if (user == null)
             return false;
 
-        // Admin cÃ³ toÃ n quyá»n
+        // Admin có toàn quyền
         if (user.getVaiTro() == TaiKhoan.VaiTro.ADMIN) {
             return true;
         }
 
-        // Quyá»n máº·c Ä‘á»‹nh cá»§a USER
+        // Quyền mặc định của USER
         if (user.getVaiTro() == TaiKhoan.VaiTro.USER) {
             return hasUserPermission(permission);
         }
 
-        // CÃ¡c vai trÃ² khÃ¡c chÆ°a cÃ³ quyá»n cá»¥ thá»ƒ
+        // Các vai trò khác chưa có quyền cụ thể
         return false;
     }
 
-    // Danh sÃ¡ch quyá»n cá»§a USER
+    // Danh sách quyền của USER
     private boolean hasUserPermission(String permission) {
         String[] userPermissions = {
                 "VIEW_PRODUCTS",

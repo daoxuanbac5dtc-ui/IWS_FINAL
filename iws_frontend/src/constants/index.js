@@ -79,22 +79,22 @@ export const footerLinks = [
     {
         title: 'Sản Phẩm',
         links: [
-            { name: 'Air Force 1', link: '/products?brand=nike&model=air-force-1' },
-            { name: 'Air Max 1', link: '/products?brand=nike&model=air-max-1' },
-            { name: 'Air Jordan 1', link: '/products?brand=nike&model=air-jordan-1' },
-            { name: 'Air Force 2', link: '/products?brand=nike&model=air-force-2' },
-            { name: 'Nike Waffle Racer', link: '/products?brand=nike&model=waffle-racer' },
-            { name: 'Nike Cortez', link: '/products?brand=nike&model=cortez' }
+            { name: 'Air Force 1', link: '/products#products' },
+            { name: 'Air Max 1', link: '/products#products' },
+            { name: 'Air Jordan 1', link: '/products#products' },
+            { name: 'Air Force 2', link: '/products#products' },
+            { name: 'Nike Waffle Racer', link: '/products#products' },
+            { name: 'Nike Cortez', link: '/products#products' }
         ]
     },
     {
         title: 'Giúp đỡ',
         links: [
-            { name: 'Về chúng tôi', link: '/gioithieu', route: 'gioi-thieu' },
-            { name: 'FAQs', link: '/gioithieu#faq' },
-            { name: 'Hướng dẫn mua hàng', link: '/gioithieu#huong-dan' },
-            { name: 'Chính sách đổi trả', link: '/gioithieu#doi-tra' },
-            { name: 'Chính sách bảo hành', link: '/gioithieu#bao-hanh' }
+            { name: 'Về chúng tôi', link: '/gioithieu' },
+            { name: 'FAQs', link: '' },
+            { name: 'Hướng dẫn mua hàng', link: '' },
+            { name: 'Chính sách đổi trả', link: '' },
+            { name: 'Chính sách bảo hành', link: '' }
         ]
     },
     {
@@ -102,8 +102,8 @@ export const footerLinks = [
         links: [
             { name: 'customer@nike.com', link: 'mailto:customer@nike.com', external: true },
             { name: '+92554862354', link: 'tel:+92554862354', external: true },
-            { name: 'Tìm cửa hàng', link: '/lienhe#stores', route: 'lien-he' },
-            { name: 'Hỗ trợ trực tuyến', link: '/lienhe#support', route: 'lien-he' }
+            { name: 'Tìm cửa hàng', link: '/lienhe#stores' },
+            { name: 'Hỗ trợ trực tuyến', link: '/lienhe#contact-form' }
         ]
     }
 ];

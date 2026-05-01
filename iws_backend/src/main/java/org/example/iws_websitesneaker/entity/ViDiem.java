@@ -22,7 +22,7 @@ public class ViDiem {
     private Double soDiemDaCong = 0.0;
 
     @Column(name = "gia_tri_diem", nullable = false)
-    private Double giaTriDiem = 1000.0; // 1 Ä‘iá»ƒm = 1000 VND
+    private Double giaTriDiem = 1000.0; // 1 điểm = 1000 VND
 
     @Column(name = "ngay_tao")
     @Temporal(TemporalType.TIMESTAMP)
@@ -107,14 +107,14 @@ public class ViDiem {
         this.ngayCapNhat = ngayCapNhat;
     }
 
-    // Method tÃ­nh Ä‘iá»ƒm hiá»‡n táº¡i cÃ³ thá»ƒ sá»­ dá»¥ng
+    // Method tính điểm hiện tại có thể sử dụng
     public Double getDiemHienTai() {
         if (this.tongDiem == null) this.tongDiem = 0.0;
         if (this.soDiemDaDung == null) this.soDiemDaDung = 0.0;
         return this.tongDiem - this.soDiemDaDung;
     }
 
-    // Method tÃ­nh giÃ¡ trá»‹ tiá»n tá»« Ä‘iá»ƒm hiá»‡n táº¡i
+    // Method tính giá trị tiền từ điểm hiện tại
     public Double getGiaTriTienHienTai() {
         return getDiemHienTai() * (this.giaTriDiem != null ? this.giaTriDiem : 1000.0);
     }
