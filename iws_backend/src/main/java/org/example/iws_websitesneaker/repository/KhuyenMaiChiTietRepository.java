@@ -28,7 +28,7 @@ public interface KhuyenMaiChiTietRepository extends JpaRepository<KhuyenMaiChiTi
     List<KhuyenMaiChiTiet> findActivePromotionsByProductDetail(
             @Param("chiTietSanPhamId") Integer chiTietSanPhamId);
 
-    // Query chÃ­nh Ä‘á»ƒ láº¥y chi tiáº¿t khuyáº¿n mÃ£i vá»›i FULL thÃ´ng tin
+    // Query chính để lấy chi tiết khuyến mãi với FULL thông tin
     @Query("SELECT DISTINCT kmct FROM KhuyenMaiChiTiet kmct " +
             "LEFT JOIN FETCH kmct.khuyenMai km " +
             "LEFT JOIN FETCH kmct.chiTietSanPham ctsp " +
@@ -45,7 +45,7 @@ public interface KhuyenMaiChiTietRepository extends JpaRepository<KhuyenMaiChiTi
     @Query("DELETE FROM KhuyenMaiChiTiet kmct WHERE kmct.khuyenMai.id = :khuyenMaiId")
     void deleteByKhuyenMaiId(@Param("khuyenMaiId") Integer khuyenMaiId);
 
-    // Native query backup cho trÆ°á»ng há»£p cáº§n thiáº¿t
+    // Native query backup cho trường hợp cần thiết
     @Query(value = "SELECT " +
             "kmct.id as kmct_id, kmct.trang_thai as kmct_trang_thai, kmct.ngay_tao as kmct_ngay_tao, " +
             "km.id as km_id, km.ma_khuyen_mai, km.ten_khuyen_mai, km.gia_tri, " +

@@ -1278,7 +1278,7 @@ const sendOrderConfirmationEmail = async (orderData, isGuest = false) => {
             shop_name: 'SHOP GIÀY THỂ THAO',
             shop_email: 'support@sportshoesshop.com',
             shop_phone: '0123-456-789',
-            shop_address: '123 Đường Nguyễn Văn Linh, Quận 7, TP.HCM',
+            shop_address: '126 Đường Nguyễn Trãi Quận Hà Đông, TP HÀ Nội',
             
             // Thông tin gửi email
             from_name: 'SHOP GIÀY THỂ THAO'

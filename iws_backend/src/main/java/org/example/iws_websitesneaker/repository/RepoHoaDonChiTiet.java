@@ -22,10 +22,10 @@ public interface RepoHoaDonChiTiet extends JpaRepository<HoaDonChiTiet, Integer>
             "ORDER BY hdct.ngayTao DESC")
     List<HoaDonChiTiet> findByChiTietSanPhamIdWithInfo(@Param("chiTietSanPhamId") Integer chiTietSanPhamId);
 
-    // Method tÃ­nh tá»•ng sá»‘ lÆ°á»£ng Ä‘Ã£ bÃ¡n cá»§a má»™t chi tiáº¿t sáº£n pháº©m (chá»‰ Ä‘Æ¡n hÃ ng hoÃ n thÃ nh)
+    // Method tính tổng số lượng đã bán của một chi tiết sản phẩm (chỉ đơn hàng hoàn thành)
     @Query("SELECT COALESCE(SUM(h.soLuong), 0) FROM HoaDonChiTiet h " +
             "WHERE h.chiTietSanPham.id = :chiTietSanPhamId " +
-            "AND h.hoaDon.trangThaiHoaDon IN ('COMPLETED', 'DELIVERED', 'DA_GIAO', 'HOAN_THANH')")
+            "AND h.hoaDon.trangThaiHoaDon IN ('COMPLETED', 'DA_THANH_TOAN', 'DELIVERED', 'DA_GIAO', 'HOAN_THANH')")
     Integer getTotalSoldQuantity(@Param("chiTietSanPhamId") Integer chiTietSanPhamId);
 
     List<HoaDonChiTiet> findByHoaDonId(Integer hoaDonId);

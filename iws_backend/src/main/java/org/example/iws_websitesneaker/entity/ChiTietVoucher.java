@@ -28,7 +28,7 @@ public class ChiTietVoucher {
     @JoinColumn(name = "id_voucher", nullable = true)
     private Voucher voucher;
 
-    // ThÃ´ng tin voucher táº¡i thá»i Ä‘iá»ƒm Ã¡p dá»¥ng
+    // Thông tin voucher tại thời điểm áp dụng
     @Column(name = "ma_voucher", length = 25)
     private String maVoucher;
 
@@ -47,7 +47,7 @@ public class ChiTietVoucher {
     @Column(name = "gia_tri_giam_toi_thieu")
     private Double giaTriGiamToiThieu;
 
-    // ThÃ´ng tin tÃ­nh toÃ¡n
+    // Thông tin tính toán
     @Column(name = "gia_tri_don_hang", precision = 18, scale = 2)
     private BigDecimal giaTriDonHang;
 
@@ -57,7 +57,7 @@ public class ChiTietVoucher {
     @Column(name = "thanh_tien", nullable = false, precision = 18, scale = 2)
     private BigDecimal thanhTien;
 
-    // ThÃ´ng tin thá»i gian
+    // Thông tin thời gian
     @Column(name = "ngay_ap_dung", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date ngayApDung;
@@ -70,14 +70,14 @@ public class ChiTietVoucher {
     @Temporal(TemporalType.TIMESTAMP)
     private Date ngayCapNhat;
 
-    // Constructor Ä‘á»ƒ táº¡o chi tiáº¿t voucher tá»« voucher gá»‘c
+    // Constructor để tạo chi tiết voucher từ voucher gốc
     public ChiTietVoucher(String maChiTietVoucher, HoaDon hoaDon, Voucher voucher,
                           BigDecimal giaTriDonHang, BigDecimal soTienGiam, BigDecimal thanhTien) {
         this.maChiTietVoucher = maChiTietVoucher;
         this.hoaDon = hoaDon;
         this.voucher = voucher;
 
-        // Sao chÃ©p thÃ´ng tin voucher táº¡i thá»i Ä‘iá»ƒm Ã¡p dá»¥ng
+        // Sao chép thông tin voucher tại thời điểm áp dụng
         if (voucher != null) {
             this.maVoucher = voucher.getMaVoucher();
             this.tenVoucher = voucher.getTenVoucher();

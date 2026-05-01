@@ -14,18 +14,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/auth/forgot-password")
 @CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173"}, allowCredentials = "true")
 public class ForgotPasswordController {
+
+    private static final SecureRandom OTP_RANDOM = new SecureRandom();
 
     @Autowired
     private TaiKhoanService taiKhoanService;
@@ -35,6 +37,12 @@ public class ForgotPasswordController {
 
     @Value("${spring.mail.username:}")
     private String mailUsername;
+
+    @Value("${forgot.password.allow-demo:false}")
+    private boolean allowDemoOtp;
+
+    @Value("${forgot.password.otp.expiry.minutes:15}")
+    private long otpExpiryMinutes;
 
     private final Map<String, String> otpStorage = new ConcurrentHashMap<>();
     private final Map<String, Long> otpExpiry = new ConcurrentHashMap<>();
@@ -52,7 +60,8 @@ public class ForgotPasswordController {
                         .body(new ApiResponse<>(false, "Email is required", null));
             }
 
-            Optional<TaiKhoan> taiKhoanOpt = taiKhoanService.findByEmail(email);
+            String emailKey = email.toLowerCase().trim();
+            Optional<TaiKhoan> taiKhoanOpt = taiKhoanService.findByEmail(emailKey);
             if (taiKhoanOpt.isEmpty()) {
                 return ResponseEntity.badRequest()
                         .body(new ApiResponse<>(false, "Email does not exist in the system", null));
@@ -64,24 +73,30 @@ public class ForgotPasswordController {
                         .body(new ApiResponse<>(false, "Account is locked", null));
             }
 
-            String otp = String.format("%06d", new Random().nextInt(1_000_000));
-            String emailKey = email.toLowerCase().trim();
+            String otp = String.format("%06d", OTP_RANDOM.nextInt(1_000_000));
             otpStorage.put(emailKey, otp);
-            otpExpiry.put(emailKey, System.currentTimeMillis() + 15 * 60 * 1000L);
+            otpExpiry.put(emailKey, System.currentTimeMillis() + otpExpiryMinutes * 60 * 1000L);
 
-            boolean emailSent = sendOtpEmail(email, otp, taiKhoan);
+            boolean emailSent = sendOtpEmail(emailKey, otp, taiKhoan);
 
             Map<String, Object> response = new HashMap<>();
-            response.put("email", maskEmail(email));
+            response.put("email", maskEmail(emailKey));
             response.put("maTaiKhoan", taiKhoan.getMaTaiKhoan());
-            response.put("expiresInMinutes", 15);
+            response.put("expiresInMinutes", otpExpiryMinutes);
 
             if (emailSent) {
                 return ResponseEntity.ok(new ApiResponse<>(true, "OTP sent to your email", response));
             }
 
-            response.put("demo_otp", otp);
-            return ResponseEntity.ok(new ApiResponse<>(true, "OTP generated. Check backend console for local demo", response));
+            if (allowDemoOtp) {
+                response.put("demo_otp", otp);
+                return ResponseEntity.ok(new ApiResponse<>(true, "OTP generated for local demo", response));
+            }
+
+            otpStorage.remove(emailKey);
+            otpExpiry.remove(emailKey);
+            return ResponseEntity.status(503)
+                    .body(new ApiResponse<>(false, "Email OTP is not configured. Please set MAIL_USERNAME and MAIL_PASSWORD.", null));
 
         } catch (Exception e) {
             System.err.println("Error sending OTP: " + e.getMessage());
@@ -159,7 +174,7 @@ public class ForgotPasswordController {
     }
 
     private boolean sendOtpEmail(String toEmail, String otp, TaiKhoan taiKhoan) {
-        if (mailSender != null && !mailUsername.isEmpty()) {
+        if (isMailConfigured()) {
             try {
                 SimpleMailMessage message = new SimpleMailMessage();
                 message.setTo(toEmail);
@@ -175,7 +190,9 @@ public class ForgotPasswordController {
             }
         }
 
-        printOtpToConsole(toEmail, otp, taiKhoan);
+        if (allowDemoOtp) {
+            printOtpToConsole(toEmail, otp, taiKhoan);
+        }
         return false;
     }
 
@@ -190,7 +207,7 @@ public class ForgotPasswordController {
     }
 
     private void sendSuccessNotification(String toEmail, TaiKhoan taiKhoan) {
-        if (mailSender != null && !mailUsername.isEmpty()) {
+        if (isMailConfigured()) {
             try {
                 SimpleMailMessage message = new SimpleMailMessage();
                 message.setTo(toEmail);
@@ -204,6 +221,10 @@ public class ForgotPasswordController {
                 System.err.println("Failed to send success notification: " + e.getMessage());
             }
         }
+    }
+
+    private boolean isMailConfigured() {
+        return mailSender != null && mailUsername != null && !mailUsername.trim().isEmpty();
     }
 
     private String buildOtpEmailContent(String otp, TaiKhoan taiKhoan) {

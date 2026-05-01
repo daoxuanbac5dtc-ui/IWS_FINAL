@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.iws_websitesneaker.util.TextEncodingGuard;
 
 import java.util.Date;
 
@@ -15,17 +16,17 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-// THÃŠM: Annotation Ä‘á»ƒ trÃ¡nh lá»—i lazy loading khi serialize JSON
+// THÊM: Annotation để tránh lỗi lazy loading khi serialize JSON
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class NhanVien {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // GIá»® NGUYÃŠN: FetchType.LAZY vÃ¬ sáº½ dÃ¹ng JOIN FETCH trong repository
+    // GIỮ NGUYÊN: FetchType.LAZY vì sẽ dùng JOIN FETCH trong repository
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_tai_khoan", referencedColumnName = "id")
-    // THÃŠM: Annotation Ä‘á»ƒ trÃ¡nh lá»—i JSON serialization
+    // THÊM: Annotation để tránh lỗi JSON serialization
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private TaiKhoan taiKhoan;
 
@@ -49,7 +50,7 @@ public class NhanVien {
     @Temporal(TemporalType.TIMESTAMP)
     private Date ngayCapNhat;
 
-    // GIá»® NGUYÃŠN: CÃ¡c method nÃ y
+    // GIỮ NGUYÊN: Các method này
     public void setDiaChi(DiaChi diaChi) {
         // Implementation for setting address
     }
@@ -58,10 +59,11 @@ public class NhanVien {
         // Implementation for setting address ID
     }
 
-    // ===== THÃŠM: LIFECYCLE CALLBACKS =====
+    // ===== THÊM: LIFECYCLE CALLBACKS =====
 
     @PrePersist
     protected void onCreate() {
+        normalizeAndValidateText();
         Date now = new Date();
         if (this.ngayTao == null) {
             this.ngayTao = now;
@@ -70,41 +72,46 @@ public class NhanVien {
             this.ngayCapNhat = now;
         }
         if (this.trangThai == null) {
-            this.trangThai = 1; // Máº·c Ä‘á»‹nh active
+            this.trangThai = 1; // Mặc định active
         }
     }
 
     @PreUpdate
     protected void onUpdate() {
+        normalizeAndValidateText();
         this.ngayCapNhat = new Date();
     }
 
-    // ===== THÃŠM: SAFE METHODS - KhÃ´ng gÃ¢y LazyInitializationException =====
+    private void normalizeAndValidateText() {
+        this.hoTen = TextEncodingGuard.normalizeAndRejectCorrupted("Họ tên nhân viên", this.hoTen);
+    }
+
+    // ===== THÊM: SAFE METHODS - Không gây LazyInitializationException =====
 
     /**
-     * Láº¥y email má»™t cÃ¡ch an toÃ n tá»« TaiKhoan
-     * QUAN TRá»ŒNG: Method nÃ y khÃ´ng gÃ¢y LazyInitializationException
+     * Lấy email một cách an toàn từ TaiKhoan
+     * QUAN TRỌNG: Method này không gây LazyInitializationException
      */
     public String getEmailSafe() {
         try {
             return this.taiKhoan != null ? this.taiKhoan.getEmail() : null;
         } catch (Exception e) {
-            // Log warning nhÆ°ng khÃ´ng throw exception Ä‘á»ƒ trÃ¡nh crash
+            // Log warning nhưng không throw exception để tránh crash
             System.err.println("Warning: Could not get email for employee " + this.id + ": " + e.getMessage());
             return null;
         }
     }
 
     /**
-     * Kiá»ƒm tra nhÃ¢n viÃªn cÃ³ Ä‘ang hoáº¡t Ä‘á»™ng khÃ´ng
+     * Kiểm tra nhân viên có đang hoạt động không
      */
     public boolean isActive() {
         return this.trangThai != null && this.trangThai == 1;
     }
 
     /**
-     * Kiá»ƒm tra cÃ³ pháº£i admin khÃ´ng (thÃ´ng qua tÃ i khoáº£n)
-     * SAFE METHOD - khÃ´ng gÃ¢y LazyInitializationException
+     * Kiểm tra có phải admin không (thông qua tài khoản)
+     * SAFE METHOD - không gây LazyInitializationException
      */
     public boolean isAdminSafe() {
         try {
@@ -116,28 +123,28 @@ public class NhanVien {
     }
 
     /**
-     * Láº¥y tÃªn vai trÃ² má»™t cÃ¡ch an toÃ n
+     * Lấy tên vai trò một cách an toàn
      */
     public String getRoleDisplayNameSafe() {
         try {
-            return this.taiKhoan != null ? this.taiKhoan.getRoleDisplayName() : "KhÃ´ng xÃ¡c Ä‘á»‹nh";
+            return this.taiKhoan != null ? this.taiKhoan.getRoleDisplayName() : "Không xác định";
         } catch (Exception e) {
             System.err.println("Warning: Could not get role for employee " + this.id + ": " + e.getMessage());
-            return "KhÃ´ng xÃ¡c Ä‘á»‹nh";
+            return "Không xác định";
         }
     }
 
     /**
-     * Get display name cho tráº¡ng thÃ¡i
+     * Get display name cho trạng thái
      */
     public String getStatusDisplayName() {
-        return this.isActive() ? "Äang lÃ m viá»‡c" : "Nghá»‰ viá»‡c";
+        return this.isActive() ? "Đang làm việc" : "Nghỉ việc";
     }
 
-    // ===== THÃŠM: BUSINESS LOGIC METHODS =====
+    // ===== THÊM: BUSINESS LOGIC METHODS =====
 
     /**
-     * Cáº­p nháº­t thÃ´ng tin cÆ¡ báº£n (khÃ´ng thay Ä‘á»•i tÃ i khoáº£n)
+     * Cập nhật thông tin cơ bản (không thay đổi tài khoản)
      */
     public void updateBasicInfo(String hoTen, String sdt, String maNhanVien) {
         if (hoTen != null && !hoTen.trim().isEmpty()) {
@@ -153,7 +160,7 @@ public class NhanVien {
     }
 
     /**
-     * Toggle tráº¡ng thÃ¡i hoáº¡t Ä‘á»™ng
+     * Toggle trạng thái hoạt động
      */
     public void toggleStatus() {
         this.trangThai = this.trangThai == 1 ? 0 : 1;
@@ -161,7 +168,7 @@ public class NhanVien {
     }
 
     /**
-     * Deactivate nhÃ¢n viÃªn (soft delete)
+     * Deactivate nhân viên (soft delete)
      */
     public void deactivate() {
         this.trangThai = 0;
@@ -169,32 +176,32 @@ public class NhanVien {
     }
 
     /**
-     * Reactivate nhÃ¢n viÃªn
+     * Reactivate nhân viên
      */
     public void reactivate() {
         this.trangThai = 1;
         this.ngayCapNhat = new Date();
     }
 
-    // ===== THÃŠM: VALIDATION METHODS =====
+    // ===== THÊM: VALIDATION METHODS =====
 
     /**
-     * Validate sá»‘ Ä‘iá»‡n thoáº¡i Viá»‡t Nam (10-11 sá»‘, báº¯t Ä‘áº§u báº±ng 0)
+     * Validate số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)
      */
     public boolean hasValidPhoneNumber() {
         return this.sdt != null && this.sdt.matches("^0\\d{9,10}$");
     }
 
     /**
-     * Validate há» tÃªn (chá»‰ chá»©a chá»¯ cÃ¡i vÃ  khoáº£ng tráº¯ng, há»— trá»£ tiáº¿ng Viá»‡t)
+     * Validate họ tên (chỉ chứa chữ cái và khoảng trắng, hỗ trợ tiếng Việt)
      */
     public boolean hasValidName() {
         return this.hoTen != null &&
-                this.hoTen.matches("^[a-zA-ZÃ€ÃÃ‚ÃƒÃˆÃ‰ÃŠÃŒÃÃ’Ã“Ã”Ã•Ã™ÃšÄ‚ÄÄ¨Å¨Æ Ã Ã¡Ã¢Ã£Ã¨Ã©ÃªÃ¬Ã­Ã²Ã³Ã´ÃµÃ¹ÃºÄƒÄ‘Ä©Å©Æ¡Æ¯Ä‚áº áº¢áº¤áº¦áº¨áºªáº¬áº®áº°áº²áº´áº¶áº¸áººáº¼á»€á»€á»‚Æ°Äƒáº¡áº£áº¥áº§áº©áº«áº­áº¯áº±áº³áºµáº·áº¹áº»áº½á»áº¿á»ƒá»„á»†á»ˆá»Šá»Œá»Žá»á»’á»”á»–á»˜á»šá»œá»žá» á»¢á»¤á»¦á»¨á»ªá»…á»‡á»‰á»‹á»á»á»‘á»“á»•á»—á»™á»›á»á»Ÿá»¡á»£á»¥á»§á»©á»«á»¬á»®á»°á»²á»´Ãá»¶á»¸á»­á»¯á»±á»³á»µÃ½á»·á»¹\\s]+$");
+                this.hoTen.matches("^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềếểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵýỷỹ\\s]+$");
     }
 
     /**
-     * Validate dá»¯ liá»‡u cÆ¡ báº£n
+     * Validate dữ liệu cơ bản
      */
     public boolean isValidForSave() {
         return this.hoTen != null && !this.hoTen.trim().isEmpty() &&
@@ -204,10 +211,10 @@ public class NhanVien {
                 this.trangThai != null;
     }
 
-    // ===== THÃŠM: SAFE TOSTRING =====
+    // ===== THÊM: SAFE TOSTRING =====
 
     /**
-     * toString an toÃ n - khÃ´ng truy cáº­p lazy-loaded fields
+     * toString an toàn - không truy cập lazy-loaded fields
      */
     @Override
     public String toString() {
@@ -223,15 +230,15 @@ public class NhanVien {
                 '}';
     }
 
-    // ===== THÃŠM: STATIC FACTORY METHODS =====
+    // ===== THÊM: STATIC FACTORY METHODS =====
 
     /**
-     * Táº¡o nhÃ¢n viÃªn má»›i tá»« tÃ i khoáº£n
+     * Tạo nhân viên mới từ tài khoản
      */
     public static NhanVien createFromTaiKhoan(TaiKhoan taiKhoan, String maNhanVien,
                                               String hoTen, String sdt) {
         if (taiKhoan == null || hoTen == null || sdt == null || maNhanVien == null) {
-            throw new IllegalArgumentException("CÃ¡c tham sá»‘ báº¯t buá»™c khÃ´ng Ä‘Æ°á»£c null");
+            throw new IllegalArgumentException("Các tham số bắt buộc không được null");
         }
 
         return NhanVien.builder()
@@ -245,7 +252,7 @@ public class NhanVien {
                 .build();
     }
 
-    // ===== THÃŠM: EQUALS & HASHCODE =====
+    // ===== THÊM: EQUALS & HASHCODE =====
 
     @Override
     public boolean equals(Object obj) {
@@ -254,12 +261,12 @@ public class NhanVien {
 
         NhanVien other = (NhanVien) obj;
 
-        // So sÃ¡nh theo ID náº¿u cÃ³
+        // So sánh theo ID nếu có
         if (this.id != null && other.id != null) {
             return this.id.equals(other.id);
         }
 
-        // So sÃ¡nh theo mÃ£ nhÃ¢n viÃªn
+        // So sánh theo mã nhân viên
         if (this.maNhanVien != null && other.maNhanVien != null) {
             return this.maNhanVien.equals(other.maNhanVien);
         }

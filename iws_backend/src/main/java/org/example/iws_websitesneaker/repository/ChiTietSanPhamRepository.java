@@ -59,7 +59,7 @@ public interface ChiTietSanPhamRepository extends JpaRepository<ChiTietSanPham, 
             "OR LOWER(dm.tenDanhMuc) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     List<ChiTietSanPham> searchByKeyword(@Param("keyword") String keyword);
 
-    // Native query backup cho trÆ°á»ng há»£p JOIN FETCH khÃ´ng work
+    // Native query backup cho trường hợp JOIN FETCH không work
     @Query(value = "SELECT " +
             "ctsp.id, ctsp.ma_chi_tiet, ctsp.gia_goc, ctsp.gia_ban, ctsp.so_luong, ctsp.trang_thai, " +
             "sp.id as sp_id, sp.ten_san_pham, sp.ma_san_pham, " +
@@ -78,22 +78,22 @@ public interface ChiTietSanPhamRepository extends JpaRepository<ChiTietSanPham, 
             "WHERE kmct.chi_tiet_san_pham_id = ctsp.id AND kmct.trang_thai = 1)",
             nativeQuery = true)
     List<Object[]> findAvailableProductsRaw();
-    // TÃ¬m theo sáº£n pháº©m
+    // Tìm theo sản phẩm
     List<ChiTietSanPham> findBySanPhamId(Integer sanPhamId);
 
-    // TÃ¬m theo mÃ u sáº¯c
+    // Tìm theo màu sắc
     List<ChiTietSanPham> findByMauSacId(Integer mauSacId);
 
-    // TÃ¬m theo kÃ­ch thÆ°á»›c
+    // Tìm theo kích thước
     List<ChiTietSanPham> findByKichCoId(Integer kichCoId);
 
-    // TÃ¬m theo sáº£n pháº©m, mÃ u vÃ  size
+    // Tìm theo sản phẩm, màu và size
     @Query("SELECT ctsp FROM ChiTietSanPham ctsp WHERE ctsp.sanPham.id = :sanPhamId AND ctsp.mauSac.id = :mauSacId AND ctsp.kichCo.id = :kichThuocId")
     Optional<ChiTietSanPham> findBySanPhamAndMauSacAndKichThuoc(@Param("sanPhamId") Integer sanPhamId,
                                                                 @Param("mauSacId") Integer mauSacId,
                                                                 @Param("kichThuocId") Integer kichThuocId);
 
-    // TÃ¬m sáº£n pháº©m cÃ²n hÃ ng (giáº£ sá»­ cÃ³ field soLuong thay vÃ¬ soLuongTon)
+    // Tìm sản phẩm còn hàng (giả sử có field soLuong thay vì soLuongTon)
     @Query("SELECT ctsp FROM ChiTietSanPham ctsp WHERE ctsp.soLuong > 0")
     List<ChiTietSanPham> findAvailableProducts();
     @Query("SELECT ctsp FROM ChiTietSanPham ctsp " +

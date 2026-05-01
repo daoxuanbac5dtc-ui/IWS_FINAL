@@ -28,7 +28,7 @@
     </scm>
     <properties>
         <java.version>17</java.version>
-        <!-- THÃŠM: Hibernate version Ä‘á»ƒ Ä‘áº£m báº£o tÆ°Æ¡ng thÃ­ch -->
+        <!-- THÊM: Hibernate version để đảm bảo tương thích -->
         <hibernate.version>6.6.11.Final</hibernate.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -71,29 +71,29 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- ===== JACKSON - QUAN TRá»ŒNG Äá»‚ Xá»¬ LÃ LAZY LOADING ===== -->
-        <!-- THÃŠM Má»šI: Jackson Hibernate module Ä‘á»ƒ xá»­ lÃ½ lazy loading -->
+        <!-- ===== JACKSON - QUAN TRỌNG ĐỂ XỬ LÝ LAZY LOADING ===== -->
+        <!-- THÊM MỚI: Jackson Hibernate module để xử lý lazy loading -->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-hibernate6</artifactId>
             <version>2.18.3</version>
         </dependency>
 
-        <!-- THÃŠM Má»šI: Jackson JSR310 cho LocalDateTime -->
+        <!-- THÊM MỚI: Jackson JSR310 cho LocalDateTime -->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
 
-        <!-- ===== HIBERNATE ENVERS - THÃŠM Má»šI ===== -->
-        <!-- Äá»ƒ audit vÃ  tracking changes -->
+        <!-- ===== HIBERNATE ENVERS - THÊM MỚI ===== -->
+        <!-- Để audit và tracking changes -->
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-envers</artifactId>
         </dependency>
 
-        <!-- ===== ASPECTJ - THÃŠM Má»šI ===== -->
-        <!-- Äá»ƒ @Transactional hoáº¡t Ä‘á»™ng tá»‘t hÆ¡n -->
+        <!-- ===== ASPECTJ - THÊM MỚI ===== -->
+        <!-- Để @Transactional hoạt động tốt hơn -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-aspects</artifactId>
@@ -139,39 +139,39 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- THÃŠM Má»šI: Spring Security Test -->
+        <!-- THÊM MỚI: Spring Security Test -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
 
-        <!-- ===== UTILITIES - THÃŠM Má»šI ===== -->
-        <!-- Apache Commons Lang3 cho cÃ¡c utility functions -->
+        <!-- ===== UTILITIES - THÊM MỚI ===== -->
+        <!-- Apache Commons Lang3 cho các utility functions -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
 
-        <!-- THÃŠM Má»šI: Bean Validation -->
+        <!-- THÊM MỚI: Bean Validation -->
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
         </dependency>
 
-        <!-- THÃŠM Má»šI: Connection Pool Monitoring -->
+        <!-- THÊM MỚI: Connection Pool Monitoring -->
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
         </dependency>
 
-        <!-- THÃŠM Má»šI: Actuator cho monitoring -->
+        <!-- THÊM MỚI: Actuator cho monitoring -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
-        <!-- THÃŠM Má»šI: Micrometer cho metrics -->
+        <!-- THÊM MỚI: Micrometer cho metrics -->
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
@@ -203,7 +203,7 @@
                             <artifactId>lombok</artifactId>
                             <version>1.18.36</version>
                         </path>
-                        <!-- THÃŠM Má»šI: Hibernate annotation processor -->
+                        <!-- THÊM MỚI: Hibernate annotation processor -->
                         <path>
                             <groupId>org.hibernate.orm</groupId>
                             <artifactId>hibernate-jpamodelgen</artifactId>
@@ -232,7 +232,7 @@
                 </configuration>
             </plugin>
 
-            <!-- THÃŠM Má»šI: Surefire plugin cho testing -->
+            <!-- THÊM MỚI: Surefire plugin cho testing -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -242,7 +242,7 @@
                 </configuration>
             </plugin>
 
-            <!-- THÃŠM Má»šI: Failsafe plugin cho integration tests -->
+            <!-- THÊM MỚI: Failsafe plugin cho integration tests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
@@ -251,7 +251,7 @@
         </plugins>
     </build>
 
-    <!-- THÃŠM Má»šI: Profiles for different environments -->
+    <!-- THÊM MỚI: Profiles for different environments -->
     <profiles>
         <profile>
             <id>dev</id>

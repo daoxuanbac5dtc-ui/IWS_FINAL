@@ -12,96 +12,96 @@ import java.util.Optional;
 /**
  * Service interface for NhanVien (Employee) management - UPDATED VERSION
  *
- * QUAN TRá»ŒNG:
- * - KhÃ´ng cÃ³ chá»©c nÄƒng thÃªm nhÃ¢n viÃªn trá»±c tiáº¿p
- * - NhÃ¢n viÃªn Ä‘Æ°á»£c táº¡o tá»± Ä‘á»™ng khi táº¡o tÃ i khoáº£n
- * - Chá»‰ cho phÃ©p cáº­p nháº­t thÃ´ng tin cÆ¡ báº£n
- * - KhÃ´ng Ä‘Æ°á»£c thay Ä‘á»•i tÃ i khoáº£n liÃªn káº¿t
- * - ThÃªm há»— trá»£ pagination vÃ  search nÃ¢ng cao
+ * QUAN TRỌNG:
+ * - Không có chức năng thêm nhân viên trực tiếp
+ * - Nhân viên được tạo tự động khi tạo tài khoản
+ * - Chỉ cho phép cập nhật thông tin cơ bản
+ * - Không được thay đổi tài khoản liên kết
+ * - Thêm hỗ trợ pagination và search nâng cao
  */
 public interface NhanVienService {
 
     // ================== BASIC CRUD OPERATIONS ==================
 
     /**
-     * Láº¥y táº¥t cáº£ nhÃ¢n viÃªn vá»›i pagination
-     * @param pageable ThÃ´ng tin phÃ¢n trang vÃ  sáº¯p xáº¿p
-     * @return Page chá»©a danh sÃ¡ch nhÃ¢n viÃªn
+     * Lấy tất cả nhân viên với pagination
+     * @param pageable Thông tin phân trang và sắp xếp
+     * @return Page chứa danh sách nhân viên
      */
     Page<NhanVien> findAllWithPagination(Pageable pageable);
 
     /**
-     * Láº¥y táº¥t cáº£ nhÃ¢n viÃªn (khÃ´ng pagination) - Backward compatibility
-     * @return Danh sÃ¡ch táº¥t cáº£ nhÃ¢n viÃªn
+     * Lấy tất cả nhân viên (không pagination) - Backward compatibility
+     * @return Danh sách tất cả nhân viên
      */
     List<NhanVien> getAllNhanVien();
 
     /**
-     * Láº¥y nhÃ¢n viÃªn theo ID
-     * @param id ID cá»§a nhÃ¢n viÃªn
-     * @return Optional chá»©a nhÃ¢n viÃªn náº¿u tÃ¬m tháº¥y
+     * Lấy nhân viên theo ID
+     * @param id ID của nhân viên
+     * @return Optional chứa nhân viên nếu tìm thấy
      */
     Optional<NhanVien> getNhanVienById(Integer id);
 
     /**
-     * CHá»¨C NÄ‚NG NÃ€Y CHá»ˆ ÄÆ¯á»¢C Sá»¬ Dá»¤NG KHI Táº O Tá»ª TÃ€I KHOáº¢N
-     * ThÃªm nhÃ¢n viÃªn má»›i (Ä‘Æ°á»£c gá»i tá»± Ä‘á»™ng tá»« TaiKhoanService)
-     * @param nhanVien ThÃ´ng tin nhÃ¢n viÃªn cáº§n thÃªm
+     * CHỨC NĂNG NÀY CHỈ ĐƯỢC SỬ DỤNG KHI TẠO TỪ TÀI KHOẢN
+     * Thêm nhân viên mới (được gọi tự động từ TaiKhoanService)
+     * @param nhanVien Thông tin nhân viên cần thêm
      */
     void addNhanVien(NhanVien nhanVien);
 
     /**
-     * Cáº­p nháº­t thÃ´ng tin nhÃ¢n viÃªn - UPDATED
-     * Chá»‰ cho phÃ©p cáº­p nháº­t: há» tÃªn, sá»‘ Ä‘iá»‡n thoáº¡i, mÃ£ nhÃ¢n viÃªn, tráº¡ng thÃ¡i
-     * KHÃ”NG cho phÃ©p thay Ä‘á»•i tÃ i khoáº£n liÃªn káº¿t
-     * @param nhanVien ThÃ´ng tin nhÃ¢n viÃªn cáº§n cáº­p nháº­t
+     * Cập nhật thông tin nhân viên - UPDATED
+     * Chỉ cho phép cập nhật: họ tên, số điện thoại, mã nhân viên, trạng thái
+     * KHÔNG cho phép thay đổi tài khoản liên kết
+     * @param nhanVien Thông tin nhân viên cần cập nhật
      */
     void updateNhanVien(NhanVien nhanVien);
 
     /**
-     * XÃ³a nhÃ¢n viÃªn (soft delete - chá»‰ thay Ä‘á»•i tráº¡ng thÃ¡i)
-     * @param id ID cá»§a nhÃ¢n viÃªn cáº§n xÃ³a
+     * Xóa nhân viên (soft delete - chỉ thay đổi trạng thái)
+     * @param id ID của nhân viên cần xóa
      */
     void deleteNhanVien(Integer id);
 
     /**
-     * XÃ³a nhiá»u nhÃ¢n viÃªn cÃ¹ng lÃºc - NEW
-     * @param ids Danh sÃ¡ch ID nhÃ¢n viÃªn cáº§n xÃ³a
+     * Xóa nhiều nhân viên cùng lúc - NEW
+     * @param ids Danh sách ID nhân viên cần xóa
      */
     void batchDeleteNhanVien(List<Integer> ids);
 
     // ================== ADVANCED SEARCH OPERATIONS - NEW ==================
 
     /**
-     * TÃ¬m kiáº¿m nhÃ¢n viÃªn vá»›i nhiá»u tiÃªu chÃ­ vÃ  pagination - MAIN SEARCH METHOD
-     * @param globalSearch Tá»« khÃ³a tÃ¬m kiáº¿m toÃ n cá»¥c (tÃªn, email, SÄT, mÃ£ NV)
-     * @param trangThai Tráº¡ng thÃ¡i nhÃ¢n viÃªn (null = táº¥t cáº£, 1 = active, 0 = inactive)
-     * @param startDate NgÃ y báº¯t Ä‘áº§u (yyyy-MM-dd)
-     * @param endDate NgÃ y káº¿t thÃºc (yyyy-MM-dd)
-     * @param pageable ThÃ´ng tin phÃ¢n trang vÃ  sáº¯p xáº¿p
-     * @return Page chá»©a káº¿t quáº£ tÃ¬m kiáº¿m
+     * Tìm kiếm nhân viên với nhiều tiêu chí và pagination - MAIN SEARCH METHOD
+     * @param globalSearch Từ khóa tìm kiếm toàn cục (tên, email, SĐT, mã NV)
+     * @param trangThai Trạng thái nhân viên (null = tất cả, 1 = active, 0 = inactive)
+     * @param startDate Ngày bắt đầu (yyyy-MM-dd)
+     * @param endDate Ngày kết thúc (yyyy-MM-dd)
+     * @param pageable Thông tin phân trang và sắp xếp
+     * @return Page chứa kết quả tìm kiếm
      */
     Page<NhanVien> searchWithCriteria(String globalSearch, Integer trangThai,
                                       String startDate, String endDate, Pageable pageable);
 
     /**
-     * TÃ¬m kiáº¿m nhÃ¢n viÃªn theo tá»« khÃ³a - Simplified version
-     * @param keyword Tá»« khÃ³a tÃ¬m kiáº¿m
-     * @return Danh sÃ¡ch nhÃ¢n viÃªn khá»›p vá»›i tá»« khÃ³a
+     * Tìm kiếm nhân viên theo từ khóa - Simplified version
+     * @param keyword Từ khóa tìm kiếm
+     * @return Danh sách nhân viên khớp với từ khóa
      */
     List<NhanVien> searchByKeyword(String keyword);
 
     /**
-     * TÃ¬m kiáº¿m nÃ¢ng cao nhÃ¢n viÃªn vá»›i nhiá»u tiÃªu chÃ­ - Backward compatibility
-     * @param hoTen Há» tÃªn (tÃ¬m kiáº¿m gáº§n Ä‘Ãºng)
-     * @param email Email (tÃ¬m kiáº¿m gáº§n Ä‘Ãºng)
-     * @param sdt Sá»‘ Ä‘iá»‡n thoáº¡i (tÃ¬m kiáº¿m gáº§n Ä‘Ãºng)
-     * @param maNhanVien MÃ£ nhÃ¢n viÃªn (tÃ¬m kiáº¿m gáº§n Ä‘Ãºng)
-     * @param diaChi Äá»‹a chá»‰ (tÃ¬m kiáº¿m gáº§n Ä‘Ãºng)
-     * @param trangThai Tráº¡ng thÃ¡i (tÃ¬m kiáº¿m chÃ­nh xÃ¡c)
-     * @param startDate NgÃ y báº¯t Ä‘áº§u (ngÃ y táº¡o >= startDate)
-     * @param endDate NgÃ y káº¿t thÃºc (ngÃ y táº¡o <= endDate)
-     * @return Danh sÃ¡ch nhÃ¢n viÃªn thá»a mÃ£n cÃ¡c tiÃªu chÃ­
+     * Tìm kiếm nâng cao nhân viên với nhiều tiêu chí - Backward compatibility
+     * @param hoTen Họ tên (tìm kiếm gần đúng)
+     * @param email Email (tìm kiếm gần đúng)
+     * @param sdt Số điện thoại (tìm kiếm gần đúng)
+     * @param maNhanVien Mã nhân viên (tìm kiếm gần đúng)
+     * @param diaChi Địa chỉ (tìm kiếm gần đúng)
+     * @param trangThai Trạng thái (tìm kiếm chính xác)
+     * @param startDate Ngày bắt đầu (ngày tạo >= startDate)
+     * @param endDate Ngày kết thúc (ngày tạo <= endDate)
+     * @return Danh sách nhân viên thỏa mãn các tiêu chí
      */
     List<NhanVien> searchAdvancedWithAllCriteria(
             String hoTen,
@@ -117,218 +117,218 @@ public interface NhanVienService {
     // ================== TAI KHOAN RELATED OPERATIONS ==================
 
     /**
-     * XÃ³a nhÃ¢n viÃªn theo ID tÃ i khoáº£n (hard delete)
-     * ÄÆ°á»£c gá»i khi xÃ³a tÃ i khoáº£n
-     * @param taiKhoanId ID cá»§a tÃ i khoáº£n
+     * Xóa nhân viên theo ID tài khoản (hard delete)
+     * Được gọi khi xóa tài khoản
+     * @param taiKhoanId ID của tài khoản
      */
     void deleteByTaiKhoanId(Integer taiKhoanId);
 
     /**
-     * TÃ¬m nhÃ¢n viÃªn theo ID tÃ i khoáº£n
-     * @param taiKhoanId ID cá»§a tÃ i khoáº£n
-     * @return Optional chá»©a nhÃ¢n viÃªn náº¿u tÃ¬m tháº¥y
+     * Tìm nhân viên theo ID tài khoản
+     * @param taiKhoanId ID của tài khoản
+     * @return Optional chứa nhân viên nếu tìm thấy
      */
     Optional<NhanVien> findByTaiKhoanId(Integer taiKhoanId);
 
     /**
-     * TÃ¬m nhÃ¢n viÃªn theo email tÃ i khoáº£n
-     * @param email Email cá»§a tÃ i khoáº£n
-     * @return Optional chá»©a nhÃ¢n viÃªn náº¿u tÃ¬m tháº¥y
+     * Tìm nhân viên theo email tài khoản
+     * @param email Email của tài khoản
+     * @return Optional chứa nhân viên nếu tìm thấy
      */
     Optional<NhanVien> findByTaiKhoanEmail(String email);
 
     // ================== SIMPLE QUERY OPERATIONS ==================
 
     /**
-     * TÃ¬m nhÃ¢n viÃªn theo mÃ£ nhÃ¢n viÃªn
-     * @param maNhanVien MÃ£ nhÃ¢n viÃªn
-     * @return Optional chá»©a nhÃ¢n viÃªn náº¿u tÃ¬m tháº¥y
+     * Tìm nhân viên theo mã nhân viên
+     * @param maNhanVien Mã nhân viên
+     * @return Optional chứa nhân viên nếu tìm thấy
      */
     Optional<NhanVien> findByMaNhanVien(String maNhanVien);
 
     /**
-     * TÃ¬m nhÃ¢n viÃªn theo tráº¡ng thÃ¡i
-     * @param trangThai Tráº¡ng thÃ¡i (0: nghá»‰ viá»‡c, 1: Ä‘ang lÃ m viá»‡c)
-     * @return Danh sÃ¡ch nhÃ¢n viÃªn cÃ³ tráº¡ng thÃ¡i tÆ°Æ¡ng á»©ng
+     * Tìm nhân viên theo trạng thái
+     * @param trangThai Trạng thái (0: nghỉ việc, 1: đang làm việc)
+     * @return Danh sách nhân viên có trạng thái tương ứng
      */
     List<NhanVien> findByTrangThai(Integer trangThai);
 
     /**
-     * TÃ¬m nhÃ¢n viÃªn theo tráº¡ng thÃ¡i vá»›i pagination - NEW
-     * @param trangThai Tráº¡ng thÃ¡i
-     * @param pageable ThÃ´ng tin phÃ¢n trang
-     * @return Page chá»©a nhÃ¢n viÃªn
+     * Tìm nhân viên theo trạng thái với pagination - NEW
+     * @param trangThai Trạng thái
+     * @param pageable Thông tin phân trang
+     * @return Page chứa nhân viên
      */
     Page<NhanVien> findByTrangThaiWithPagination(Integer trangThai, Pageable pageable);
 
     // ================== VALIDATION METHODS ==================
 
     /**
-     * Validate cÃ¡c tham sá»‘ tÃ¬m kiáº¿m nhÃ¢n viÃªn
-     * @param hoTen Há» tÃªn cáº§n validate
-     * @param email Email cáº§n validate
-     * @param sdt Sá»‘ Ä‘iá»‡n thoáº¡i cáº§n validate
-     * @param maNhanVien MÃ£ nhÃ¢n viÃªn cáº§n validate
-     * @return true náº¿u táº¥t cáº£ tham sá»‘ há»£p lá»‡
+     * Validate các tham số tìm kiếm nhân viên
+     * @param hoTen Họ tên cần validate
+     * @param email Email cần validate
+     * @param sdt Số điện thoại cần validate
+     * @param maNhanVien Mã nhân viên cần validate
+     * @return true nếu tất cả tham số hợp lệ
      */
     boolean isValidNhanVienSearchParams(String hoTen, String email, String sdt, String maNhanVien);
 
     /**
-     * Validate dá»¯ liá»‡u nhÃ¢n viÃªn trÆ°á»›c khi lÆ°u - NEW
-     * @param nhanVien NhÃ¢n viÃªn cáº§n validate
-     * @return Danh sÃ¡ch lá»—i validation (empty náº¿u há»£p lá»‡)
+     * Validate dữ liệu nhân viên trước khi lưu - NEW
+     * @param nhanVien Nhân viên cần validate
+     * @return Danh sách lỗi validation (empty nếu hợp lệ)
      */
     List<String> validateNhanVienData(NhanVien nhanVien);
 
     // ================== EXISTENCE CHECKS ==================
 
     /**
-     * Kiá»ƒm tra mÃ£ nhÃ¢n viÃªn Ä‘Ã£ tá»“n táº¡i chÆ°a
-     * @param maNhanVien MÃ£ nhÃ¢n viÃªn cáº§n kiá»ƒm tra
-     * @return true náº¿u mÃ£ nhÃ¢n viÃªn Ä‘Ã£ tá»“n táº¡i
+     * Kiểm tra mã nhân viên đã tồn tại chưa
+     * @param maNhanVien Mã nhân viên cần kiểm tra
+     * @return true nếu mã nhân viên đã tồn tại
      */
     boolean existsByMaNhanVien(String maNhanVien);
 
     /**
-     * Kiá»ƒm tra mÃ£ nhÃ¢n viÃªn Ä‘Ã£ tá»“n táº¡i (loáº¡i trá»« ID hiá»‡n táº¡i) - NEW
-     * @param maNhanVien MÃ£ nhÃ¢n viÃªn cáº§n kiá»ƒm tra
-     * @param excludeId ID nhÃ¢n viÃªn loáº¡i trá»«
-     * @return true náº¿u mÃ£ nhÃ¢n viÃªn Ä‘Ã£ tá»“n táº¡i
+     * Kiểm tra mã nhân viên đã tồn tại (loại trừ ID hiện tại) - NEW
+     * @param maNhanVien Mã nhân viên cần kiểm tra
+     * @param excludeId ID nhân viên loại trừ
+     * @return true nếu mã nhân viên đã tồn tại
      */
     boolean existsByMaNhanVienExcludingId(String maNhanVien, Integer excludeId);
 
     /**
-     * Kiá»ƒm tra sá»‘ Ä‘iá»‡n thoáº¡i cÃ³ Ä‘ang Ä‘Æ°á»£c sá»­ dá»¥ng bá»Ÿi nhÃ¢n viÃªn khÃ¡c khÃ´ng
-     * @param sdt Sá»‘ Ä‘iá»‡n thoáº¡i cáº§n kiá»ƒm tra
-     * @param excludeId ID nhÃ¢n viÃªn loáº¡i trá»« (cho trÆ°á»ng há»£p update)
-     * @return true náº¿u sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng
+     * Kiểm tra số điện thoại có đang được sử dụng bởi nhân viên khác không
+     * @param sdt Số điện thoại cần kiểm tra
+     * @param excludeId ID nhân viên loại trừ (cho trường hợp update)
+     * @return true nếu số điện thoại đã được sử dụng
      */
     boolean isPhoneNumberUsed(String sdt, Integer excludeId);
 
     // ================== STATISTICAL METHODS ==================
 
     /**
-     * TÃ¬m nhÃ¢n viÃªn theo phÃ²ng ban (náº¿u cÃ³)
-     * @param department TÃªn phÃ²ng ban
-     * @return Danh sÃ¡ch nhÃ¢n viÃªn thuá»™c phÃ²ng ban Ä‘Ã³
+     * Tìm nhân viên theo phòng ban (nếu có)
+     * @param department Tên phòng ban
+     * @return Danh sách nhân viên thuộc phòng ban đó
      */
     List<NhanVien> findByDepartment(String department);
 
     /**
-     * Äáº¿m sá»‘ nhÃ¢n viÃªn Ä‘ang hoáº¡t Ä‘á»™ng trong khoáº£ng thá»i gian
-     * @param startDate NgÃ y báº¯t Ä‘áº§u
-     * @param endDate NgÃ y káº¿t thÃºc
-     * @return Sá»‘ lÆ°á»£ng nhÃ¢n viÃªn active trong khoáº£ng thá»i gian
+     * Đếm số nhân viên đang hoạt động trong khoảng thời gian
+     * @param startDate Ngày bắt đầu
+     * @param endDate Ngày kết thúc
+     * @return Số lượng nhân viên active trong khoảng thời gian
      */
     long countActiveInDateRange(Date startDate, Date endDate);
 
     /**
-     * Láº¥y thá»‘ng kÃª nhÃ¢n viÃªn
-     * @return Map chá»©a thá»‘ng kÃª: total, active, inactive, recent
+     * Lấy thống kê nhân viên
+     * @return Map chứa thống kê: total, active, inactive, recent
      */
     Map<String, Long> getEmployeeStatistics();
 
     /**
-     * Láº¥y thá»‘ng kÃª nhÃ¢n viÃªn vá»›i pagination context - NEW
-     * @param pageable ThÃ´ng tin phÃ¢n trang hiá»‡n táº¡i
-     * @return Map chá»©a thá»‘ng kÃª chi tiáº¿t
+     * Lấy thống kê nhân viên với pagination context - NEW
+     * @param pageable Thông tin phân trang hiện tại
+     * @return Map chứa thống kê chi tiết
      */
     Map<String, Object> getEmployeeStatisticsWithContext(Pageable pageable);
 
     // ================== BUSINESS LOGIC METHODS ==================
 
     /**
-     * Kiá»ƒm tra cÃ³ thá»ƒ xÃ³a nhÃ¢n viÃªn khÃ´ng
-     * @param id ID nhÃ¢n viÃªn
-     * @return true náº¿u cÃ³ thá»ƒ xÃ³a
+     * Kiểm tra có thể xóa nhân viên không
+     * @param id ID nhân viên
+     * @return true nếu có thể xóa
      */
     boolean canDeleteNhanVien(Integer id);
 
     /**
-     * Chuyá»ƒn Ä‘á»•i tráº¡ng thÃ¡i nhÃ¢n viÃªn (active/inactive)
-     * @param id ID nhÃ¢n viÃªn
+     * Chuyển đổi trạng thái nhân viên (active/inactive)
+     * @param id ID nhân viên
      */
     void toggleTrangThai(Integer id);
 
     /**
-     * Láº¥y danh sÃ¡ch nhÃ¢n viÃªn hoáº¡t Ä‘á»™ng
-     * @return Danh sÃ¡ch nhÃ¢n viÃªn cÃ³ tráº¡ng thÃ¡i = 1
+     * Lấy danh sách nhân viên hoạt động
+     * @return Danh sách nhân viên có trạng thái = 1
      */
     List<NhanVien> getActiveNhanVien();
 
     /**
-     * Láº¥y danh sÃ¡ch nhÃ¢n viÃªn hoáº¡t Ä‘á»™ng vá»›i pagination - NEW
-     * @param pageable ThÃ´ng tin phÃ¢n trang
-     * @return Page chá»©a nhÃ¢n viÃªn active
+     * Lấy danh sách nhân viên hoạt động với pagination - NEW
+     * @param pageable Thông tin phân trang
+     * @return Page chứa nhân viên active
      */
     Page<NhanVien> getActiveNhanVienWithPagination(Pageable pageable);
 
     // ================== ADMIN DASHBOARD METHODS ==================
 
     /**
-     * Láº¥y thá»‘ng kÃª dashboard cho ADMIN
-     * @return Map chá»©a thá»‘ng kÃª dashboard
+     * Lấy thống kê dashboard cho ADMIN
+     * @return Map chứa thống kê dashboard
      */
     Map<String, Object> getAdminDashboardStats();
 
     /**
-     * Láº¥y hoáº¡t Ä‘á»™ng gáº§n Ä‘Ã¢y cho ADMIN
-     * @return Danh sÃ¡ch hoáº¡t Ä‘á»™ng gáº§n Ä‘Ã¢y
+     * Lấy hoạt động gần đây cho ADMIN
+     * @return Danh sách hoạt động gần đây
      */
     List<Map<String, Object>> getRecentActivities();
 
     /**
-     * Láº¥y nhÃ¢n viÃªn má»›i trong X ngÃ y
-     * @param days Sá»‘ ngÃ y
-     * @return Danh sÃ¡ch nhÃ¢n viÃªn má»›i
+     * Lấy nhân viên mới trong X ngày
+     * @param days Số ngày
+     * @return Danh sách nhân viên mới
      */
     List<NhanVien> getNewEmployees(int days);
 
     /**
-     * Láº¥y nhÃ¢n viÃªn cáº§n ADMIN xem xÃ©t
-     * @return Danh sÃ¡ch nhÃ¢n viÃªn cáº§n review
+     * Lấy nhân viên cần ADMIN xem xét
+     * @return Danh sách nhân viên cần review
      */
     List<NhanVien> getEmployeesNeedingReview();
 
     /**
-     * Láº¥y nhÃ¢n viÃªn cÃ³ hoáº¡t Ä‘á»™ng gáº§n Ä‘Ã¢y
-     * @return Danh sÃ¡ch nhÃ¢n viÃªn active gáº§n Ä‘Ã¢y
+     * Lấy nhân viên có hoạt động gần đây
+     * @return Danh sách nhân viên active gần đây
      */
     List<NhanVien> getRecentlyActiveEmployees();
 
     // ================== CACHE MANAGEMENT - NEW ==================
 
     /**
-     * XÃ³a cache liÃªn quan Ä‘áº¿n nhÃ¢n viÃªn
+     * Xóa cache liên quan đến nhân viên
      */
     void clearEmployeeCache();
 
     /**
-     * Refresh cache cho má»™t nhÃ¢n viÃªn cá»¥ thá»ƒ
-     * @param employeeId ID nhÃ¢n viÃªn
+     * Refresh cache cho một nhân viên cụ thể
+     * @param employeeId ID nhân viên
      */
     void refreshEmployeeCache(Integer employeeId);
 
     // ================== EXPORT/IMPORT METHODS - NEW ==================
 
     /**
-     * Xuáº¥t danh sÃ¡ch nhÃ¢n viÃªn ra Excel
-     * @param searchCriteria TiÃªu chÃ­ tÃ¬m kiáº¿m Ä‘á»ƒ xuáº¥t
-     * @return Byte array cá»§a file Excel
+     * Xuất danh sách nhân viên ra Excel
+     * @param searchCriteria Tiêu chí tìm kiếm để xuất
+     * @return Byte array của file Excel
      */
     byte[] exportEmployeesToExcel(Map<String, Object> searchCriteria);
 
     /**
-     * Láº¥y template Excel Ä‘á»ƒ import nhÃ¢n viÃªn
-     * @return Byte array cá»§a template Excel
+     * Lấy template Excel để import nhân viên
+     * @return Byte array của template Excel
      */
     byte[] getEmployeeImportTemplate();
 
     // ================== PERFORMANCE MONITORING - NEW ==================
 
     /**
-     * Láº¥y metrics hiá»‡u suáº¥t cá»§a service
-     * @return Map chá»©a metrics
+     * Lấy metrics hiệu suất của service
+     * @return Map chứa metrics
      */
     Map<String, Object> getPerformanceMetrics();
 

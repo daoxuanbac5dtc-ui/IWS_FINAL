@@ -14,8 +14,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Triá»ƒn khai service quáº£n lÃ½ KhÃ¡ch hÃ ng - ÄÃƒ Sá»¬A Lá»–I LazyInitializationException
- * Cung cáº¥p cÃ¡c chá»©c nÄƒng CRUD vÃ  tÃ¬m kiáº¿m cho khÃ¡ch hÃ ng
+ * Triển khai service quản lý Khách hàng - ĐÃ SỬA LỖI LazyInitializationException
+ * Cung cấp các chức năng CRUD và tìm kiếm cho khách hàng
  */
 @Service
 @Transactional
@@ -27,7 +27,7 @@ public class KhachHangServiceImpl implements KhachHangService {
     @Autowired
     private DiaChiService diaChiService;
 
-    // ================== CÃC THAO TÃC CRUD CÆ  Báº¢N ==================
+    // ================== CÁC THAO TÁC CRUD CƠ BẢN ==================
 
     @Override
     @Transactional(readOnly = true)
@@ -48,7 +48,7 @@ public class KhachHangServiceImpl implements KhachHangService {
             return repoKhachHang.findAllWithTaiKhoan();
         } catch (Exception e) {
             System.err.println("Error getting all customers with complete info: " + e.getMessage());
-            throw new RuntimeException("Lá»—i khi láº¥y danh sÃ¡ch khÃ¡ch hÃ ng: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi khi lấy danh sách khách hàng: " + e.getMessage(), e);
         }
     }
 
@@ -76,7 +76,7 @@ public class KhachHangServiceImpl implements KhachHangService {
             return repoKhachHang.findByIdWithTaiKhoan(id);
         } catch (Exception e) {
             System.err.println("Error getting customer by ID with eager loading " + id + ": " + e.getMessage());
-            throw new RuntimeException("Lá»—i khi láº¥y thÃ´ng tin khÃ¡ch hÃ ng: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi khi lấy thông tin khách hàng: " + e.getMessage(), e);
         }
     }
 
@@ -84,28 +84,28 @@ public class KhachHangServiceImpl implements KhachHangService {
     public void addKhachHang(KhachHang khachHang) {
         try {
             if (khachHang == null) {
-                throw new IllegalArgumentException("ThÃ´ng tin khÃ¡ch hÃ ng khÃ´ng Ä‘Æ°á»£c null");
+                throw new IllegalArgumentException("Thông tin khách hàng không được null");
             }
 
-            // Thiáº¿t láº­p ngÃ y táº¡o náº¿u chÆ°a cÃ³
+            // Thiết lập ngày tạo nếu chưa có
             if (khachHang.getNgayTao() == null) {
                 khachHang.setNgayTao(new Date());
             }
             khachHang.setNgayCapNhat(new Date());
 
-            // Táº¡o mÃ£ khÃ¡ch hÃ ng náº¿u chÆ°a cÃ³
+            // Tạo mã khách hàng nếu chưa có
             if (khachHang.getMaKhachHang() == null || khachHang.getMaKhachHang().isEmpty()) {
                 khachHang.setMaKhachHang(generateMaKhachHang());
             }
 
-            // Thiáº¿t láº­p tráº¡ng thÃ¡i máº·c Ä‘á»‹nh
+            // Thiết lập trạng thái mặc định
             if (khachHang.getTrangThai() == null) {
                 khachHang.setTrangThai(1);
             }
 
-            // Kiá»ƒm tra trÃ¹ng láº·p
+            // Kiểm tra trùng lặp
             if (existsBySdt(khachHang.getSdt())) {
-                throw new IllegalArgumentException("Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ tá»“n táº¡i: " + khachHang.getSdt());
+                throw new IllegalArgumentException("Số điện thoại đã tồn tại: " + khachHang.getSdt());
             }
 
             validateKhachHangData(khachHang);
@@ -114,7 +114,7 @@ public class KhachHangServiceImpl implements KhachHangService {
 
         } catch (Exception e) {
             System.err.println("Error adding customer: " + e.getMessage());
-            throw new RuntimeException("Lá»—i khi thÃªm khÃ¡ch hÃ ng: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi khi thêm khách hàng: " + e.getMessage(), e);
         }
     }
 
@@ -122,12 +122,12 @@ public class KhachHangServiceImpl implements KhachHangService {
     public void updateKhachHang(KhachHang khachHang) {
         try {
             if (khachHang == null || khachHang.getId() == null) {
-                throw new IllegalArgumentException("ThÃ´ng tin khÃ¡ch hÃ ng hoáº·c ID khÃ´ng Ä‘Æ°á»£c null");
+                throw new IllegalArgumentException("Thông tin khách hàng hoặc ID không được null");
             }
 
             Optional<KhachHang> existing = getKhachHangById(khachHang.getId());
             if (existing.isEmpty()) {
-                throw new IllegalArgumentException("KhÃ´ng tÃ¬m tháº¥y khÃ¡ch hÃ ng vá»›i ID: " + khachHang.getId());
+                throw new IllegalArgumentException("Không tìm thấy khách hàng với ID: " + khachHang.getId());
             }
 
             validateKhachHangData(khachHang);
@@ -135,7 +135,7 @@ public class KhachHangServiceImpl implements KhachHangService {
             KhachHang existingKH = existing.get();
             if (!khachHang.getSdt().equals(existingKH.getSdt())) {
                 if (existsBySdt(khachHang.getSdt())) {
-                    throw new IllegalArgumentException("Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng bá»Ÿi khÃ¡ch hÃ ng khÃ¡c");
+                    throw new IllegalArgumentException("Số điện thoại đã được sử dụng bởi khách hàng khác");
                 }
             }
 
@@ -150,7 +150,7 @@ public class KhachHangServiceImpl implements KhachHangService {
 
         } catch (Exception e) {
             System.err.println("Error updating customer: " + e.getMessage());
-            throw new RuntimeException("Lá»—i khi cáº­p nháº­t khÃ¡ch hÃ ng: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi khi cập nhật khách hàng: " + e.getMessage(), e);
         }
     }
 
@@ -158,17 +158,17 @@ public class KhachHangServiceImpl implements KhachHangService {
     public void deleteKhachHang(Integer id) {
         try {
             if (id == null || id <= 0) {
-                throw new IllegalArgumentException("ID khÃ¡ch hÃ ng khÃ´ng há»£p lá»‡");
+                throw new IllegalArgumentException("ID khách hàng không hợp lệ");
             }
 
             Optional<KhachHang> khachHang = getKhachHangById(id);
             if (khachHang.isEmpty()) {
-                throw new IllegalArgumentException("KhÃ´ng tÃ¬m tháº¥y khÃ¡ch hÃ ng vá»›i ID: " + id);
+                throw new IllegalArgumentException("Không tìm thấy khách hàng với ID: " + id);
             }
 
             KhachHang kh = khachHang.get();
             if (!canDeleteKhachHang(id)) {
-                throw new IllegalStateException("KhÃ´ng thá»ƒ xÃ³a khÃ¡ch hÃ ng nÃ y do cÃ²n dá»¯ liá»‡u liÃªn quan");
+                throw new IllegalStateException("Không thể xóa khách hàng này do còn dữ liệu liên quan");
             }
 
             // Soft delete
@@ -180,7 +180,7 @@ public class KhachHangServiceImpl implements KhachHangService {
 
         } catch (Exception e) {
             System.err.println("Error deleting customer: " + e.getMessage());
-            throw new RuntimeException("Lá»—i khi xÃ³a khÃ¡ch hÃ ng: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi khi xóa khách hàng: " + e.getMessage(), e);
         }
     }
 
@@ -188,24 +188,24 @@ public class KhachHangServiceImpl implements KhachHangService {
     @Transactional(readOnly = true)
     public KhachHang findByTaiKhoanId(Integer taiKhoanId) {
         try {
-            System.out.println("ðŸ” DEBUG KhachHangService - TÃ¬m khÃ¡ch hÃ ng theo TaiKhoan ID: " + taiKhoanId);
+            System.out.println("🔍 DEBUG KhachHangService - Tìm khách hàng theo TaiKhoan ID: " + taiKhoanId);
 
-            // TÃ¬m theo tai_khoan_id trong báº£ng khach_hang
+            // Tìm theo tai_khoan_id trong bảng khach_hang
             Optional<KhachHang> result = repoKhachHang.findByTaiKhoanId(taiKhoanId);
 
             if (result.isPresent()) {
                 KhachHang khachHang = result.get();
-                System.out.println("âœ… DEBUG KhachHangService - TÃ¬m tháº¥y: " +
+                System.out.println("✅ DEBUG KhachHangService - Tìm thấy: " +
                         "KH.ID=" + khachHang.getId() +
-                        ", TÃªn=" + khachHang.getHoTen() +
+                        ", Tên=" + khachHang.getHoTen() +
                         ", TaiKhoan.ID=" + (khachHang.getTaiKhoan() != null ? khachHang.getTaiKhoan().getId() : "null"));
                 return khachHang;
             } else {
-                System.out.println("âŒ DEBUG KhachHangService - KhÃ´ng tÃ¬m tháº¥y khÃ¡ch hÃ ng cho TaiKhoan ID: " + taiKhoanId);
+                System.out.println("❌ DEBUG KhachHangService - Không tìm thấy khách hàng cho TaiKhoan ID: " + taiKhoanId);
                 return null;
             }
         } catch (Exception e) {
-            System.out.println("ðŸ’¥ DEBUG KhachHangService - Lá»—i: " + e.getMessage());
+            System.out.println("💥 DEBUG KhachHangService - Lỗi: " + e.getMessage());
             e.printStackTrace();
             return null;
         }
@@ -233,11 +233,11 @@ public class KhachHangServiceImpl implements KhachHangService {
         } catch (Exception e) {
             System.err.println("Error deleting customer by taiKhoanId: " + e.getMessage());
             e.printStackTrace();
-            throw new RuntimeException("KhÃ´ng thá»ƒ xÃ³a khÃ¡ch hÃ ng: " + e.getMessage(), e);
+            throw new RuntimeException("Không thể xóa khách hàng: " + e.getMessage(), e);
         }
     }
 
-    // ================== CÃC PHÆ¯Æ NG THá»¨C TÃŒM KIáº¾M ==================
+    // ================== CÁC PHƯƠNG THỨC TÌM KIẾM ==================
 
     @Override
     @Transactional(readOnly = true)
@@ -325,7 +325,7 @@ public class KhachHangServiceImpl implements KhachHangService {
         }
     }
 
-    // ================== CÃC PHÆ¯Æ NG THá»¨C TÃŒM KIáº¾M CÆ  Báº¢N ==================
+    // ================== CÁC PHƯƠNG THỨC TÌM KIẾM CƠ BẢN ==================
 
     @Override
     @Transactional(readOnly = true)
@@ -350,7 +350,7 @@ public class KhachHangServiceImpl implements KhachHangService {
 
             return baseResults.stream()
                     .filter(kh -> {
-                        // Filter theo khoáº£ng thá»i gian
+                        // Filter theo khoảng thời gian
                         if (startDate != null && kh.getNgayTao() != null && kh.getNgayTao().before(startDate)) {
                             return false;
                         }
@@ -363,7 +363,7 @@ public class KhachHangServiceImpl implements KhachHangService {
 
         } catch (Exception e) {
             System.err.println("Error in advanced search: " + e.getMessage());
-            throw new RuntimeException("TÃ¬m kiáº¿m nÃ¢ng cao tháº¥t báº¡i: " + e.getMessage(), e);
+            throw new RuntimeException("Tìm kiếm nâng cao thất bại: " + e.getMessage(), e);
         }
     }
 
@@ -379,14 +379,14 @@ public class KhachHangServiceImpl implements KhachHangService {
 
             return baseResults.stream()
                     .filter(kh -> {
-                        // Filter theo Ä‘á»‹a chá»‰
+                        // Filter theo địa chỉ
                         if (diaChi != null && !diaChi.trim().isEmpty()) {
                             if (!searchInAddress(kh, diaChi)) {
                                 return false;
                             }
                         }
 
-                        // Filter theo khoáº£ng thá»i gian
+                        // Filter theo khoảng thời gian
                         if (startDate != null && kh.getNgayTao() != null && kh.getNgayTao().before(startDate)) {
                             return false;
                         }
@@ -400,7 +400,7 @@ public class KhachHangServiceImpl implements KhachHangService {
 
         } catch (Exception e) {
             System.err.println("Error in advanced search with all criteria: " + e.getMessage());
-            throw new RuntimeException("TÃ¬m kiáº¿m nÃ¢ng cao khÃ¡ch hÃ ng tháº¥t báº¡i: " + e.getMessage(), e);
+            throw new RuntimeException("Tìm kiếm nâng cao khách hàng thất bại: " + e.getMessage(), e);
         }
     }
 
@@ -420,7 +420,7 @@ public class KhachHangServiceImpl implements KhachHangService {
                                 match = match && provinceCode.equals(dc.getMaTinh());
                             }
 
-                            // districtCode deprecated - khÃ´ng sá»­ dá»¥ng ná»¯a
+                            // districtCode deprecated - không sử dụng nữa
 
                             if (addressDetail != null && !addressDetail.trim().isEmpty()) {
                                 match = match && dc.getDiaChiChiTiet() != null &&
@@ -471,7 +471,7 @@ public class KhachHangServiceImpl implements KhachHangService {
         }
     }
 
-    // ================== CÃC PHÆ¯Æ NG THá»¨C VALIDATION ==================
+    // ================== CÁC PHƯƠNG THỨC VALIDATION ==================
 
     @Override
     public boolean isValidKhachHangSearchParams(String hoTen, String email, String sdt) {
@@ -495,7 +495,7 @@ public class KhachHangServiceImpl implements KhachHangService {
         }
     }
 
-    // ================== CÃC PHÆ¯Æ NG THá»¨C THá»NG KÃŠ ==================
+    // ================== CÁC PHƯƠNG THỨC THỐNG KÊ ==================
 
     @Override
     @Transactional(readOnly = true)
@@ -533,7 +533,7 @@ public class KhachHangServiceImpl implements KhachHangService {
             stats.put("active", allCustomers.stream().filter(kh -> kh.getTrangThai() == 1).count());
             stats.put("inactive", allCustomers.stream().filter(kh -> kh.getTrangThai() == 0).count());
 
-            // KhÃ¡ch hÃ ng má»›i (trong 30 ngÃ y qua)
+            // Khách hàng mới (trong 30 ngày qua)
             Date thirtyDaysAgo = new Date(System.currentTimeMillis() - (30 * 24 * 60 * 60 * 1000L));
             stats.put("recent", allCustomers.stream()
                     .filter(kh -> kh.getNgayTao() != null && kh.getNgayTao().after(thirtyDaysAgo))
@@ -543,7 +543,7 @@ public class KhachHangServiceImpl implements KhachHangService {
                     .filter(KhachHang::isProfileCompleted)
                     .count());
 
-            // KhÃ¡ch hÃ ng hÃ´m nay
+            // Khách hàng hôm nay
             Date today = new Date();
             Date startOfDay = new Date(today.getTime() - (today.getTime() % (24 * 60 * 60 * 1000)));
             Date endOfDay = new Date(startOfDay.getTime() + (24 * 60 * 60 * 1000) - 1);
@@ -561,35 +561,35 @@ public class KhachHangServiceImpl implements KhachHangService {
         }
     }
 
-    // ================== CÃC PHÆ¯Æ NG THá»¨C NGHIá»†P Vá»¤ ==================
+    // ================== CÁC PHƯƠNG THỨC NGHIỆP VỤ ==================
 
     @Override
     @Transactional
     public KhachHang completeProfile(Integer id, KhachHangDto profileData) {
         try {
             if (id == null || id <= 0) {
-                throw new IllegalArgumentException("ID khÃ¡ch hÃ ng khÃ´ng há»£p lá»‡");
+                throw new IllegalArgumentException("ID khách hàng không hợp lệ");
             }
 
             if (profileData == null) {
-                throw new IllegalArgumentException("Dá»¯ liá»‡u profile khÃ´ng Ä‘Æ°á»£c null");
+                throw new IllegalArgumentException("Dữ liệu profile không được null");
             }
 
             Optional<KhachHang> customerOpt = findByIdWithEagerLoading(id);
             if (customerOpt.isEmpty()) {
-                throw new IllegalArgumentException("KhÃ´ng tÃ¬m tháº¥y khÃ¡ch hÃ ng vá»›i ID: " + id);
+                throw new IllegalArgumentException("Không tìm thấy khách hàng với ID: " + id);
             }
 
             KhachHang customer = customerOpt.get();
 
             List<String> validationErrors = profileData.getProfileCompletionErrors();
             if (!validationErrors.isEmpty()) {
-                throw new IllegalArgumentException("Dá»¯ liá»‡u khÃ´ng há»£p lá»‡: " + String.join(", ", validationErrors));
+                throw new IllegalArgumentException("Dữ liệu không hợp lệ: " + String.join(", ", validationErrors));
             }
 
             if (!profileData.getSdt().equals(customer.getSdt())) {
                 if (isPhoneNumberUsed(profileData.getSdt(), id)) {
-                    throw new IllegalArgumentException("Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng bá»Ÿi khÃ¡ch hÃ ng khÃ¡c");
+                    throw new IllegalArgumentException("Số điện thoại đã được sử dụng bởi khách hàng khác");
                 }
             }
 
@@ -601,7 +601,7 @@ public class KhachHangServiceImpl implements KhachHangService {
 
         } catch (Exception e) {
             System.err.println("Error completing customer profile: " + e.getMessage());
-            throw new RuntimeException("Lá»—i khi hoÃ n thiá»‡n profile: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi khi hoàn thiện profile: " + e.getMessage(), e);
         }
     }
 
@@ -610,16 +610,16 @@ public class KhachHangServiceImpl implements KhachHangService {
     public void updateStatus(Integer id, Integer trangThai) {
         try {
             if (id == null || id <= 0) {
-                throw new IllegalArgumentException("ID khÃ¡ch hÃ ng khÃ´ng há»£p lá»‡");
+                throw new IllegalArgumentException("ID khách hàng không hợp lệ");
             }
 
             if (trangThai == null || (trangThai != 0 && trangThai != 1)) {
-                throw new IllegalArgumentException("Tráº¡ng thÃ¡i khÃ´ng há»£p lá»‡ (chá»‰ nháº­n 0 hoáº·c 1)");
+                throw new IllegalArgumentException("Trạng thái không hợp lệ (chỉ nhận 0 hoặc 1)");
             }
 
             Optional<KhachHang> customerOpt = findByIdWithEagerLoading(id);
             if (customerOpt.isEmpty()) {
-                throw new IllegalArgumentException("KhÃ´ng tÃ¬m tháº¥y khÃ¡ch hÃ ng vá»›i ID: " + id);
+                throw new IllegalArgumentException("Không tìm thấy khách hàng với ID: " + id);
             }
 
             KhachHang customer = customerOpt.get();
@@ -639,7 +639,7 @@ public class KhachHangServiceImpl implements KhachHangService {
 
         } catch (Exception e) {
             System.err.println("Error updating customer status: " + e.getMessage());
-            throw new RuntimeException("Lá»—i khi cáº­p nháº­t tráº¡ng thÃ¡i: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi khi cập nhật trạng thái: " + e.getMessage(), e);
         }
     }
 
@@ -740,7 +740,7 @@ public class KhachHangServiceImpl implements KhachHangService {
             info.setIsDefault(diaChi.getIsDefault());
             info.setTrangThai(diaChi.getTrangThai());
 
-            // GhÃ©p Ä‘á»‹a chá»‰ Ä‘áº§y Ä‘á»§ (2-level addressing)
+            // Ghép địa chỉ đầy đủ (2-level addressing)
             List<String> parts = new ArrayList<>();
             if (diaChi.getDiaChiChiTiet() != null && !diaChi.getDiaChiChiTiet().trim().isEmpty()) {
                 parts.add(diaChi.getDiaChiChiTiet().trim());
@@ -752,7 +752,7 @@ public class KhachHangServiceImpl implements KhachHangService {
                 parts.add(diaChi.getTenTinh().trim());
             }
 
-            String diaChiDayDu = parts.isEmpty() ? "ChÆ°a cÃ³ Ä‘á»‹a chá»‰" : String.join(", ", parts);
+            String diaChiDayDu = parts.isEmpty() ? "Chưa có địa chỉ" : String.join(", ", parts);
             info.setDiaChiDayDu(diaChiDayDu);
 
             return info;
@@ -762,7 +762,7 @@ public class KhachHangServiceImpl implements KhachHangService {
         }
     }
 
-    // ================== CÃC PHÆ¯Æ NG THá»¨C Bá»” SUNG ==================
+    // ================== CÁC PHƯƠNG THỨC BỔ SUNG ==================
 
     @Override
     @Transactional(readOnly = true)
@@ -850,18 +850,18 @@ public class KhachHangServiceImpl implements KhachHangService {
                 String statusText = newStatus == 1 ? "activated" : "deactivated";
                 System.out.println("Customer " + statusText + ": " + kh.getHoTen() + " (ID: " + id + ")");
             } else {
-                throw new IllegalArgumentException("KhÃ´ng tÃ¬m tháº¥y khÃ¡ch hÃ ng vá»›i ID: " + id);
+                throw new IllegalArgumentException("Không tìm thấy khách hàng với ID: " + id);
             }
         } catch (Exception e) {
             System.err.println("Error toggling customer status: " + e.getMessage());
-            throw new RuntimeException("Lá»—i khi thay Ä‘á»•i tráº¡ng thÃ¡i khÃ¡ch hÃ ng: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi khi thay đổi trạng thái khách hàng: " + e.getMessage(), e);
         }
     }
 
     // ================== UTILITY METHODS ==================
 
     /**
-     * TÃ¬m kiáº¿m trong Ä‘á»‹a chá»‰ cá»§a khÃ¡ch hÃ ng
+     * Tìm kiếm trong địa chỉ của khách hàng
      */
     private boolean searchInAddress(KhachHang kh, String diaChi) {
         if (kh.getTaiKhoan() == null) return false;
@@ -884,7 +884,7 @@ public class KhachHangServiceImpl implements KhachHangService {
     }
 
     /**
-     * Táº¡o mÃ£ khÃ¡ch hÃ ng duy nháº¥t
+     * Tạo mã khách hàng duy nhất
      */
     private String generateMaKhachHang() {
         try {
@@ -912,42 +912,42 @@ public class KhachHangServiceImpl implements KhachHangService {
     }
 
     /**
-     * Validate dá»¯ liá»‡u cÆ¡ báº£n cá»§a khÃ¡ch hÃ ng
+     * Validate dữ liệu cơ bản của khách hàng
      */
     private void validateKhachHangData(KhachHang khachHang) {
         if (khachHang == null) {
-            throw new IllegalArgumentException("ThÃ´ng tin khÃ¡ch hÃ ng khÃ´ng Ä‘Æ°á»£c null");
+            throw new IllegalArgumentException("Thông tin khách hàng không được null");
         }
 
         if (khachHang.getHoTen() == null || khachHang.getHoTen().trim().isEmpty()) {
-            throw new IllegalArgumentException("Há» tÃªn khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            throw new IllegalArgumentException("Họ tên không được để trống");
         }
         if (khachHang.getHoTen().length() > 255) {
-            throw new IllegalArgumentException("Há» tÃªn khÃ´ng Ä‘Æ°á»£c quÃ¡ 255 kÃ½ tá»±");
+            throw new IllegalArgumentException("Họ tên không được quá 255 ký tự");
         }
 
         if (khachHang.getSdt() == null || khachHang.getSdt().trim().isEmpty()) {
-            throw new IllegalArgumentException("Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            throw new IllegalArgumentException("Số điện thoại không được để trống");
         }
         if (!khachHang.getSdt().matches("^0\\d{9}$")) {
-            throw new IllegalArgumentException("Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng há»£p lá»‡ (pháº£i cÃ³ 10 sá»‘ vÃ  báº¯t Ä‘áº§u báº±ng 0)");
+            throw new IllegalArgumentException("Số điện thoại không hợp lệ (phải có 10 số và bắt đầu bằng 0)");
         }
 
         if (khachHang.getTrangThai() == null || (khachHang.getTrangThai() != 0 && khachHang.getTrangThai() != 1)) {
-            throw new IllegalArgumentException("Tráº¡ng thÃ¡i khÃ´ng há»£p lá»‡ (chá»‰ nháº­n 0 hoáº·c 1)");
+            throw new IllegalArgumentException("Trạng thái không hợp lệ (chỉ nhận 0 hoặc 1)");
         }
     }
 
     /**
-     * Validate tÃªn (chá»‰ chá»¯ cÃ¡i vÃ  khoáº£ng tráº¯ng, há»— trá»£ tiáº¿ng Viá»‡t)
+     * Validate tên (chỉ chữ cái và khoảng trắng, hỗ trợ tiếng Việt)
      */
     private boolean isValidName(String name) {
         if (name == null || name.trim().isEmpty()) return false;
-        return name.matches("^[a-zA-ZÃ€ÃÃ‚ÃƒÃˆÃ‰ÃŠÃŒÃÃ’Ã“Ã”Ã•Ã™ÃšÄ‚ÄÄ¨Å¨Æ Ã Ã¡Ã¢Ã£Ã¨Ã©ÃªÃ¬Ã­Ã²Ã³Ã´ÃµÃ¹ÃºÄƒÄ‘Ä©Å©Æ¡Æ¯Ä‚áº áº¢áº¤áº¦áº¨áºªáº¬áº®áº°áº²áº´áº¶áº¸áººáº¼á»€á»€á»‚Æ°Äƒáº¡áº£áº¥áº§áº©áº«áº­áº¯áº±áº³áºµáº·áº¹áº»áº½á»áº¿á»ƒá»„á»†á»ˆá»Šá»Œá»Žá»á»’á»”á»–á»˜á»šá»œá»žá» á»¢á»¤á»¦á»¨á»ªá»…á»‡á»‰á»‹á»á»á»‘á»“á»•á»—á»™á»›á»á»Ÿá»¡á»£á»¥á»§á»©á»«á»¬á»®á»°á»²á»´Ãá»¶á»¸á»­á»¯á»±á»³á»µÃ½á»·á»¹\\s]+$");
+        return name.matches("^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềếểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵýỷỹ\\s]+$");
     }
 
     /**
-     * Validate Ä‘á»‹nh dáº¡ng email
+     * Validate định dạng email
      */
     private boolean isValidEmailFormat(String email) {
         if (email == null || email.trim().isEmpty()) return false;
@@ -955,7 +955,7 @@ public class KhachHangServiceImpl implements KhachHangService {
     }
 
     /**
-     * Validate sá»‘ Ä‘iá»‡n thoáº¡i (10-11 sá»‘, báº¯t Ä‘áº§u báº±ng 0)
+     * Validate số điện thoại (10-11 số, bắt đầu bằng 0)
      */
     private boolean isValidPhoneNumber(String phone) {
         if (phone == null || phone.trim().isEmpty()) return false;

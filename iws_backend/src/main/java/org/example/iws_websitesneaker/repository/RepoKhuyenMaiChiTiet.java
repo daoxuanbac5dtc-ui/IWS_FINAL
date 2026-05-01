@@ -12,14 +12,14 @@ import java.util.List;
 
 @Repository
 public interface RepoKhuyenMaiChiTiet extends JpaRepository<KhuyenMaiChiTiet, Integer> {
-    // Method Ä‘á»ƒ tÃ¬m chi tiáº¿t khuyáº¿n mÃ£i theo ID khuyáº¿n mÃ£i
+    // Method để tìm chi tiết khuyến mãi theo ID khuyến mãi
     List<KhuyenMaiChiTiet> findByKhuyenMaiId(Integer khuyenMaiId);
 
-    // Hoáº·c sá»­ dá»¥ng query tÃ¹y chá»‰nh
+    // Hoặc sử dụng query tùy chỉnh
     @Query("SELECT k FROM KhuyenMaiChiTiet k WHERE k.khuyenMai.id = :khuyenMaiId")
     List<KhuyenMaiChiTiet> findByKhuyenMaiIdCustom(@Param("khuyenMaiId") Integer khuyenMaiId);
 
-    // XÃ³a Khuyáº¿n mÃ£i - sá»­a id khuyÃªn mÃ£i trong báº£ng ctsp vá» null
+    // Xóa Khuyến mãi - sửa id khuyên mãi trong bảng ctsp về null
     @Modifying
     @Transactional
     @Query("UPDATE KhuyenMaiChiTiet kmct SET kmct.khuyenMai = NULL WHERE kmct.khuyenMai.id = :id")

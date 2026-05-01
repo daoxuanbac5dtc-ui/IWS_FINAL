@@ -8,13 +8,13 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ValidateVoucherRequest {
-    @NotBlank(message = "MÃ£ voucher khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
+    @NotBlank(message = "Mã voucher không được để trống")
     private String maVoucher;
 
     private Integer khachHangId;
 
-    @NotNull(message = "Tá»•ng tiá»n khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Tá»•ng tiá»n pháº£i lá»›n hÆ¡n 0")
+    @NotNull(message = "Tổng tiền không được để trống")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Tổng tiền phải lớn hơn 0")
     private Double tongTien;
 }
 

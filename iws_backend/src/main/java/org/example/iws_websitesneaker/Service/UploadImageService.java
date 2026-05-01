@@ -5,31 +5,31 @@ import org.springframework.web.multipart.MultipartFile;
 public interface UploadImageService {
 
     /**
-     * LÆ°u áº£nh vÃ o thÆ° má»¥c chá»‰ Ä‘á»‹nh
-     * @param file File áº£nh cáº§n lÆ°u
-     * @param folder ThÆ° má»¥c Ä‘Ã­ch (vÃ­ dá»¥: "return-images", "product-images")
-     * @return ÄÆ°á»ng dáº«n tÆ°Æ¡ng Ä‘á»‘i cá»§a áº£nh Ä‘Ã£ lÆ°u
+     * Lưu ảnh vào thư mục chỉ định
+     * @param file File ảnh cần lưu
+     * @param folder Thư mục đích (ví dụ: "return-images", "product-images")
+     * @return Đường dẫn tương đối của ảnh đã lưu
      */
     String saveImage(MultipartFile file, String folder);
 
     /**
-     * XÃ³a áº£nh khá»i há»‡ thá»‘ng
-     * @param imagePath ÄÆ°á»ng dáº«n áº£nh cáº§n xÃ³a
-     * @return true náº¿u xÃ³a thÃ nh cÃ´ng, false náº¿u tháº¥t báº¡i
+     * Xóa ảnh khỏi hệ thống
+     * @param imagePath Đường dẫn ảnh cần xóa
+     * @return true nếu xóa thành công, false nếu thất bại
      */
     boolean deleteImage(String imagePath);
 
     /**
-     * Kiá»ƒm tra file cÃ³ pháº£i lÃ  áº£nh há»£p lá»‡ khÃ´ng
-     * @param file File cáº§n kiá»ƒm tra
-     * @return true náº¿u lÃ  áº£nh há»£p lá»‡
+     * Kiểm tra file có phải là ảnh hợp lệ không
+     * @param file File cần kiểm tra
+     * @return true nếu là ảnh hợp lệ
      */
     boolean isValidImage(MultipartFile file);
 
     /**
-     * Láº¥y Ä‘Æ°á»ng dáº«n Ä‘áº§y Ä‘á»§ cá»§a áº£nh
-     * @param relativePath ÄÆ°á»ng dáº«n tÆ°Æ¡ng Ä‘á»‘i
-     * @return ÄÆ°á»ng dáº«n Ä‘áº§y Ä‘á»§
+     * Lấy đường dẫn đầy đủ của ảnh
+     * @param relativePath Đường dẫn tương đối
+     * @return Đường dẫn đầy đủ
      */
     String getFullImagePath(String relativePath);
 }

@@ -14,11 +14,11 @@ import lombok.Setter;
 public class KichCoDto {
 
     private Integer id;
-    @NotBlank(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng mÃ£ kÃ­ch cá»¡!")
+    @NotBlank(message = "Không được để trống mã kích cỡ!")
     private String maKichCo;
-    @NotBlank(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng tÃªn kÃ­ch cá»¡!")
+    @NotBlank(message = "Không được để trống tên kích cỡ!")
     private String tenKichCo;
-    @NotNull(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng tráº¡ng thÃ¡i kÃ­ch cá»¡!")
+    @NotNull(message = "Không được để trống trạng thái kích cỡ!")
     private Integer trangThai;
 }
 

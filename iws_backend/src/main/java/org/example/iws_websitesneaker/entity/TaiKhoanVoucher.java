@@ -14,11 +14,11 @@ public class TaiKhoanVoucher {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "id_tai_khoan", nullable = true) // chuyáº¿n vá» null
+    @JoinColumn(name = "id_tai_khoan", nullable = true) // chuyến về null
     private TaiKhoan taiKhoan;
 
     @ManyToOne
-    @JoinColumn(name = "id_voucher", nullable = true) // chuyáº¿n vá» null
+    @JoinColumn(name = "id_voucher", nullable = true) // chuyến về null
     private Voucher voucher;
 
     @Column(name = "trang_thai", nullable = false)

@@ -9,10 +9,10 @@ public class PromotionProductResponse {
     private Integer id;
     private ChiTietSanPham chiTietSanPham;
     private KhuyenMai khuyenMai;
-    private Double giaGoc;           // GiÃ¡ gá»‘c
-    private Double giaBanSauKhuyenMai; // GiÃ¡ bÃ¡n sau khuyáº¿n mÃ£i
-    private Double soTienTietKiem;   // Sá»‘ tiá»n tiáº¿t kiá»‡m
-    private Float phanTramGiam;      // Pháº§n trÄƒm giáº£m
+    private Double giaGoc;           // Giá gốc
+    private Double giaBanSauKhuyenMai; // Giá bán sau khuyến mãi
+    private Double soTienTietKiem;   // Số tiền tiết kiệm
+    private Float phanTramGiam;      // Phần trăm giảm
 
     public PromotionProductResponse(ChiTietSanPham chiTietSanPham, KhuyenMai khuyenMai) {
         this.chiTietSanPham = chiTietSanPham;
@@ -20,7 +20,7 @@ public class PromotionProductResponse {
         this.giaGoc = chiTietSanPham.getGiaGoc();
         this.giaBanSauKhuyenMai = chiTietSanPham.getGiaBan();
 
-        // TÃ­nh toÃ¡n tiáº¿t kiá»‡m
+        // Tính toán tiết kiệm
         if (giaGoc != null && giaBanSauKhuyenMai != null) {
             this.soTienTietKiem = giaGoc - giaBanSauKhuyenMai;
         } else {

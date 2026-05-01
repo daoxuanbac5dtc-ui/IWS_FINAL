@@ -20,19 +20,19 @@ public interface RepoSanPham extends JpaRepository<SanPham, Integer>, JpaSpecifi
     @Transactional
     @Query("UPDATE SanPham sp SET sp.thuongHieu = NULL WHERE sp.thuongHieu.id = :id")
     void removeThuongHieuReference(@Param("id") int id);
-    // XÃ³a  danh má»¥c - - sá»­a id danh má»¥c trong báº£ng ctsp vá» null
+    // Xóa  danh mục - - sửa id danh mục trong bảng ctsp về null
     @Modifying
     @Transactional
     @Query("UPDATE SanPham sp SET sp.danhMuc = NULL WHERE sp.danhMuc.id = :id")
     void removeDanhMucReference(@Param("id") int id);
 
-    // XÃ³a Cháº¥t liÃªu - - sá»­a id cl trong báº£ng ctsp vá» null
+    // Xóa Chất liêu - - sửa id cl trong bảng ctsp về null
     @Modifying
     @Transactional
     @Query("UPDATE SanPham sp SET sp.chatLieu = NULL WHERE sp.chatLieu.id = :id")
     void removeChatLieuReference(@Param("id") int id);
 
-    // XÃ³a Äáº¿ giÃ y - - sá»­a id de giÃ y trong báº£ng ctsp vá» null
+    // Xóa Đế giày - - sửa id de giày trong bảng ctsp về null
     @Modifying
     @Transactional
     @Query("UPDATE SanPham sp SET sp.deGiay = NULL WHERE sp.deGiay.id = :id")

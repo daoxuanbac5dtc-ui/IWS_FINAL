@@ -15,14 +15,14 @@ import javax.crypto.spec.SecretKeySpec;
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class VnPayController {
 
-    // Cáº¥u hÃ¬nh VNPay
+    // Cấu hình VNPay
     private final String vnp_TmnCode = "QOXX28F3";
     private final String vnp_HashSecret = "3I6XUNL7P6LO55MCZUNRKDFO8F159T2M";
     private final String vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
     private final String vnp_ReturnUrl = "http://localhost:5173/payment-return";
 
     /**
-     * API táº¡o URL thanh toÃ¡n VNPay
+     * API tạo URL thanh toán VNPay
      */
     @PostMapping("/create-payment")
     public ResponseEntity<Map<String, Object>> createPayment(
@@ -33,7 +33,7 @@ public class VnPayController {
             System.out.println("=== VNPay Create Payment DEBUG ===");
             System.out.println("Request: " + request);
 
-            // Láº¥y thÃ´ng tin tá»« request
+            // Lấy thông tin từ request
             String orderId = (String) request.get("orderId");
             Long amount = Long.valueOf(request.get("amount").toString());
             String orderInfo = (String) request.get("orderInfo");
@@ -42,18 +42,18 @@ public class VnPayController {
             System.out.println("Amount: " + amount);
             System.out.println("OrderInfo: " + orderInfo);
 
-            // Validate dá»¯ liá»‡u Ä‘áº§u vÃ o
+            // Validate dữ liệu đầu vào
             if (orderId == null || orderId.trim().isEmpty()) {
-                throw new IllegalArgumentException("OrderId khÃ´ng Ä‘Æ°á»£c rá»—ng");
+                throw new IllegalArgumentException("OrderId không được rỗng");
             }
             if (amount == null || amount <= 0) {
-                throw new IllegalArgumentException("Amount pháº£i lá»›n hÆ¡n 0");
+                throw new IllegalArgumentException("Amount phải lớn hơn 0");
             }
             if (orderInfo == null || orderInfo.trim().isEmpty()) {
-                orderInfo = "Payment for order " + orderId; // DÃ¹ng tiáº¿ng Anh
+                orderInfo = "Payment for order " + orderId; // Dùng tiếng Anh
             }
 
-            // Táº¡o cÃ¡c tham sá»‘ cho VNPay
+            // Tạo các tham số cho VNPay
             Map<String, String> vnp_Params = new HashMap<>();
             vnp_Params.put("vnp_Version", "2.1.0");
             vnp_Params.put("vnp_Command", "pay");
@@ -67,7 +67,7 @@ public class VnPayController {
             vnp_Params.put("vnp_ReturnUrl", vnp_ReturnUrl);
             vnp_Params.put("vnp_IpAddr", getClientIP(httpRequest));
 
-            // Táº¡o thá»i gian
+            // Tạo thời gian
             Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
             SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
             String vnp_CreateDate = formatter.format(cld.getTime());
@@ -82,7 +82,7 @@ public class VnPayController {
                 System.out.println(entry.getKey() + ": " + entry.getValue());
             }
 
-            // Sáº¯p xáº¿p tham sá»‘ vÃ  táº¡o hash
+            // Sắp xếp tham số và tạo hash
             List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
             Collections.sort(fieldNames);
 
@@ -114,20 +114,20 @@ public class VnPayController {
             System.out.println("=== Hash Data ===");
             System.out.println("HashData: " + hashData.toString());
 
-            // Táº¡o secure hash - ÄÃƒ Sá»¬A: DÃ¹ng HMAC-SHA512
+            // Tạo secure hash - ĐÃ SỬA: Dùng HMAC-SHA512
             String vnp_SecureHash = hmacSHA512(vnp_HashSecret, hashData.toString());
             System.out.println("SecureHash: " + vnp_SecureHash);
 
             query.append("&vnp_SecureHash=").append(vnp_SecureHash);
 
-            // Táº¡o URL Ä‘áº§y Ä‘á»§
+            // Tạo URL đầy đủ
             String paymentUrl = vnp_Url + "?" + query.toString();
 
             System.out.println("=== Final Payment URL ===");
             System.out.println("URL Length: " + paymentUrl.length());
             System.out.println("Payment URL: " + paymentUrl);
 
-            // Tráº£ vá» URL cho frontend
+            // Trả về URL cho frontend
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("paymentUrl", paymentUrl);
@@ -147,14 +147,14 @@ public class VnPayController {
 
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("message", "Lá»—i táº¡o thanh toÃ¡n: " + e.getMessage());
+            errorResponse.put("message", "Lỗi tạo thanh toán: " + e.getMessage());
             errorResponse.put("error", e.getClass().getSimpleName());
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }
 
     /**
-     * API xá»­ lÃ½ káº¿t quáº£ tráº£ vá» tá»« VNPay
+     * API xử lý kết quả trả về từ VNPay
      */
     @PostMapping("/payment-return")
     public ResponseEntity<Map<String, Object>> paymentReturn(@RequestBody Map<String, String> params) {
@@ -163,7 +163,7 @@ public class VnPayController {
             System.out.println("=== VNPay Payment Return ===");
             System.out.println("Params: " + params);
 
-            // Láº¥y cÃ¡c tham sá»‘ tá»« VNPay
+            // Lấy các tham số từ VNPay
             String vnp_ResponseCode = params.get("vnp_ResponseCode");
             String vnp_TxnRef = params.get("vnp_TxnRef");
             String vnp_Amount = params.get("vnp_Amount");
@@ -171,11 +171,11 @@ public class VnPayController {
             String vnp_TransactionNo = params.get("vnp_TransactionNo");
             String vnp_SecureHash = params.get("vnp_SecureHash");
 
-            // XÃ³a vnp_SecureHash Ä‘á»ƒ verify
+            // Xóa vnp_SecureHash để verify
             params.remove("vnp_SecureHash");
             params.remove("vnp_SecureHashType");
 
-            // Táº¡o láº¡i hash Ä‘á»ƒ kiá»ƒm tra
+            // Tạo lại hash để kiểm tra
             List<String> fieldNames = new ArrayList<>(params.keySet());
             Collections.sort(fieldNames);
 
@@ -198,28 +198,28 @@ public class VnPayController {
 
             Map<String, Object> response = new HashMap<>();
 
-            // Kiá»ƒm tra chá»¯ kÃ½
+            // Kiểm tra chữ ký
             if (!myChecksum.equals(vnp_SecureHash)) {
                 response.put("success", false);
-                response.put("message", "Chá»¯ kÃ½ khÃ´ng há»£p lá»‡");
+                response.put("message", "Chữ ký không hợp lệ");
                 return ResponseEntity.badRequest().body(response);
             }
 
-            // Kiá»ƒm tra káº¿t quáº£ thanh toÃ¡n
+            // Kiểm tra kết quả thanh toán
             if ("00".equals(vnp_ResponseCode)) {
-                // Thanh toÃ¡n thÃ nh cÃ´ng
-                System.out.println("Thanh toÃ¡n thÃ nh cÃ´ng: " + vnp_TxnRef);
+                // Thanh toán thành công
+                System.out.println("Thanh toán thành công: " + vnp_TxnRef);
 
                 response.put("success", true);
-                response.put("message", "Thanh toÃ¡n thÃ nh cÃ´ng");
+                response.put("message", "Thanh toán thành công");
                 response.put("orderCode", vnp_TxnRef);
                 response.put("amount", Long.parseLong(vnp_Amount) / 100);
                 response.put("transactionNo", vnp_TransactionNo);
                 response.put("bankCode", vnp_BankCode);
 
             } else {
-                // Thanh toÃ¡n tháº¥t báº¡i
-                System.out.println("Thanh toÃ¡n tháº¥t báº¡i: " + vnp_TxnRef + " - " + vnp_ResponseCode);
+                // Thanh toán thất bại
+                System.out.println("Thanh toán thất bại: " + vnp_TxnRef + " - " + vnp_ResponseCode);
 
                 response.put("success", false);
                 response.put("message", getErrorMessage(vnp_ResponseCode));
@@ -232,7 +232,7 @@ public class VnPayController {
             e.printStackTrace();
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("message", "Lá»—i xá»­ lÃ½ káº¿t quáº£ thanh toÃ¡n: " + e.getMessage());
+            errorResponse.put("message", "Lỗi xử lý kết quả thanh toán: " + e.getMessage());
             return ResponseEntity.status(500).body(errorResponse);
         }
     }
@@ -243,7 +243,7 @@ public class VnPayController {
         String xfHeader = request.getHeader("X-Forwarded-For");
         if (xfHeader == null) {
             String remoteAddr = request.getRemoteAddr();
-            // Chuyá»ƒn IPv6 localhost thÃ nh IPv4
+            // Chuyển IPv6 localhost thành IPv4
             if ("0:0:0:0:0:0:0:1".equals(remoteAddr)) {
                 return "127.0.0.1";
             }
@@ -252,7 +252,7 @@ public class VnPayController {
         return xfHeader.split(",")[0].trim();
     }
 
-    // ÄÃƒ Sá»¬A: DÃ¹ng HMAC-SHA512 thay vÃ¬ SHA-512 thÃ´ng thÆ°á»ng
+    // ĐÃ SỬA: Dùng HMAC-SHA512 thay vì SHA-512 thông thường
     private String hmacSHA512(String key, String data) {
         try {
             Mac hmac = Mac.getInstance("HmacSHA512");
@@ -273,18 +273,18 @@ public class VnPayController {
 
     private String getErrorMessage(String responseCode) {
         switch (responseCode) {
-            case "24": return "KhÃ¡ch hÃ ng há»§y giao dá»‹ch";
-            case "51": return "TÃ i khoáº£n khÃ´ng Ä‘á»§ sá»‘ dÆ°";
-            case "65": return "TÃ i khoáº£n Ä‘Ã£ vÆ°á»£t quÃ¡ háº¡n má»©c giao dá»‹ch";
-            case "75": return "NgÃ¢n hÃ ng Ä‘ang báº£o trÃ¬";
-            case "07": return "Giao dá»‹ch bá»‹ nghi ngá»";
-            case "09": return "Tháº» chÆ°a Ä‘Äƒng kÃ½ Internet Banking";
-            case "10": return "XÃ¡c thá»±c thÃ´ng tin khÃ´ng Ä‘Ãºng quÃ¡ 3 láº§n";
-            case "11": return "ÄÃ£ háº¿t háº¡n chá» thanh toÃ¡n";
-            case "12": return "Tháº» bá»‹ khÃ³a";
-            case "13": return "Máº­t kháº©u OTP khÃ´ng Ä‘Ãºng";
-            case "99": return "Lá»—i khÃ´ng xÃ¡c Ä‘á»‹nh";
-            default: return "Giao dá»‹ch tháº¥t báº¡i";
+            case "24": return "Khách hàng hủy giao dịch";
+            case "51": return "Tài khoản không đủ số dư";
+            case "65": return "Tài khoản đã vượt quá hạn mức giao dịch";
+            case "75": return "Ngân hàng đang bảo trì";
+            case "07": return "Giao dịch bị nghi ngờ";
+            case "09": return "Thẻ chưa đăng ký Internet Banking";
+            case "10": return "Xác thực thông tin không đúng quá 3 lần";
+            case "11": return "Đã hết hạn chờ thanh toán";
+            case "12": return "Thẻ bị khóa";
+            case "13": return "Mật khẩu OTP không đúng";
+            case "99": return "Lỗi không xác định";
+            default: return "Giao dịch thất bại";
         }
     }
 }

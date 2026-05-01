@@ -25,7 +25,7 @@ public class HoaDonChiTietRestController {
                     "success", true,
                     "data", chiTietList,
                     "total", chiTietList.size(),
-                    "message", "Láº¥y chi tiáº¿t hÃ³a Ä‘Æ¡n thÃ nh cÃ´ng"
+                    "message", "Lấy chi tiết hóa đơn thành công"
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -42,7 +42,7 @@ public class HoaDonChiTietRestController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "data", chiTiet,
-                    "message", "Láº¥y thÃ´ng tin chi tiáº¿t thÃ nh cÃ´ng"
+                    "message", "Lấy thông tin chi tiết thành công"
             ));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -61,7 +61,7 @@ public class HoaDonChiTietRestController {
             if (soLuong == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "success", false,
-                        "message", "Vui lÃ²ng nháº­p sá»‘ lÆ°á»£ng"
+                        "message", "Vui lòng nhập số lượng"
                 ));
             }
 
@@ -69,7 +69,7 @@ public class HoaDonChiTietRestController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "data", updated,
-                    "message", "Cáº­p nháº­t sá»‘ lÆ°á»£ng thÃ nh cÃ´ng"
+                    "message", "Cập nhật số lượng thành công"
             ));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -88,7 +88,7 @@ public class HoaDonChiTietRestController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "data", updated,
-                    "message", "Cáº­p nháº­t sáº£n pháº©m thÃ nh cÃ´ng"
+                    "message", "Cập nhật sản phẩm thành công"
             ));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -104,7 +104,7 @@ public class HoaDonChiTietRestController {
             hoaDonChiTietService.removeProduct(id);
             return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", "XÃ³a sáº£n pháº©m thÃ nh cÃ´ng. Sá»‘ lÆ°á»£ng Ä‘Ã£ Ä‘Æ°á»£c hoÃ n láº¡i kho."
+                    "message", "Xóa sản phẩm thành công. Số lượng đã được hoàn lại kho."
             ));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -114,7 +114,7 @@ public class HoaDonChiTietRestController {
         }
     }
 
-    // API bá»• sung
+    // API bổ sung
     @GetMapping("/thong-ke/{hoaDonId}")
     public ResponseEntity<Map<String, Object>> getStatistics(@PathVariable Integer hoaDonId) {
         try {

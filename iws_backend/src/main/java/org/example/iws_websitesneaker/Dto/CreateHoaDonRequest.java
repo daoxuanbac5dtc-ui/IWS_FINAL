@@ -6,7 +6,7 @@ import java.util.List;
 
 @Data
 public class CreateHoaDonRequest {
-    // ThÃ´ng tin khÃ¡ch hÃ ng
+    // Thông tin khách hàng
     private Integer khachHangId; // null cho guest
     private String tenNguoiDung;
     private String email;
@@ -14,28 +14,28 @@ public class CreateHoaDonRequest {
     private String diaChi;
     private String ghiChu;
 
-    // ThÃ´ng tin Ä‘Æ¡n hÃ ng
-    private String maHoaDon; // Optional, sáº½ tá»± generate náº¿u null
+    // Thông tin đơn hàng
+    private String maHoaDon; // Optional, sẽ tự generate nếu null
     private String phuongThucThanhToan; // COD, VNPAY
     private String loaiHoaDon; // ONLINE, OFFLINE
     private String trangThaiHoaDon; // CHO_XAC_NHAN, etc.
 
-    // ThÃ´ng tin tÃ i chÃ­nh
+    // Thông tin tài chính
     private BigDecimal tongTien;
     private BigDecimal phiVanChuyen;
     private BigDecimal tongThanhToan;
-    private Integer diemSuDung; // Äiá»ƒm tÃ­ch lÅ©y sá»­ dá»¥ng (thÆ°á»ng 0 cho guest)
-    private Double giaTriDiem; // GiÃ¡ trá»‹ Ä‘iá»ƒm quy Ä‘á»•i thÃ nh tiá»n
+    private Integer diemSuDung; // Điểm tích lũy sử dụng (thường 0 cho guest)
+    private Double giaTriDiem; // Giá trị điểm quy đổi thành tiền
 
-    // ThÃ´ng tin voucher - Bá»” SUNG
-    private Integer voucherId; // ID voucher Ä‘Æ°á»£c Ã¡p dá»¥ng
-    private String maVoucher; // MÃ£ voucher (Ä‘á»ƒ hiá»ƒn thá»‹)
-    private Double giaTriVoucher; // Sá»‘ tiá»n giáº£m tá»« voucher
+    // Thông tin voucher - BỔ SUNG
+    private Integer voucherId; // ID voucher được áp dụng
+    private String maVoucher; // Mã voucher (để hiển thị)
+    private Double giaTriVoucher; // Số tiền giảm từ voucher
 
-    // Chi tiáº¿t sáº£n pháº©m
+    // Chi tiết sản phẩm
     private List<ChiTietHoaDonRequest> chiTietSanPham;
 
-    // ThÃ´ng tin thá»i gian (optional - sáº½ tá»± set trong service)
+    // Thông tin thời gian (optional - sẽ tự set trong service)
     private String ngayTao;
     private String ngayXacNhan;
     private String ngayGiaoHang;

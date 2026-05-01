@@ -29,34 +29,34 @@ public class KichCoController {
     public KichCo getKichCoDetail(@PathVariable int id){
         return kichCoService.getKichCoById(id).orElse(null);
     }
-    //Them kich cá»¡ - ngÃ y táº¡o
+    //Them kich cỡ - ngày tạo
     @PostMapping
     public String addKichCo(@Valid  @RequestBody KichCo kichCo){
         kichCo.setNgayTao(new Date());
         kichCoService.addKichCo(kichCo);
-        return "ÄÃ£ thÃªm thÃ nh cÃ´ng kÃ­ch cá»¡!";
+        return "Đã thêm thành công kích cỡ!";
     }
-    //Sá»­a - ngÃ y cáº­p nháº­t
+    //Sửa - ngày cập nhật
     @PutMapping("/{id}")
     public String updateKichCo( @PathVariable int id , @Valid   @RequestBody  KichCo kichCo){
         Optional<KichCo> optional = kichCoService.getKichCoById(id);
         if (optional.isEmpty()) {
-            return "KhÃ´ng tÃ¬m tháº¥y kÃ­ch cá»¡ vá»›i ID: " + id;
+            return "Không tìm thấy kích cỡ với ID: " + id;
         }
         kichCo.setId(id);
         kichCo.setNgayCapNhat(new Date());
         kichCoService.updateKichCo(kichCo);
-        return "ÄÃ£ sá»­a thÃ nh cÃ´ng kÃ­ch cá»¡ vá»›i id : " + id ;
+        return "Đã sửa thành công kích cỡ với id : " + id ;
     }
-    //XÃ³a kÃ­ch cá»¡
+    //Xóa kích cỡ
     @DeleteMapping("/{id}")
     public String deleteKichCo(@PathVariable int id){
         Optional<KichCo> optional = kichCoService.getKichCoById(id);
         if (optional.isEmpty()) {
-            return "KhÃ´ng tÃ¬m tháº¥y kÃ­ch cá»¡ vá»›i ID: " + id;
+            return "Không tìm thấy kích cỡ với ID: " + id;
         }
         kichCoService.deleteKichCo(id);
-        return "ÄÃ£ xÃ³a thÃ nh cÃ´ng kÃ­ch cá»¡ vá»›i id : " + id ;
+        return "Đã xóa thành công kích cỡ với id : " + id ;
     }
 }
 

@@ -21,7 +21,7 @@
 //    @Autowired
 //    private ViDiemService viDiemService;
 //
-//    // GET - Láº¥y danh sÃ¡ch táº¥t cáº£ vÃ­ Ä‘iá»ƒm
+//    // GET - Lấy danh sách tất cả ví điểm
 //    @GetMapping
 //    public ResponseEntity<List<ViDiem>> getAllViDiem() {
 //        try {
@@ -32,7 +32,7 @@
 //        }
 //    }
 //
-//    // GET - Láº¥y vÃ­ Ä‘iá»ƒm theo ID
+//    // GET - Lấy ví điểm theo ID
 //    @GetMapping("/{id}")
 //    public ResponseEntity<ViDiem> getViDiemById(@PathVariable Integer id) {
 //        try {
@@ -44,15 +44,15 @@
 //        }
 //    }
 //
-//    // POST - Táº¡o vÃ­ Ä‘iá»ƒm má»›i
+//    // POST - Tạo ví điểm mới
 //    @PostMapping
 //    public ResponseEntity<ViDiem> createViDiem(@RequestBody ViDiem viDiem) {
 //        try {
-//            // Set thá»i gian táº¡o
+//            // Set thời gian tạo
 //            viDiem.setNgayTao(new Date());
 //            viDiem.setNgayCapNhat(new Date());
 //
-//            // Set giÃ¡ trá»‹ máº·c Ä‘á»‹nh náº¿u chÆ°a cÃ³
+//            // Set giá trị mặc định nếu chưa có
 //            if (viDiem.getTongDiem() == null) {
 //                viDiem.setTongDiem(0.0);
 //            }
@@ -73,7 +73,7 @@
 //        }
 //    }
 //
-//    // PUT - Cáº­p nháº­t vÃ­ Ä‘iá»ƒm
+//    // PUT - Cập nhật ví điểm
 //    @PutMapping("/{id}")
 //    public ResponseEntity<ViDiem> updateViDiem(@PathVariable Integer id, @RequestBody ViDiem viDiem) {
 //        try {
@@ -85,7 +85,7 @@
 //
 //            ViDiem existingViDiem = existingViDiemOpt.get();
 //
-//            // Cáº­p nháº­t thÃ´ng tin
+//            // Cập nhật thông tin
 //            existingViDiem.setTongDiem(viDiem.getTongDiem());
 //            existingViDiem.setSoDiemDaDung(viDiem.getSoDiemDaDung());
 //            existingViDiem.setSoDiemDaCong(viDiem.getSoDiemDaCong());
@@ -99,7 +99,7 @@
 //        }
 //    }
 //
-//    // DELETE - XÃ³a vÃ­ Ä‘iá»ƒm
+//    // DELETE - Xóa ví điểm
 //    @DeleteMapping("/{id}")
 //    public ResponseEntity<Void> deleteViDiem(@PathVariable Integer id) {
 //        try {
@@ -116,7 +116,7 @@
 //        }
 //    }
 //
-//    // POST - Cá»™ng Ä‘iá»ƒm
+//    // POST - Cộng điểm
 //    @PostMapping("/{id}/cong-diem")
 //    public ResponseEntity<ViDiem> congDiem(@PathVariable Integer id, @RequestBody Map<String, Double> request) {
 //        try {
@@ -134,7 +134,7 @@
 //        }
 //    }
 //
-//    // POST - Trá»« Ä‘iá»ƒm (sá»­ dá»¥ng Ä‘iá»ƒm)
+//    // POST - Trừ điểm (sử dụng điểm)
 //    @PostMapping("/{id}/tru-diem")
 //    public ResponseEntity<ViDiem> truDiem(@PathVariable Integer id, @RequestBody Map<String, Double> request) {
 //        try {
@@ -154,7 +154,7 @@
 //        }
 //    }
 //
-//    // GET - Láº¥y Ä‘iá»ƒm hiá»‡n táº¡i
+//    // GET - Lấy điểm hiện tại
 //    @GetMapping("/{id}/diem-hien-tai")
 //    public ResponseEntity<Map<String, Double>> getDiemHienTai(@PathVariable Integer id) {
 //        try {
@@ -179,7 +179,7 @@
 //        }
 //    }
 //
-//    // GET - TÃ­nh giÃ¡ trá»‹ tiá»n cá»§a Ä‘iá»ƒm hiá»‡n táº¡i
+//    // GET - Tính giá trị tiền của điểm hiện tại
 //    @GetMapping("/{id}/gia-tri-tien")
 //    public ResponseEntity<Map<String, Double>> getGiaTriTien(@PathVariable Integer id) {
 //        try {
@@ -207,7 +207,7 @@
 //        }
 //                }
 //
-//// GET - Láº¥y vÃ­ Ä‘iá»ƒm theo ID
+//// GET - Lấy ví điểm theo ID
 //@GetMapping("/{id}")
 //public ResponseEntity<ViDiem> getViDiemById(@PathVariable Integer id) {
 //    try {
@@ -219,15 +219,15 @@
 //    }
 //}
 //
-//// POST - Táº¡o vÃ­ Ä‘iá»ƒm má»›i
+//// POST - Tạo ví điểm mới
 //@PostMapping
 //public ResponseEntity<ViDiem> createViDiem(@RequestBody ViDiem viDiem) {
 //    try {
-//        // Set thá»i gian táº¡o
+//        // Set thời gian tạo
 //        viDiem.setNgayTao(new Date());
 //        viDiem.setNgayCapNhat(new Date());
 //
-//        // Set giÃ¡ trá»‹ máº·c Ä‘á»‹nh náº¿u chÆ°a cÃ³
+//        // Set giá trị mặc định nếu chưa có
 //        if (viDiem.getDiemHienTai() == null) {
 //            viDiem.setDiemHienTai(0);
 //        }
@@ -248,7 +248,7 @@
 //    }
 //}
 //
-//// PUT - Cáº­p nháº­t vÃ­ Ä‘iá»ƒm
+//// PUT - Cập nhật ví điểm
 //@PutMapping("/{id}")
 //public ResponseEntity<ViDiem> updateViDiem(@PathVariable Integer id, @RequestBody ViDiem viDiem) {
 //    try {
@@ -260,7 +260,7 @@
 //
 //        ViDiem existingViDiem = existingViDiemOpt.get();
 //
-//        // Cáº­p nháº­t thÃ´ng tin
+//        // Cập nhật thông tin
 //        existingViDiem.setDiemHienTai(viDiem.getDiemHienTai());
 //        existingViDiem.setTongDiemDaDung(viDiem.getTongDiemDaDung());
 //        existingViDiem.setTongDiemTichLuy(viDiem.getTongDiemTichLuy());
@@ -274,7 +274,7 @@
 //    }
 //}
 //
-//// DELETE - XÃ³a vÃ­ Ä‘iá»ƒm
+//// DELETE - Xóa ví điểm
 //@DeleteMapping("/{id}")
 //public ResponseEntity<Void> deleteViDiem(@PathVariable Integer id) {
 //    try {
@@ -291,7 +291,7 @@
 //    }
 //}
 //
-//// PATCH - Cáº­p nháº­t Ä‘iá»ƒm
+//// PATCH - Cập nhật điểm
 //@PatchMapping("/{id}/diem")
 //public ResponseEntity<ViDiem> updateDiem(@PathVariable Integer id,
 //                                         @RequestParam Integer diemMoi,
@@ -306,11 +306,11 @@
 //        ViDiem viDiem = viDiemOpt.get();
 //
 //        if ("TICH_LUY".equals(loaiGiaoDich)) {
-//            // TÃ­ch lÅ©y Ä‘iá»ƒm
+//            // Tích lũy điểm
 //            viDiem.setDiemHienTai(viDiem.getDiemHienTai() + diemMoi);
 //            viDiem.setTongDiemTichLuy(viDiem.getTongDiemTichLuy() + diemMoi);
 //        } else if ("SU_DUNG".equals(loaiGiaoDich)) {
-//            // Sá»­ dá»¥ng Ä‘iá»ƒm
+//            // Sử dụng điểm
 //            if (viDiem.getDiemHienTai() >= diemMoi) {
 //                viDiem.setDiemHienTai(viDiem.getDiemHienTai() - diemMoi);
 //                viDiem.setTongDiemDaDung(viDiem.getTongDiemDaDung() + diemMoi);

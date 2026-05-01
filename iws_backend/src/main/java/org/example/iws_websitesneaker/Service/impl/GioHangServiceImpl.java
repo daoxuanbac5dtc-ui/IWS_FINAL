@@ -1,7 +1,7 @@
 package org.example.iws_websitesneaker.Service.impl;
 
 import org.example.iws_websitesneaker.Dto.AddToCartRequest;
-import org.example.iws_websitesneaker.Dto.CartItemResponse; // THÃŠM IMPORT
+import org.example.iws_websitesneaker.Dto.CartItemResponse; // THÊM IMPORT
 import org.example.iws_websitesneaker.Service.GioHangService;
 import org.example.iws_websitesneaker.entity.GioHang;
 import org.example.iws_websitesneaker.entity.GioHangChiTIet;
@@ -55,31 +55,31 @@ public class GioHangServiceImpl implements GioHangService {
         System.out.println("Quantity: " + request.getSoLuong());
         System.out.println("Price: " + request.getGia());
 
-        // Validation Ä‘áº§u vÃ o
+        // Validation đầu vào
         if (userId == null) {
-            throw new IllegalArgumentException("User ID khÃ´ng Ä‘Æ°á»£c null");
+            throw new IllegalArgumentException("User ID không được null");
         }
         if (request.getProductDetailId() == null) {
-            throw new IllegalArgumentException("Product Detail ID khÃ´ng Ä‘Æ°á»£c null");
+            throw new IllegalArgumentException("Product Detail ID không được null");
         }
         if (request.getSoLuong() == null || request.getSoLuong() <= 0) {
-            throw new IllegalArgumentException("Sá»‘ lÆ°á»£ng pháº£i lá»›n hÆ¡n 0");
+            throw new IllegalArgumentException("Số lượng phải lớn hơn 0");
         }
 
         try {
-            // 1. TÃ¬m hoáº·c táº¡o giá» hÃ ng
+            // 1. Tìm hoặc tạo giỏ hàng
             System.out.println("Finding or creating cart for user: " + userId);
             GioHang gioHang = findOrCreateCart(userId);
             System.out.println("Cart found/created: " + gioHang.getId());
 
-            // 2. Kiá»ƒm tra chi tiáº¿t sáº£n pháº©m cÃ³ tá»“n táº¡i
+            // 2. Kiểm tra chi tiết sản phẩm có tồn tại
             System.out.println("Checking if product detail exists: " + request.getProductDetailId());
             ChiTietSanPham chiTietSanPham = chiTietSanPhamRepository
                     .findById(request.getProductDetailId())
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t sáº£n pháº©m vá»›i ID: " + request.getProductDetailId()));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết sản phẩm với ID: " + request.getProductDetailId()));
             System.out.println("Product detail found: " + chiTietSanPham.getId());
 
-            // 3. Kiá»ƒm tra item Ä‘Ã£ tá»“n táº¡i trong giá» hÃ ng
+            // 3. Kiểm tra item đã tồn tại trong giỏ hàng
             System.out.println("Checking if item already exists in cart");
             Optional<GioHangChiTIet> existing = gioHangChiTietRepository
                     .findByGioHangAndChiTietSanPham_Id(gioHang, request.getProductDetailId());
@@ -104,10 +104,10 @@ public class GioHangServiceImpl implements GioHangService {
                 cartItem.setChiTietSanPham(chiTietSanPham);
                 cartItem.setSoLuong(request.getSoLuong());
 
-                // Xá»­ lÃ½ giÃ¡ - náº¿u khÃ´ng cÃ³ trong request thÃ¬ láº¥y tá»« sáº£n pháº©m
+                // Xử lý giá - nếu không có trong request thì lấy từ sản phẩm
                 Double price = request.getGia();
                 if (price == null) {
-                    price = chiTietSanPham.getGiaBan(); // Giáº£ sá»­ cÃ³ method nÃ y
+                    price = chiTietSanPham.getGiaBan(); // Giả sử có method này
                     System.out.println("Price taken from product: " + price);
                 }
                 cartItem.setGia(price);
@@ -123,12 +123,12 @@ public class GioHangServiceImpl implements GioHangService {
                 System.out.println("- Code: " + cartItem.getMaGioHangChiTiet());
             }
 
-            // 4. LÆ°u vÃ o database
+            // 4. Lưu vào database
             System.out.println("Saving cart item to database");
             cartItem = gioHangChiTietRepository.save(cartItem);
             System.out.println("Cart item saved with ID: " + cartItem.getId());
 
-            // 5. Convert vÃ  tráº£ vá» response
+            // 5. Convert và trả về response
             System.out.println("Converting to response");
             CartItemResponse response = convertToCartItemResponse(cartItem);
             System.out.println("Response created successfully");
@@ -146,10 +146,10 @@ public class GioHangServiceImpl implements GioHangService {
     @Transactional
     public CartItemResponse updateCartItem(Integer cartItemId, Integer newQuantity) {
         GioHangChiTIet cartItem = gioHangChiTietRepository.findById(cartItemId)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y sáº£n pháº©m trong giá» hÃ ng"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm trong giỏ hàng"));
 
         if (newQuantity <= 0) {
-            throw new RuntimeException("Sá»‘ lÆ°á»£ng pháº£i lá»›n hÆ¡n 0");
+            throw new RuntimeException("Số lượng phải lớn hơn 0");
         }
 
         cartItem.setSoLuong(newQuantity);
@@ -163,7 +163,7 @@ public class GioHangServiceImpl implements GioHangService {
     @Transactional
     public void removeCartItem(Integer cartItemId) {
         if (!gioHangChiTietRepository.existsById(cartItemId)) {
-            throw new RuntimeException("KhÃ´ng tÃ¬m tháº¥y sáº£n pháº©m trong giá» hÃ ng");
+            throw new RuntimeException("Không tìm thấy sản phẩm trong giỏ hàng");
         }
         gioHangChiTietRepository.deleteById(cartItemId);
     }
@@ -202,13 +202,13 @@ public class GioHangServiceImpl implements GioHangService {
     private GioHang findOrCreateCart(Integer userId) {
         TaiKhoan taiKhoan = repoTaiKhoan.findById(userId).orElseThrow();
 
-        // TÃ¬m giá» hÃ ng cÃ³ sáºµn
+        // Tìm giỏ hàng có sẵn
         Optional<GioHang> existingCart = repoGioHang.findByTaiKhoan(taiKhoan);
 
         if (existingCart.isPresent()) {
             return existingCart.get();
         } else {
-            // Táº¡o giá» hÃ ng má»›i
+            // Tạo giỏ hàng mới
             GioHang newCart = new GioHang();
             newCart.setTaiKhoan(taiKhoan);
             newCart.setMaGioHang("GH" + System.currentTimeMillis());
@@ -217,7 +217,7 @@ public class GioHangServiceImpl implements GioHangService {
         }
     }
 
-    // THÃŠM METHOD CONVERT
+    // THÊM METHOD CONVERT
     private CartItemResponse convertToCartItemResponse(GioHangChiTIet item) {
         ChiTietSanPham ctsp = item.getChiTietSanPham();
 
@@ -230,7 +230,7 @@ public class GioHangServiceImpl implements GioHangService {
         response.setPrice(item.getGia());
         response.setQuantity(item.getSoLuong());
         response.setSize(ctsp.getKichCo() != null ? ctsp.getKichCo().getTenKichCo() : null);
-        response.setColor(ctsp.getMauSac() != null ? ctsp.getMauSac().getTenMauSac() : null); // Náº¿u response.setColor() nháº­n String
+        response.setColor(ctsp.getMauSac() != null ? ctsp.getMauSac().getTenMauSac() : null); // Nếu response.setColor() nhận String
 
         response.setStock(ctsp.getSoLuong());
         response.setPoints(Math.toIntExact(Math.round(item.getGia() / 100)));

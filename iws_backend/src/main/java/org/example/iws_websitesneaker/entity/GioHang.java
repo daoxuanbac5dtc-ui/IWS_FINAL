@@ -13,7 +13,7 @@ public class GioHang {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // Quan há»‡ ManyToOne vá»›i TaiKhoan
+    // Quan hệ ManyToOne với TaiKhoan
     @ManyToOne
     @JoinColumn(name = "id_tai_khoan", nullable = false)
     private TaiKhoan taiKhoan;

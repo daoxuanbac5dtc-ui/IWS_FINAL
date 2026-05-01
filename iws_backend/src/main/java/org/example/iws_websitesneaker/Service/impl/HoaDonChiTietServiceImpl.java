@@ -34,7 +34,7 @@ public class HoaDonChiTietServiceImpl implements HoaDonChiTietService {
                     .map(this::convertToDTO)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            // Fallback náº¿u query vá»›i full info khÃ´ng hoáº¡t Ä‘á»™ng
+            // Fallback nếu query với full info không hoạt động
             return hoaDonChiTietRepository.findByHoaDonId(hoaDonId).stream()
                     .map(this::convertToDTO)
                     .collect(Collectors.toList());
@@ -43,101 +43,101 @@ public class HoaDonChiTietServiceImpl implements HoaDonChiTietService {
     @Override
     public HoaDonChiTiet save(HoaDonChiTiet hoaDonChiTiet) {
         try {
-            // Validation cÆ¡ báº£n
+            // Validation cơ bản
             if (hoaDonChiTiet.getHoaDon() == null) {
-                throw new IllegalArgumentException("HÃ³a Ä‘Æ¡n khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+                throw new IllegalArgumentException("Hóa đơn không được để trống");
             }
 
             if (hoaDonChiTiet.getChiTietSanPham() == null) {
-                throw new IllegalArgumentException("Chi tiáº¿t sáº£n pháº©m khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+                throw new IllegalArgumentException("Chi tiết sản phẩm không được để trống");
             }
 
             if (hoaDonChiTiet.getSoLuong() == null || hoaDonChiTiet.getSoLuong() <= 0) {
-                throw new IllegalArgumentException("Sá»‘ lÆ°á»£ng pháº£i lá»›n hÆ¡n 0");
+                throw new IllegalArgumentException("Số lượng phải lớn hơn 0");
             }
 
-            // Sá»­a validation cho Double
+            // Sửa validation cho Double
             if (hoaDonChiTiet.getGia() == null || hoaDonChiTiet.getGia() <= 0) {
-                throw new IllegalArgumentException("GiÃ¡ pháº£i lá»›n hÆ¡n 0");
+                throw new IllegalArgumentException("Giá phải lớn hơn 0");
             }
 
-            // Kiá»ƒm tra tá»“n kho
+            // Kiểm tra tồn kho
             ChiTietSanPham ctsp = hoaDonChiTiet.getChiTietSanPham();
             if (ctsp.getSoLuong() < hoaDonChiTiet.getSoLuong()) {
-                throw new IllegalArgumentException("KhÃ´ng Ä‘á»§ hÃ ng trong kho. CÃ²n láº¡i: " + ctsp.getSoLuong());
+                throw new IllegalArgumentException("Không đủ hàng trong kho. Còn lại: " + ctsp.getSoLuong());
             }
 
-            // Náº¿u lÃ  táº¡o má»›i, set ngÃ y táº¡o
+            // Nếu là tạo mới, set ngày tạo
             if (hoaDonChiTiet.getId() == null) {
                 hoaDonChiTiet.setNgayTao(new Date());
             }
 
-            // LÆ°u chi tiáº¿t hÃ³a Ä‘Æ¡n
+            // Lưu chi tiết hóa đơn
             HoaDonChiTiet saved = hoaDonChiTietRepository.save(hoaDonChiTiet);
 
-            // Trá»« sá»‘ lÆ°á»£ng tá»“n kho (chá»‰ khi táº¡o má»›i)
+            // Trừ số lượng tồn kho (chỉ khi tạo mới)
             if (hoaDonChiTiet.getId() == null) {
                 ctsp.setSoLuong(ctsp.getSoLuong() - hoaDonChiTiet.getSoLuong());
-                chiTietSanPhamService.save(ctsp); // Gá»i hÃ m save á»Ÿ trÃªn
+                chiTietSanPhamService.save(ctsp); // Gọi hàm save ở trên
             }
 
             return saved;
 
         } catch (Exception e) {
-            throw new RuntimeException("Lá»—i khi lÆ°u chi tiáº¿t hÃ³a Ä‘Æ¡n: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi khi lưu chi tiết hóa đơn: " + e.getMessage(), e);
         }
     }
     @Override
     public HoaDonChiTietDTO getById(Integer id) {
         HoaDonChiTiet chiTiet = hoaDonChiTietRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t hÃ³a Ä‘Æ¡n vá»›i ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết hóa đơn với ID: " + id));
         return convertToDTO(chiTiet);
     }
 
     @Override
     public HoaDonChiTietDTO updateQuantity(Integer id, Integer soLuong) {
         if (soLuong == null || soLuong <= 0) {
-            throw new RuntimeException("Sá»‘ lÆ°á»£ng pháº£i lá»›n hÆ¡n 0");
+            throw new RuntimeException("Số lượng phải lớn hơn 0");
         }
 
         HoaDonChiTiet chiTiet = hoaDonChiTietRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t hÃ³a Ä‘Æ¡n"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết hóa đơn"));
 
-        // Kiá»ƒm tra tráº¡ng thÃ¡i hÃ³a Ä‘Æ¡n cÃ³ thá»ƒ chá»‰nh sá»­a khÃ´ng
+        // Kiểm tra trạng thái hóa đơn có thể chỉnh sửa không
         String trangThaiHoaDon = chiTiet.getHoaDon().getTrangThaiHoaDon();
         if (!canModifyInvoice(trangThaiHoaDon)) {
-            throw new RuntimeException("KhÃ´ng thá»ƒ chá»‰nh sá»­a hÃ³a Ä‘Æ¡n á»Ÿ tráº¡ng thÃ¡i: " + trangThaiHoaDon);
+            throw new RuntimeException("Không thể chỉnh sửa hóa đơn ở trạng thái: " + trangThaiHoaDon);
         }
 
-        // Kiá»ƒm tra sá»‘ lÆ°á»£ng tá»“n kho
+        // Kiểm tra số lượng tồn kho
         ChiTietSanPham ctsp = chiTiet.getChiTietSanPham();
         if (ctsp != null) {
             int soLuongHienTai = chiTiet.getSoLuong();
             int chenhLech = soLuong - soLuongHienTai;
 
             if (chenhLech > 0 && ctsp.getSoLuong() < chenhLech) {
-                throw new RuntimeException("KhÃ´ng Ä‘á»§ sá»‘ lÆ°á»£ng trong kho. CÃ²n láº¡i: " + ctsp.getSoLuong());
+                throw new RuntimeException("Không đủ số lượng trong kho. Còn lại: " + ctsp.getSoLuong());
             }
 
-            // Cáº­p nháº­t sá»‘ lÆ°á»£ng tá»“n kho
+            // Cập nhật số lượng tồn kho
             ctsp.setSoLuong(ctsp.getSoLuong() - chenhLech);
             chiTietSanPhamRepository.save(ctsp);
 
-            // Cáº­p nháº­t tá»•ng sá»‘ lÆ°á»£ng sáº£n pháº©m
+            // Cập nhật tổng số lượng sản phẩm
             if (ctsp.getSanPham() != null) {
                 SanPham sanPham = ctsp.getSanPham();
                 sanPham.setSoLuong(sanPham.getSoLuong() - chenhLech);
-                // sanPhamRepository.save(sanPham); // Uncomment náº¿u cáº§n
+                // sanPhamRepository.save(sanPham); // Uncomment nếu cần
             }
         }
 
-        // Cáº­p nháº­t chi tiáº¿t hÃ³a Ä‘Æ¡n
+        // Cập nhật chi tiết hóa đơn
         chiTiet.setSoLuong(soLuong);
         chiTiet.setNgayCapNhat(new Date());
 
         HoaDonChiTiet saved = hoaDonChiTietRepository.save(chiTiet);
 
-        // Cáº­p nháº­t láº¡i tá»•ng tiá»n hÃ³a Ä‘Æ¡n
+        // Cập nhật lại tổng tiền hóa đơn
         updateInvoiceTotal(chiTiet.getHoaDon().getId());
 
         return convertToDTO(saved);
@@ -146,15 +146,15 @@ public class HoaDonChiTietServiceImpl implements HoaDonChiTietService {
     @Override
     public HoaDonChiTietDTO updateProduct(Integer id, HoaDonChiTietDTO dto) {
         HoaDonChiTiet chiTiet = hoaDonChiTietRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t hÃ³a Ä‘Æ¡n"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết hóa đơn"));
 
-        // Kiá»ƒm tra tráº¡ng thÃ¡i hÃ³a Ä‘Æ¡n
+        // Kiểm tra trạng thái hóa đơn
         String trangThaiHoaDon = chiTiet.getHoaDon().getTrangThaiHoaDon();
         if (!canModifyInvoice(trangThaiHoaDon)) {
-            throw new RuntimeException("KhÃ´ng thá»ƒ chá»‰nh sá»­a hÃ³a Ä‘Æ¡n á»Ÿ tráº¡ng thÃ¡i: " + trangThaiHoaDon);
+            throw new RuntimeException("Không thể chỉnh sửa hóa đơn ở trạng thái: " + trangThaiHoaDon);
         }
 
-        // Cáº­p nháº­t thÃ´ng tin náº¿u cÃ³
+        // Cập nhật thông tin nếu có
         if (dto.getSoLuong() != null) {
             return updateQuantity(id, dto.getSoLuong());
         }
@@ -170,7 +170,7 @@ public class HoaDonChiTietServiceImpl implements HoaDonChiTietService {
         chiTiet.setNgayCapNhat(new Date());
         HoaDonChiTiet saved = hoaDonChiTietRepository.save(chiTiet);
 
-        // Cáº­p nháº­t tá»•ng tiá»n hÃ³a Ä‘Æ¡n
+        // Cập nhật tổng tiền hóa đơn
         updateInvoiceTotal(chiTiet.getHoaDon().getId());
 
         return convertToDTO(saved);
@@ -179,34 +179,34 @@ public class HoaDonChiTietServiceImpl implements HoaDonChiTietService {
     @Override
     public void removeProduct(Integer id) {
         HoaDonChiTiet chiTiet = hoaDonChiTietRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t hÃ³a Ä‘Æ¡n"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết hóa đơn"));
 
-        // Kiá»ƒm tra tráº¡ng thÃ¡i hÃ³a Ä‘Æ¡n
+        // Kiểm tra trạng thái hóa đơn
         String trangThaiHoaDon = chiTiet.getHoaDon().getTrangThaiHoaDon();
         if (!canModifyInvoice(trangThaiHoaDon)) {
-            throw new RuntimeException("KhÃ´ng thá»ƒ chá»‰nh sá»­a hÃ³a Ä‘Æ¡n á»Ÿ tráº¡ng thÃ¡i: " + trangThaiHoaDon);
+            throw new RuntimeException("Không thể chỉnh sửa hóa đơn ở trạng thái: " + trangThaiHoaDon);
         }
 
-        // HoÃ n láº¡i sá»‘ lÆ°á»£ng vÃ o kho
+        // Hoàn lại số lượng vào kho
         ChiTietSanPham ctsp = chiTiet.getChiTietSanPham();
         if (ctsp != null) {
             ctsp.setSoLuong(ctsp.getSoLuong() + chiTiet.getSoLuong());
             chiTietSanPhamRepository.save(ctsp);
 
-            // Cáº­p nháº­t tá»•ng sá»‘ lÆ°á»£ng sáº£n pháº©m
+            // Cập nhật tổng số lượng sản phẩm
             if (ctsp.getSanPham() != null) {
                 SanPham sanPham = ctsp.getSanPham();
                 sanPham.setSoLuong(sanPham.getSoLuong() + chiTiet.getSoLuong());
-                // sanPhamRepository.save(sanPham); // Uncomment náº¿u cáº§n
+                // sanPhamRepository.save(sanPham); // Uncomment nếu cần
             }
         }
 
         Integer hoaDonId = chiTiet.getHoaDon().getId();
 
-        // XÃ³a chi tiáº¿t
+        // Xóa chi tiết
         hoaDonChiTietRepository.delete(chiTiet);
 
-        // Cáº­p nháº­t tá»•ng tiá»n hÃ³a Ä‘Æ¡n
+        // Cập nhật tổng tiền hóa đơn
         updateInvoiceTotal(hoaDonId);
     }
 
@@ -240,8 +240,8 @@ public class HoaDonChiTietServiceImpl implements HoaDonChiTietService {
             dto.setMauSac(ctsp.getMauSac() != null ? ctsp.getMauSac().getTenMauSac() : "N/A");
             dto.setKichThuoc(ctsp.getKichCo() != null ? ctsp.getKichCo().getTenKichCo() : "N/A");
         } else {
-            // Fallback náº¿u khÃ´ng cÃ³ thÃ´ng tin chi tiáº¿t sáº£n pháº©m
-            dto.setTenSanPham("Sáº£n pháº©m khÃ´ng xÃ¡c Ä‘á»‹nh");
+            // Fallback nếu không có thông tin chi tiết sản phẩm
+            dto.setTenSanPham("Sản phẩm không xác định");
             dto.setMaSanPham("N/A");
             dto.setMauSac("N/A");
             dto.setKichThuoc("N/A");
@@ -249,20 +249,20 @@ public class HoaDonChiTietServiceImpl implements HoaDonChiTietService {
             dto.setDanhMuc("N/A");
         }
 
-        // TÃ­nh toÃ¡n cÃ¡c giÃ¡ trá»‹
+        // Tính toán các giá trị
         dto.calculateValues();
 
         return dto;
     }
 
     private boolean canModifyInvoice(String trangThai) {
-        // Chá»‰ cho phÃ©p chá»‰nh sá»­a khi hÃ³a Ä‘Æ¡n á»Ÿ tráº¡ng thÃ¡i PENDING hoáº·c CONFIRMED
+        // Chỉ cho phép chỉnh sửa khi hóa đơn ở trạng thái PENDING hoặc CONFIRMED
         return "PENDING".equals(trangThai) || "CONFIRMED".equals(trangThai);
     }
 
     private void updateInvoiceTotal(Integer hoaDonId) {
         try {
-            // TÃ­nh láº¡i tá»•ng tiá»n hÃ³a Ä‘Æ¡n dá»±a trÃªn chi tiáº¿t - Sá»¬ Dá»¤NG DOUBLE
+            // Tính lại tổng tiền hóa đơn dựa trên chi tiết - SỬ DỤNG DOUBLE
             List<HoaDonChiTiet> chiTietList = hoaDonChiTietRepository.findByHoaDonId(hoaDonId);
 
             Double tongTien = chiTietList.stream()
@@ -273,12 +273,12 @@ public class HoaDonChiTietServiceImpl implements HoaDonChiTietService {
                     })
                     .reduce(0.0, Double::sum);
 
-            // Cáº­p nháº­t tá»•ng tiá»n vÃ o hÃ³a Ä‘Æ¡n
+            // Cập nhật tổng tiền vào hóa đơn
             // hoaDonRepository.updateTongTien(hoaDonId, tongTien);
-            System.out.println("Tá»•ng tiá»n hÃ³a Ä‘Æ¡n " + hoaDonId + ": " + tongTien);
+            System.out.println("Tổng tiền hóa đơn " + hoaDonId + ": " + tongTien);
 
         } catch (Exception e) {
-            System.err.println("Lá»—i cáº­p nháº­t tá»•ng tiá»n hÃ³a Ä‘Æ¡n: " + e.getMessage());
+            System.err.println("Lỗi cập nhật tổng tiền hóa đơn: " + e.getMessage());
         }
     }
 }

@@ -13,7 +13,7 @@ public class DeGiayResponse {
     private String maDeGiay;
     private String tenDeGiay;
     private Integer trangThai;
-    private Date ngayTao;           // â† THÃŠM field nÃ y
+    private Date ngayTao;           // ← THÊM field này
     private Date ngayCapNhat;
 }
 

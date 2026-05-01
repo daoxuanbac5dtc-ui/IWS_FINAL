@@ -12,11 +12,8 @@
             <div class="brand-side">
                 <div class="brand-content">
                     <div class="logo-area">
-                        <div class="logo">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 15l2-2-2-2m-3 4l-2-2 2-2"/>
-                                <circle cx="12" cy="12" r="10"/>
-                            </svg>
+                        <div class="logo" aria-hidden="true">
+                            <i class="pi pi-lock"></i>
                         </div>
                         <h1 class="brand-name">ShoesBees</h1>
                         <p class="brand-tagline">Khôi phục mật khẩu</p>
@@ -257,12 +254,6 @@ const sendOTP = async () => {
         if (data.success) {
             currentStep.value = 2;
             showSuccess('OTP đã được gửi đến email của bạn');
-
-            // Nếu là demo mode, hiển thị OTP
-            if (data.data && data.data.demo_otp) {
-                console.log('Demo OTP:', data.data.demo_otp);
-                showSuccess(`OTP (Demo): ${data.data.demo_otp}`);
-            }
         } else {
             showError(data.message);
         }
@@ -377,6 +368,36 @@ const goToLogin = () => {
     justify-content: center;
 }
 
+.brand-content {
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+}
+
+.logo-area {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.logo {
+    width: 168px;
+    height: 168px;
+    margin-bottom: 1.5rem;
+    border: 10px solid rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    box-shadow: 0 18px 40px rgba(17, 24, 39, 0.18);
+}
+
+.logo .pi {
+    font-size: 4.5rem;
+    line-height: 1;
+}
+
 .brand-name {
     font-size: 2rem;
     font-weight: 700;
@@ -458,20 +479,51 @@ const goToLogin = () => {
     left: 0.75rem;
     top: 50%;
     transform: translateY(-50%);
+    z-index: 2;
+    width: 1rem;
+    height: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: #9ca3af;
+    pointer-events: none;
 }
 
-.field-input,
-.field-password {
+.field-input {
     width: 100%;
+    height: 46px;
     padding: 0.75rem 0.75rem 0.75rem 2.5rem;
     border: 1px solid #d1d5db;
     border-radius: 8px;
     font-size: 1rem;
+    box-sizing: border-box;
 }
 
-.field-input.error,
-.field-password.error {
+.field-password {
+    display: block;
+    width: 100%;
+}
+
+.input-wrapper :deep(.field-password input) {
+    width: 100%;
+    height: 46px;
+    padding: 0.75rem 2.75rem 0.75rem 2.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.input-wrapper :deep(.field-password .p-password-toggle-mask-icon) {
+    right: 0.85rem;
+    color: #9ca3af;
+}
+
+.field-input.error {
+    border-color: red;
+}
+
+.input-wrapper :deep(.field-password.error input) {
     border-color: red;
 }
 
@@ -499,6 +551,7 @@ const goToLogin = () => {
     font-size: 1.2rem;
     font-weight: 600;
     letter-spacing: 0.25rem;
+    padding-right: 2.5rem;
 }
 
 /* Toast */

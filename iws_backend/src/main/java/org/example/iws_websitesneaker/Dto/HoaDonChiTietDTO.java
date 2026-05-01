@@ -10,7 +10,7 @@ public class HoaDonChiTietDTO {
     private Integer hoaDonId;
     private Integer chiTietSanPhamId;
 
-    // ThÃ´ng tin sáº£n pháº©m chi tiáº¿t
+    // Thông tin sản phẩm chi tiết
     private String tenSanPham;
     private String maSanPham;
     private String maChiTiet;
@@ -20,36 +20,36 @@ public class HoaDonChiTietDTO {
     private String danhMuc;
     private String hinhAnh;
 
-    // ThÃ´ng tin giÃ¡ cáº£
-    private Double giaGoc;           // GiÃ¡ gá»‘c
-    private Double giaBan;           // GiÃ¡ bÃ¡n (cÃ³ thá»ƒ Ä‘Ã£ giáº£m)
-    private BigDecimal giaKhuyenMai;     // GiÃ¡ sau khuyáº¿n mÃ£i
-    private BigDecimal tienTietKiem;     // Sá»‘ tiá»n tiáº¿t kiá»‡m Ä‘Æ°á»£c
-    private Float phanTramGiam;          // % giáº£m giÃ¡
+    // Thông tin giá cả
+    private Double giaGoc;           // Giá gốc
+    private Double giaBan;           // Giá bán (có thể đã giảm)
+    private BigDecimal giaKhuyenMai;     // Giá sau khuyến mãi
+    private BigDecimal tienTietKiem;     // Số tiền tiết kiệm được
+    private Float phanTramGiam;          // % giảm giá
 
-    // Sá»‘ lÆ°á»£ng vÃ  tá»•ng
+    // Số lượng và tổng
     private Integer soLuong;
-    private BigDecimal thanhTien;        // Tá»•ng tiá»n = giaBan * soLuong
+    private BigDecimal thanhTien;        // Tổng tiền = giaBan * soLuong
 
     private String trangThai;
 
     public HoaDonChiTietDTO() {}
 
-    // TÃ­nh toÃ¡n tá»± Ä‘á»™ng
+    // Tính toán tự động
     public void calculateValues() {
         if (giaGoc != null && giaBan != null && soLuong != null) {
-            // TÃ­nh tiá»n tiáº¿t kiá»‡m
+            // Tính tiền tiết kiệm
             this.tienTietKiem = BigDecimal.valueOf(giaGoc - giaBan).multiply(BigDecimal.valueOf(soLuong));
-            // TÃ­nh pháº§n trÄƒm giáº£m giÃ¡
+            // Tính phần trăm giảm giá
             if (giaGoc > 0) {
                 this.phanTramGiam = (float)(((giaGoc - giaBan) / giaGoc) * 100);
             }
-            // TÃ­nh thÃ nh tiá»n
+            // Tính thành tiền
             this.thanhTien = BigDecimal.valueOf(giaBan).multiply(BigDecimal.valueOf(soLuong));
         }
     }
 
-    // Getters vÃ  Setters
+    // Getters và Setters
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 

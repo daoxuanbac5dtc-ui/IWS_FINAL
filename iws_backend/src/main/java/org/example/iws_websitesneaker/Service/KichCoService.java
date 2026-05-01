@@ -8,11 +8,11 @@ import java.util.Optional;
 public interface KichCoService {
     List<KichCo> getAllKichCo();
     Optional<KichCo> getKichCoById(int id);
-    // ThÃªm
+    // Thêm
     void addKichCo(KichCo kichCo);
-    //Sá»­a
+    //Sửa
     void updateKichCo(KichCo kichCo);
-    //XÃ³a
+    //Xóa
     void deleteKichCo(int id);
 }
 

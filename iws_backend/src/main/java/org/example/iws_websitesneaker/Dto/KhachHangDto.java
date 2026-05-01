@@ -15,7 +15,7 @@ public class KhachHangDto {
     // Basic customer information
     private Integer id;
     private Integer idTaiKhoan; // Reference to TaiKhoan
-    private Integer idDiaChi;   // Legacy field (cÃ³ thá»ƒ bá» náº¿u khÃ´ng dÃ¹ng)
+    private Integer idDiaChi;   // Legacy field (có thể bỏ nếu không dùng)
     private Integer idViDiem;   // Reference to ViDiem
     private String maKhachHang;
 
@@ -23,10 +23,10 @@ public class KhachHangDto {
     private String email;
 
     // Customer personal information - can be null initially, completed later
-    @Size(max = 225, message = "Há» tÃªn khÃ´ng Ä‘Æ°á»£c quÃ¡ 225 kÃ½ tá»±")
+    @Size(max = 225, message = "Họ tên không được quá 225 ký tự")
     private String hoTen;
 
-    @Pattern(regexp = "^0\\d{9,10}$|^$", message = "Sá»‘ Ä‘iá»‡n thoáº¡i pháº£i cÃ³ 10-11 sá»‘ vÃ  báº¯t Ä‘áº§u báº±ng 0")
+    @Pattern(regexp = "^0\\d{9,10}$|^$", message = "Số điện thoại phải có 10-11 số và bắt đầu bằng 0")
     private String sdt;
 
     // Status and audit fields
@@ -75,7 +75,7 @@ public class KhachHangDto {
         if (email != null && !email.trim().isEmpty()) {
             return email;
         }
-        return maKhachHang != null ? maKhachHang : "KhÃ¡ch hÃ ng";
+        return maKhachHang != null ? maKhachHang : "Khách hàng";
     }
 
     /**
@@ -92,7 +92,7 @@ public class KhachHangDto {
         if (diaChiMacDinh != null && diaChiMacDinh.getDiaChiDayDu() != null) {
             return diaChiMacDinh.getDiaChiDayDu();
         }
-        return "ChÆ°a cÃ³ Ä‘á»‹a chá»‰";
+        return "Chưa có địa chỉ";
     }
 
     /**
@@ -100,7 +100,7 @@ public class KhachHangDto {
      */
     public String getFormattedPhone() {
         if (sdt == null || sdt.trim().isEmpty()) {
-            return "ChÆ°a cáº­p nháº­t";
+            return "Chưa cập nhật";
         }
 
         String phone = sdt.trim();
@@ -129,15 +129,15 @@ public class KhachHangDto {
         List<String> errors = new java.util.ArrayList<>();
 
         if (hoTen == null || hoTen.trim().isEmpty()) {
-            errors.add("Há» tÃªn khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            errors.add("Họ tên không được để trống");
         } else if (hoTen.length() > 225) {
-            errors.add("Há» tÃªn khÃ´ng Ä‘Æ°á»£c quÃ¡ 225 kÃ½ tá»±");
+            errors.add("Họ tên không được quá 225 ký tự");
         }
 
         if (sdt == null || sdt.trim().isEmpty()) {
-            errors.add("Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            errors.add("Số điện thoại không được để trống");
         } else if (!sdt.matches("^0\\d{9,10}$")) {
-            errors.add("Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng Ä‘Ãºng Ä‘á»‹nh dáº¡ng");
+            errors.add("Số điện thoại không đúng định dạng");
         }
 
         return errors;

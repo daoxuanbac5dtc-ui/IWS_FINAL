@@ -40,7 +40,7 @@ public class MauSacServiceImpl implements MauSacService {
 
     @Override
     public void delete(int id) {
-        repoChiTietSanPham.removeMauSacReference(id);// Gá»¡ rÃ ng buá»™c khÃ³a ngoáº¡i tá»« báº£ng ctsp
+        repoChiTietSanPham.removeMauSacReference(id);// Gỡ ràng buộc khóa ngoại từ bảng ctsp
         repoMauSac.deleteById(id);
     }
 }

@@ -34,11 +34,11 @@ public class ChiTietTraHang {
     @Temporal(TemporalType.TIMESTAMP)
     private Date ngayCapNhat;
 
-    // âœ… THÃŠM: TrÆ°á»ng lÃ½ do tráº£ hÃ ng
+    // ✅ THÊM: Trường lý do trả hàng
     @Column(name = "ly_do", length = 255)
     private String lyDo;
 
-    // âœ… THÃŠM: TrÆ°á»ng Ä‘Æ°á»ng dáº«n áº£nh
+    // ✅ THÊM: Trường đường dẫn ảnh
     @Column(name = "duong_dan_anh", length = 255)
     private String duongDanAnh;
 

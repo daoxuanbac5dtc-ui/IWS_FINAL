@@ -14,12 +14,12 @@ import java.util.Optional;
 public interface KhuyenMaiBHRepository extends JpaRepository<KhuyenMai, Integer> {
 
     /**
-     * TÃ¬m khuyáº¿n mÃ£i theo mÃ£
+     * Tìm khuyến mãi theo mã
      */
     Optional<KhuyenMai> findByMaKhuyenMai(String maKhuyenMai);
 
     /**
-     * Láº¥y khuyáº¿n mÃ£i Ä‘ang hoáº¡t Ä‘á»™ng
+     * Lấy khuyến mãi đang hoạt động
      */
     @Query("SELECT km FROM KhuyenMai km " +
             "WHERE km.trangThai = 1 " +

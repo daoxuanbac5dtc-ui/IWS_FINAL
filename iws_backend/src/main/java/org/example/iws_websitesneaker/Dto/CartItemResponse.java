@@ -5,23 +5,23 @@ import java.util.Date;
 
 @Data
 public class CartItemResponse {
-    private Integer id;                    // âœ… Khá»›p vá»›i frontend
-    private Integer productDetailId;       // âœ… Khá»›p
-    private String name;                   // âœ… Khá»›p (productName -> name)
-    private String code;                   // âœ… Khá»›p (productCode -> code)
-    private String image;                  // âœ… Khá»›p (imageUrl -> image)
-    private Double price;                  // âœ… Khá»›p
-    private Integer quantity;              // âœ… Khá»›p
-    private Integer stock;                 // âœ… Khá»›p
-    private Integer points;                // âœ… THÃŠM - frontend cÃ³
-    private Double totalPrice;             // âœ… Khá»›p
+    private Integer id;                    // ✅ Khớp với frontend
+    private Integer productDetailId;       // ✅ Khớp
+    private String name;                   // ✅ Khớp (productName -> name)
+    private String code;                   // ✅ Khớp (productCode -> code)
+    private String image;                  // ✅ Khớp (imageUrl -> image)
+    private Double price;                  // ✅ Khớp
+    private Integer quantity;              // ✅ Khớp
+    private Integer stock;                 // ✅ Khớp
+    private Integer points;                // ✅ THÊM - frontend có
+    private Double totalPrice;             // ✅ Khớp
 
-    // Size vÃ  Color - THAY Äá»”I Ä‘á»ƒ khá»›p frontend
-    private String size;                   // âœ… Frontend dÃ¹ng string
-    private String color;               // âœ… Frontend dÃ¹ng object
+    // Size và Color - THAY ĐỔI để khớp frontend
+    private String size;                   // ✅ Frontend dùng string
+    private String color;               // ✅ Frontend dùng object
 
-    private Date createdDate;              // âœ… Khá»›p
-    private Date updatedDate;              // âœ… Khá»›p
+    private Date createdDate;              // ✅ Khớp
+    private Date updatedDate;              // ✅ Khớp
 
     // Inner class cho color info
     @Data

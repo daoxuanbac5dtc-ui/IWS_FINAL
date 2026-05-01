@@ -8,12 +8,12 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ApDungVoucherRequest {
-    @NotNull(message = "Voucher ID khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
+    @NotNull(message = "Voucher ID không được để trống")
     private Integer voucherId;
 
     private Integer khachHangId;
 
-    @NotNull(message = "Tá»•ng tiá»n khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
+    @NotNull(message = "Tổng tiền không được để trống")
     private Double tongTien;
 }
 

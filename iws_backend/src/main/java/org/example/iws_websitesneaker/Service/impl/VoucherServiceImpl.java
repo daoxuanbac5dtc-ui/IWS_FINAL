@@ -19,7 +19,7 @@ public class VoucherServiceImpl implements VoucherService {
     private RepoChiTietVoucher repoChiTietVoucher;
     @Autowired
     private RepoTaiKhoanVoucher repoTaiKhoanVoucher;
-    //Hiá»ƒn thi
+    //Hiển thi
     @Override
     public List<Voucher> getVouchers() {
         return repoVoucher.findAll();
@@ -42,8 +42,8 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     public void deleteVoucher(int id) {
-        repoTaiKhoanVoucher.removeVoucherReference(id);// Gá»¡ rÃ ng buá»™c khÃ³a ngoáº¡i tá»« báº£ng tÃ i kháº£on voucher
-        repoChiTietVoucher.removeVoucherReference(id);// Gá»¡ rÃ ng buá»™c khÃ³a ngoáº¡i tá»« báº£ng chitietvoucher
+        repoTaiKhoanVoucher.removeVoucherReference(id);// Gỡ ràng buộc khóa ngoại từ bảng tài khảon voucher
+        repoChiTietVoucher.removeVoucherReference(id);// Gỡ ràng buộc khóa ngoại từ bảng chitietvoucher
         repoVoucher.deleteById(id);
     }
 }

@@ -19,38 +19,38 @@ public class ThuongHieuController {
     @Autowired
     private ThuongHieuService thuongHieuService;
 
-    // HiÃªnr thá»‹ thÆ°Æ¡ng hiá»‡u
+    // Hiênr thị thương hiệu
     @GetMapping
     public List<ThuongHieu> getAll(){
         return thuongHieuService.getAllThuongHieu();
     }
 
-    //Detail thÆ°Æ¡ng hiá»‡u theo id
+    //Detail thương hiệu theo id
     @GetMapping("/{id}")
     public ThuongHieu getDetail(@PathVariable int id){
         return thuongHieuService.getThuongHieuById(id).orElse(null);
     }
 
-    //ThÃªm thÆ°Æ¡ng hiá»‡u - ngÃ y táº¡o
+    //Thêm thương hiệu - ngày tạo
     @PostMapping
     public String add(@Valid @RequestBody ThuongHieu thuongHieu){
         thuongHieu.setNgayTao(new Date());
         thuongHieuService.addThuongHieu(thuongHieu);
-        return "ThÃªm thÃ nh cÃ´ng thÆ°Æ¡ng hiá»‡u !";
+        return "Thêm thành công thương hiệu !";
     }
-    // Sá»­a thÆ°ong hiá»‡u - ngÃ y cáº­p nháº­t
+    // Sửa thưong hiệu - ngày cập nhật
     @PutMapping("/{id}")
     public String update(@PathVariable int id ,@Valid @RequestBody  ThuongHieu thuongHieu){
         thuongHieu.setId(id);
         thuongHieu.setNgayCapNhat(new Date());
         thuongHieuService.updateThuongHieu(thuongHieu);
-        return "Sá»­a thÃ nh cÃ´ng thÆ°Æ¡ng hiá»‡u vá»›i id : " + id;
+        return "Sửa thành công thương hiệu với id : " + id;
     }
-    // XÃ³a thÆ°Æ¡ng hiá»‡u
+    // Xóa thương hiệu
     @DeleteMapping("/{id}")
     public String delete(@PathVariable int id){
         thuongHieuService.deleteThuongHieuById(id);
-        return "ÄÃ£ xÃ³a thÃ nh cÃ´ng thÆ°Æ¡ng hiá»‡u vá»›i id : " + id;
+        return "Đã xóa thành công thương hiệu với id : " + id;
     }
 
 }

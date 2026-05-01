@@ -14,30 +14,30 @@ public class ThanhToanResponse {
     private String maHoaDon;
     private String trangThaiHoaDon;
 
-    // ThÃ´ng tin thanh toÃ¡n
+    // Thông tin thanh toán
     private String phuongThucThanhToan;
     private BigDecimal tongTienCanThanhToan;
     private BigDecimal tienMat;
     private BigDecimal tienChuyenKhoan;
-    private BigDecimal tienThua; // Tiá»n thá»«a khi thanh toÃ¡n tiá»n máº·t
+    private BigDecimal tienThua; // Tiền thừa khi thanh toán tiền mặt
 
-    // ThÃ´ng tin voucher vÃ  Ä‘iá»ƒm
+    // Thông tin voucher và điểm
     private Integer voucherId;
     private String tenVoucher;
     private BigDecimal giaTriGiamVoucher;
     private Integer diemSuDung;
-    private BigDecimal giaTriDiem; // GiÃ¡ trá»‹ tiá»n cá»§a Ä‘iá»ƒm Ä‘Ã£ sá»­ dá»¥ng
+    private BigDecimal giaTriDiem; // Giá trị tiền của điểm đã sử dụng
 
-    // ThÃ´ng tin khÃ¡ch hÃ ng
+    // Thông tin khách hàng
     private Integer khachHangId;
     private String tenKhachHang;
     private String sdtKhachHang;
 
-    // ThÃ´ng tin thá»i gian
+    // Thông tin thời gian
     private Date ngayThanhToan;
     private Date ngayHoanThanh;
 
-    // ThÃ´ng tin nhÃ¢n viÃªn
+    // Thông tin nhân viên
     private Integer nhanVienId;
     private String tenNhanVien;
 
@@ -45,6 +45,6 @@ public class ThanhToanResponse {
     private String thongBaoThanhToan;
     private Boolean thanhCong;
 
-    // THÃŠM FIELD Má»šI
-    private List<InventoryCheckResponse> kiemTraTonKho; // Káº¿t quáº£ kiá»ƒm tra tá»“n kho
+    // THÊM FIELD MỚI
+    private List<InventoryCheckResponse> kiemTraTonKho; // Kết quả kiểm tra tồn kho
 }

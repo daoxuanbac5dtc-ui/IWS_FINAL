@@ -12,13 +12,13 @@ import java.util.Optional;
 @Repository
 public interface NhanVienBHRepository extends JpaRepository<NhanVien, Integer> {
 
-    // Method hiá»‡n táº¡i - tÃ¬m theo mÃ£ nhÃ¢n viÃªn
+    // Method hiện tại - tìm theo mã nhân viên
     Optional<NhanVien> findByMaNhanVienAndTrangThai(String maNhanVien, Integer trangThai);
 
-    // âœ… THÃŠM: TÃ¬m theo mÃ£ tÃ i khoáº£n (vÃ¬ cÃ³ thá»ƒ Ä‘ang truyá»n nháº§m)
+    // ✅ THÊM: Tìm theo mã tài khoản (vì có thể đang truyền nhầm)
     Optional<NhanVien> findByTaiKhoan_MaTaiKhoanAndTrangThai(String maTaiKhoan, Integer trangThai);
 
-    // âœ… THÃŠM: TÃ¬m linh hoáº¡t theo cáº£ mÃ£ nhÃ¢n viÃªn HOáº¶C mÃ£ tÃ i khoáº£n
+    // ✅ THÊM: Tìm linh hoạt theo cả mã nhân viên HOẶC mã tài khoản
     @Query("SELECT nv FROM NhanVien nv WHERE " +
             "(nv.maNhanVien = :ma OR nv.taiKhoan.maTaiKhoan = :ma) " +
             "AND nv.trangThai = :trangThai")
@@ -27,24 +27,24 @@ public interface NhanVienBHRepository extends JpaRepository<NhanVien, Integer> {
             @Param("trangThai") Integer trangThai
     );
 
-    // âœ… THÃŠM: TÃ¬m theo mÃ£ tÃ i khoáº£n chá»©a pattern
+    // ✅ THÊM: Tìm theo mã tài khoản chứa pattern
     List<NhanVien> findByTaiKhoan_MaTaiKhoanContainingIgnoreCase(String maTaiKhoan);
 
     List<NhanVien> findByMaNhanVienContaining(String maNhanVien);
 
     List<NhanVien> findByMaNhanVienContainingAndTrangThai(String maNhanVien, Integer trangThai);
 
-    // CÃCH 3: DÃ¹ng native SQL náº¿u cáº§n
+    // CÁCH 3: Dùng native SQL nếu cần
     @Query(value = "SELECT * FROM nhan_vien nv WHERE " +
             "nv.ma_nhan_vien LIKE CONCAT('%', :pattern, '%') " +
             "OR UPPER(nv.ma_nhan_vien) LIKE UPPER(CONCAT('%', :pattern, '%'))",
             nativeQuery = true)
     List<NhanVien> findByMaNhanVienPatternNative(@Param("pattern") String pattern);
 
-    // Method kiá»ƒm tra tá»“n táº¡i
+    // Method kiểm tra tồn tại
     boolean existsByMaNhanVienAndTrangThai(String maNhanVien, Integer trangThai);
 
-    // Method tÃ¬m exact match vá»›i nhiá»u Ä‘iá»u kiá»‡n
+    // Method tìm exact match với nhiều điều kiện
     @Query("SELECT nv FROM NhanVien nv WHERE " +
             "(nv.maNhanVien = :maNhanVien " +
             "OR UPPER(nv.maNhanVien) = UPPER(:maNhanVien) " +
@@ -55,31 +55,31 @@ public interface NhanVienBHRepository extends JpaRepository<NhanVien, Integer> {
             @Param("trangThai") Integer trangThai
     );
     /**
-     * TÃ¬m nhÃ¢n viÃªn theo mÃ£ nhÃ¢n viÃªn
+     * Tìm nhân viên theo mã nhân viên
      */
     Optional<NhanVien> findByMaNhanVien(String maNhanVien);
 
 
     /**
-     * TÃ¬m nhÃ¢n viÃªn theo email
+     * Tìm nhân viên theo email
      */
 //    Optional<NhanVien> findByEmail(String email);
 
     /**
-     * Láº¥y nhÃ¢n viÃªn Ä‘ang hoáº¡t Ä‘á»™ng
+     * Lấy nhân viên đang hoạt động
      */
     List<NhanVien> findByTrangThai(Integer trangThai);
 
     /**
-     * Kiá»ƒm tra tá»“n táº¡i email
+     * Kiểm tra tồn tại email
      */
 //    Boolean existsByEmail(String email);
 
-    // TÃ¬m theo mÃ£ nhÃ¢n viÃªn cÃ³ chá»©a (ignore case)
+    // Tìm theo mã nhân viên có chứa (ignore case)
     List<NhanVien> findByMaNhanVienContainingIgnoreCase(String maNhanVien);
 
 
-    // TÃ¬m kiáº¿m linh hoáº¡t vá»›i ignore case vÃ  trim
+    // Tìm kiếm linh hoạt với ignore case và trim
     @Query("SELECT nv FROM NhanVien nv WHERE " +
             "(UPPER(TRIM(nv.maNhanVien)) = UPPER(TRIM(:ma)) " +
             "OR UPPER(TRIM(nv.taiKhoan.maTaiKhoan)) = UPPER(TRIM(:ma))) " +
@@ -89,7 +89,7 @@ public interface NhanVienBHRepository extends JpaRepository<NhanVien, Integer> {
             @Param("trangThai") Integer trangThai
     );
 
-    // TÃ¬m theo pattern chá»©a trong mÃ£ nhÃ¢n viÃªn hoáº·c mÃ£ tÃ i khoáº£n
+    // Tìm theo pattern chứa trong mã nhân viên hoặc mã tài khoản
     @Query("SELECT nv FROM NhanVien nv WHERE " +
             "(nv.maNhanVien LIKE CONCAT('%', :pattern, '%') " +
             "OR nv.taiKhoan.maTaiKhoan LIKE CONCAT('%', :pattern, '%')) " +
@@ -110,18 +110,18 @@ public interface NhanVienBHRepository extends JpaRepository<NhanVien, Integer> {
     @Query("SELECT nv.maNhanVien FROM NhanVien nv WHERE nv.taiKhoan.maTaiKhoan = :maTaiKhoan")
     Optional<String> findMaNhanVienByMaTaiKhoan(@Param("maTaiKhoan") String maTaiKhoan);
 
-    // ===== METHODS SEARCH NÃ‚NG CAO =====
+    // ===== METHODS SEARCH NÂNG CAO =====
 
-    // TÃ¬m theo há» tÃªn
+    // Tìm theo họ tên
     List<NhanVien> findByHoTenContainingIgnoreCase(String hoTen);
 
-    // TÃ¬m theo email
+    // Tìm theo email
 //    Optional<NhanVien> findByEmailAndTrangThai(String email, Integer trangThai);
 
-    // TÃ¬m theo sá»‘ Ä‘iá»‡n thoáº¡i
+    // Tìm theo số điện thoại
     Optional<NhanVien> findBySdtAndTrangThai(String sdt, Integer trangThai);
 
-    // TÃ¬m kiáº¿m toÃ n diá»‡n
+    // Tìm kiếm toàn diện
     @Query("SELECT nv FROM NhanVien nv WHERE " +
             "(nv.maNhanVien LIKE CONCAT('%', :keyword, '%') " +
             "OR nv.taiKhoan.maTaiKhoan LIKE CONCAT('%', :keyword, '%') " +

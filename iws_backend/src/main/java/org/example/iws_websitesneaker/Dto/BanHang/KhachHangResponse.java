@@ -17,7 +17,7 @@ public class KhachHangResponse {
     private Double diemTichLuy;
     private Date ngayTao;
 
-    // Äá»‹a chá»‰
+    // Địa chỉ
     private String tenTinh;
     private String tenHuyen;
     private String tenPhuong;

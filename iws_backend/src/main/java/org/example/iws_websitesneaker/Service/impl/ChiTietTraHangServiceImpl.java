@@ -45,7 +45,7 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
     @Override
     public ChiTietTraHangDTO getById(Integer id) {
         ChiTietTraHang chiTiet = chiTietTraHangRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t tráº£ hÃ ng vá»›i ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết trả hàng với ID: " + id));
         return convertToDTO(chiTiet);
     }
 
@@ -54,20 +54,20 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
         try {
             return chiTietTraHangRepository.findByHoaDonIdWithFullInfo(hoaDonId).stream()
                     .map(this::convertToDTO)
-                    .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // âœ… Sá»¬A
+                    .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // ✅ SỬA
                     .collect(Collectors.toList());
         } catch (Exception e) {
             try {
                 return chiTietTraHangRepository.findByHoaDonIdWithFullInfoFallback(hoaDonId).stream()
                         .map(this::convertToDTO)
-                        .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // âœ… Sá»¬A
+                        .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // ✅ SỬA
                         .collect(Collectors.toList());
             } catch (Exception e2) {
                 List<HoaDonChiTiet> hoaDonChiTiets = hoaDonChiTietRepository.findByHoaDonId(hoaDonId);
                 return hoaDonChiTiets.stream()
                         .flatMap(hdct -> chiTietTraHangRepository.findByChiTietSanPhamId(hdct.getChiTietSanPham().getId()).stream())
                         .map(this::convertToDTO)
-                        .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // âœ… Sá»¬A
+                        .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // ✅ SỬA
                         .collect(Collectors.toList());
             }
         }
@@ -75,30 +75,30 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
 
     @Override
     public ChiTietTraHangDTO createChiTietTraHang(ChiTietTraHangDTO dto) {
-        // Validate input cÆ¡ báº£n
+        // Validate input cơ bản
         if (dto.getChiTietSanPhamId() == null) {
-            throw new RuntimeException("ID chi tiáº¿t sáº£n pháº©m khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            throw new RuntimeException("ID chi tiết sản phẩm không được để trống");
         }
 
         if (dto.getSoLuong() == null || dto.getSoLuong() <= 0) {
-            throw new RuntimeException("Sá»‘ lÆ°á»£ng pháº£i lá»›n hÆ¡n 0");
+            throw new RuntimeException("Số lượng phải lớn hơn 0");
         }
 
         if (dto.getLyDo() == null || dto.getLyDo().trim().isEmpty()) {
-            throw new RuntimeException("LÃ½ do tráº£ hÃ ng khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            throw new RuntimeException("Lý do trả hàng không được để trống");
         }
 
-        // Kiá»ƒm tra chi tiáº¿t sáº£n pháº©m tá»“n táº¡i
+        // Kiểm tra chi tiết sản phẩm tồn tại
         ChiTietSanPham ctsp = chiTietSanPhamRepository.findById(dto.getChiTietSanPhamId())
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t sáº£n pháº©m vá»›i ID: " + dto.getChiTietSanPhamId()));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết sản phẩm với ID: " + dto.getChiTietSanPhamId()));
 
-        // Xá»­ lÃ½ hÃ³a Ä‘Æ¡n
+        // Xử lý hóa đơn
         HoaDon hoaDon = null;
         if (dto.getHoaDonId() != null) {
             hoaDon = hoaDonRepository.findById(dto.getHoaDonId())
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n vá»›i ID: " + dto.getHoaDonId()));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn với ID: " + dto.getHoaDonId()));
         } else {
-            // Tá»± Ä‘á»™ng tÃ¬m hÃ³a Ä‘Æ¡n tá»« chi tiáº¿t sáº£n pháº©m
+            // Tự động tìm hóa đơn từ chi tiết sản phẩm
             List<HoaDonChiTiet> hoaDonChiTiets = hoaDonChiTietRepository.findByChiTietSanPhamId(dto.getChiTietSanPhamId());
             if (!hoaDonChiTiets.isEmpty()) {
                 hoaDonChiTiets.sort((a, b) -> b.getNgayTao().compareTo(a.getNgayTao()));
@@ -107,14 +107,14 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
             }
         }
 
-        // âœ… QUAN TRá»ŒNG: Kiá»ƒm tra cÃ³ thá»ƒ tráº£ hÃ ng khÃ´ng vá»›i logic má»›i
+        // ✅ QUAN TRỌNG: Kiểm tra có thể trả hàng không với logic mới
         if (!canReturn(dto.getChiTietSanPhamId(), dto.getSoLuong())) {
-            // ThÃªm thÃ´ng tin chi tiáº¿t vÃ o error message
+            // Thêm thông tin chi tiết vào error message
             Integer tongDaMua = hoaDonChiTietRepository.getTotalSoldQuantity(dto.getChiTietSanPhamId());
             Integer tongDaTra = getTotalReturnedQuantity(dto.getChiTietSanPhamId());
 
             String errorMsg = String.format(
-                    "KhÃ´ng thá»ƒ tráº£ %d sáº£n pháº©m. ÄÃ£ mua: %d, Ä‘Ã£ tráº£: %d, cÃ³ thá»ƒ tráº£ thÃªm: %d",
+                    "Không thể trả %d sản phẩm. Đã mua: %d, đã trả: %d, có thể trả thêm: %d",
                     dto.getSoLuong(),
                     tongDaMua != null ? tongDaMua : 0,
                     tongDaTra != null ? tongDaTra : 0,
@@ -124,16 +124,16 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
             throw new RuntimeException(errorMsg);
         }
 
-        // Kiá»ƒm tra tráº¡ng thÃ¡i hÃ³a Ä‘Æ¡n - CHá»ˆ check náº¿u cÃ³ hÃ³a Ä‘Æ¡n
+        // Kiểm tra trạng thái hóa đơn - CHỈ check nếu có hóa đơn
         if (hoaDon != null) {
-            // âœ… Sá»¬A: Cho phÃ©p tráº£ vá»›i nhiá»u tráº¡ng thÃ¡i hÆ¡n
-            Set<String> allowedStatuses = Set.of("COMPLETED", "DELIVERED", "DA_GIAO", "HOAN_THANH");
+            // ✅ SỬA: Cho phép trả với nhiều trạng thái hơn
+            Set<String> allowedStatuses = Set.of("COMPLETED", "DA_THANH_TOAN", "DELIVERED", "DA_GIAO", "HOAN_THANH");
             if (!allowedStatuses.contains(hoaDon.getTrangThaiHoaDon())) {
-                throw new RuntimeException("Chá»‰ cÃ³ thá»ƒ táº¡o yÃªu cáº§u tráº£ hÃ ng cho Ä‘Æ¡n hÃ ng Ä‘Ã£ giao thÃ nh cÃ´ng. Tráº¡ng thÃ¡i hiá»‡n táº¡i: " + hoaDon.getTrangThaiHoaDon());
+                throw new RuntimeException("Chỉ có thể tạo yêu cầu trả hàng cho đơn hàng đã giao thành công. Trạng thái hiện tại: " + hoaDon.getTrangThaiHoaDon());
             }
         }
 
-        // Táº¡o chi tiáº¿t tráº£ hÃ ng
+        // Tạo chi tiết trả hàng
         ChiTietTraHang chiTiet = new ChiTietTraHang();
         chiTiet.setMaChiTietTraHang(generateMaChiTietTraHang());
         chiTiet.setSoLuong(dto.getSoLuong());
@@ -153,7 +153,7 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
 
         ChiTietTraHang saved = chiTietTraHangRepository.save(chiTiet);
 
-        System.out.println("âœ… Táº¡o thÃ nh cÃ´ng chi tiáº¿t tráº£ hÃ ng: " + saved.getMaChiTietTraHang());
+        System.out.println("✅ Tạo thành công chi tiết trả hàng: " + saved.getMaChiTietTraHang());
 
         return convertToDTO(saved);
     }
@@ -161,41 +161,41 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
     @Override
     public ChiTietTraHangDTO updateChiTietTraHang(Integer id, ChiTietTraHangDTO dto) {
         ChiTietTraHang chiTiet = chiTietTraHangRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t tráº£ hÃ ng vá»›i ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết trả hàng với ID: " + id));
 
-        // Chá»‰ cho phÃ©p cáº­p nháº­t khi tráº¡ng thÃ¡i lÃ  PENDING
+        // Chỉ cho phép cập nhật khi trạng thái là PENDING
         if (!"PENDING".equals(chiTiet.getTrangThaiHoaDon())) {
-            throw new RuntimeException("KhÃ´ng thá»ƒ cáº­p nháº­t chi tiáº¿t tráº£ hÃ ng á»Ÿ tráº¡ng thÃ¡i: " + chiTiet.getTrangThaiHoaDon());
+            throw new RuntimeException("Không thể cập nhật chi tiết trả hàng ở trạng thái: " + chiTiet.getTrangThaiHoaDon());
         }
 
         boolean hasChanges = false;
 
-        // Cáº­p nháº­t sá»‘ lÆ°á»£ng náº¿u cÃ³
+        // Cập nhật số lượng nếu có
         if (dto.getSoLuong() != null && dto.getSoLuong() > 0 && !dto.getSoLuong().equals(chiTiet.getSoLuong())) {
-            // Kiá»ƒm tra sá»‘ lÆ°á»£ng cÃ³ há»£p lá»‡ khÃ´ng
+            // Kiểm tra số lượng có hợp lệ không
             if (!canReturn(chiTiet.getChiTietSanPham().getId(), dto.getSoLuong())) {
-                throw new RuntimeException("KhÃ´ng thá»ƒ tráº£ hÃ ng vá»›i sá»‘ lÆ°á»£ng nÃ y");
+                throw new RuntimeException("Không thể trả hàng với số lượng này");
             }
             chiTiet.setSoLuong(dto.getSoLuong());
             hasChanges = true;
         }
 
-        // âœ… THÃŠM: Cáº­p nháº­t lÃ½ do náº¿u cÃ³
+        // ✅ THÊM: Cập nhật lý do nếu có
         if (dto.getLyDo() != null && !dto.getLyDo().trim().isEmpty() && !dto.getLyDo().equals(chiTiet.getLyDo())) {
             chiTiet.setLyDo(dto.getLyDo());
             hasChanges = true;
         }
 
-        // âœ… THÃŠM: Cáº­p nháº­t áº£nh náº¿u cÃ³
+        // ✅ THÊM: Cập nhật ảnh nếu có
         if (dto.getDuongDanAnh() != null && !dto.getDuongDanAnh().equals(chiTiet.getDuongDanAnh())) {
             chiTiet.setDuongDanAnh(dto.getDuongDanAnh());
             hasChanges = true;
         }
 
-        // Cáº­p nháº­t tráº¡ng thÃ¡i náº¿u cÃ³
+        // Cập nhật trạng thái nếu có
         if (dto.getTrangThaiHoaDon() != null && !dto.getTrangThaiHoaDon().equals(chiTiet.getTrangThaiHoaDon())) {
             if (!isValidStatusTransition(chiTiet.getTrangThaiHoaDon(), dto.getTrangThaiHoaDon())) {
-                throw new RuntimeException("KhÃ´ng thá»ƒ chuyá»ƒn tá»« tráº¡ng thÃ¡i " + chiTiet.getTrangThaiHoaDon() + " sang " + dto.getTrangThaiHoaDon());
+                throw new RuntimeException("Không thể chuyển từ trạng thái " + chiTiet.getTrangThaiHoaDon() + " sang " + dto.getTrangThaiHoaDon());
             }
             chiTiet.setTrangThaiHoaDon(dto.getTrangThaiHoaDon());
             hasChanges = true;
@@ -213,23 +213,23 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
     @Override
     public ChiTietTraHangDTO updateTrangThai(Integer id, String trangThai, String ghiChu) {
         if (trangThai == null || trangThai.trim().isEmpty()) {
-            throw new RuntimeException("Tráº¡ng thÃ¡i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            throw new RuntimeException("Trạng thái không được để trống");
         }
 
         ChiTietTraHang chiTiet = chiTietTraHangRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t tráº£ hÃ ng vá»›i ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết trả hàng với ID: " + id));
 
         String oldStatus = chiTiet.getTrangThaiHoaDon();
 
-        // Kiá»ƒm tra logic chuyá»ƒn tráº¡ng thÃ¡i
+        // Kiểm tra logic chuyển trạng thái
         if (!isValidStatusTransition(oldStatus, trangThai)) {
-            throw new RuntimeException("KhÃ´ng thá»ƒ chuyá»ƒn tá»« tráº¡ng thÃ¡i " + oldStatus + " sang " + trangThai);
+            throw new RuntimeException("Không thể chuyển từ trạng thái " + oldStatus + " sang " + trangThai);
         }
 
         chiTiet.setTrangThaiHoaDon(trangThai);
         chiTiet.setNgayCapNhat(new Date());
 
-        // Xá»­ lÃ½ logic theo tráº¡ng thÃ¡i má»›i
+        // Xử lý logic theo trạng thái mới
         handleStatusChange(chiTiet, oldStatus, trangThai, ghiChu);
 
         ChiTietTraHang saved = chiTietTraHangRepository.save(chiTiet);
@@ -239,11 +239,11 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
     @Override
     public void deleteChiTietTraHang(Integer id) {
         ChiTietTraHang chiTiet = chiTietTraHangRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t tráº£ hÃ ng vá»›i ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết trả hàng với ID: " + id));
 
-        // Chá»‰ cho phÃ©p xÃ³a khi tráº¡ng thÃ¡i lÃ  PENDING
+        // Chỉ cho phép xóa khi trạng thái là PENDING
         if (!"PENDING".equals(chiTiet.getTrangThaiHoaDon())) {
-            throw new RuntimeException("KhÃ´ng thá»ƒ xÃ³a chi tiáº¿t tráº£ hÃ ng á»Ÿ tráº¡ng thÃ¡i: " + chiTiet.getTrangThaiHoaDon());
+            throw new RuntimeException("Không thể xóa chi tiết trả hàng ở trạng thái: " + chiTiet.getTrangThaiHoaDon());
         }
 
         chiTietTraHangRepository.delete(chiTiet);
@@ -252,15 +252,15 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
     @Override
     public Integer getTotalReturnedQuantity(Integer chiTietSanPhamId) {
         try {
-            // âœ… Sá»¬A: Äáº£m báº£o query nÃ y Ä‘Ãºng logic
+            // ✅ SỬA: Đảm bảo query này đúng logic
             Integer total = chiTietTraHangRepository.getTotalReturnedQuantityExcludeRejected(chiTietSanPhamId);
 
             System.out.println("DEBUG getTotalReturnedQuantity for product " + chiTietSanPhamId + ": " + total);
 
             return total != null ? total : 0;
         } catch (Exception e) {
-            System.err.println("Lá»—i getTotalReturnedQuantity: " + e.getMessage());
-            e.printStackTrace(); // âœ… THÃŠM: In stack trace Ä‘á»ƒ debug
+            System.err.println("Lỗi getTotalReturnedQuantity: " + e.getMessage());
+            e.printStackTrace(); // ✅ THÊM: In stack trace để debug
             return 0;
         }
     }
@@ -312,41 +312,41 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
     @Override
     public boolean canReturn(Integer chiTietSanPhamId, Integer soLuong) {
         if (chiTietSanPhamId == null || soLuong == null || soLuong <= 0) {
-            System.out.println("âŒ canReturn: Invalid input - chiTietSanPhamId=" + chiTietSanPhamId + ", soLuong=" + soLuong);
+            System.out.println("❌ canReturn: Invalid input - chiTietSanPhamId=" + chiTietSanPhamId + ", soLuong=" + soLuong);
             return false;
         }
 
         try {
-            // Láº¥y tá»•ng sá»‘ lÆ°á»£ng Ä‘Ã£ mua cá»§a chi tiáº¿t sáº£n pháº©m nÃ y
+            // Lấy tổng số lượng đã mua của chi tiết sản phẩm này
             Integer tongSoLuongDaMua = hoaDonChiTietRepository.getTotalSoldQuantity(chiTietSanPhamId);
             if (tongSoLuongDaMua == null || tongSoLuongDaMua <= 0) {
-                System.out.println("âŒ canReturn: No purchase found for product " + chiTietSanPhamId);
+                System.out.println("❌ canReturn: No purchase found for product " + chiTietSanPhamId);
                 return false;
             }
 
-            // Láº¥y tá»•ng sá»‘ lÆ°á»£ng Ä‘Ã£ tráº£ (chá»‰ tÃ­nh nhá»¯ng cÃ¡i KHÃ”NG bá»‹ reject)
+            // Lấy tổng số lượng đã trả (chỉ tính những cái KHÔNG bị reject)
             Integer tongSoLuongDaTra = getTotalReturnedQuantity(chiTietSanPhamId);
             if (tongSoLuongDaTra == null) {
                 tongSoLuongDaTra = 0;
             }
 
-            // âœ… LOGIC CHO PHÃ‰P TRáº¢ 100%
+            // ✅ LOGIC CHO PHÉP TRẢ 100%
             int coTheTraThem = tongSoLuongDaMua - tongSoLuongDaTra;
             boolean result = soLuong <= coTheTraThem;
 
             System.out.println("=== CAN RETURN CHECK ===");
             System.out.println("Product ID: " + chiTietSanPhamId);
-            System.out.println("ÄÃ£ mua: " + tongSoLuongDaMua);
-            System.out.println("ÄÃ£ tráº£: " + tongSoLuongDaTra);
-            System.out.println("CÃ³ thá»ƒ tráº£ thÃªm: " + coTheTraThem);
-            System.out.println("YÃªu cáº§u tráº£: " + soLuong);
-            System.out.println("Káº¿t quáº£: " + result);
+            System.out.println("Đã mua: " + tongSoLuongDaMua);
+            System.out.println("Đã trả: " + tongSoLuongDaTra);
+            System.out.println("Có thể trả thêm: " + coTheTraThem);
+            System.out.println("Yêu cầu trả: " + soLuong);
+            System.out.println("Kết quả: " + result);
             System.out.println("========================");
 
             return result;
 
         } catch (Exception e) {
-            System.err.println("âŒ Lá»—i kiá»ƒm tra canReturn: " + e.getMessage());
+            System.err.println("❌ Lỗi kiểm tra canReturn: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -355,10 +355,10 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
     @Override
     public ChiTietTraHangDTO approveReturn(Integer id, String ghiChu) {
         ChiTietTraHang chiTiet = chiTietTraHangRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t tráº£ hÃ ng vá»›i ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết trả hàng với ID: " + id));
 
         if (!"PENDING".equals(chiTiet.getTrangThaiHoaDon())) {
-            throw new RuntimeException("Chá»‰ cÃ³ thá»ƒ cháº¥p nháº­n tráº£ hÃ ng á»Ÿ tráº¡ng thÃ¡i PENDING");
+            throw new RuntimeException("Chỉ có thể chấp nhận trả hàng ở trạng thái PENDING");
         }
 
         return updateTrangThai(id, "APPROVED", ghiChu);
@@ -373,7 +373,7 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
         try {
             return chiTietTraHangRepository.findByHoaDonIdAndTrangThaiHoaDon(hoaDonId, trangThai).stream()
                     .map(this::convertToDTO)
-                    .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // âœ… Sá»¬A
+                    .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // ✅ SỬA
                     .collect(Collectors.toList());
         } catch (Exception e) {
             return List.of();
@@ -426,7 +426,7 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
     private ChiTietTraHangDTO convertToDTO(ChiTietTraHang chiTiet) {
         ChiTietTraHangDTO dto = new ChiTietTraHangDTO();
 
-        // ThÃ´ng tin cÆ¡ báº£n
+        // Thông tin cơ bản
         dto.setId(chiTiet.getId());
         dto.setMaChiTietTraHang(chiTiet.getMaChiTietTraHang());
         dto.setSoLuong(chiTiet.getSoLuong());
@@ -435,26 +435,26 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
         dto.setNgayTaoTraHang(chiTiet.getNgayTaoTraHang());
         dto.setNgayCapNhat(chiTiet.getNgayCapNhat());
 
-        // âœ… THÃŠM: LÃ½ do vÃ  áº£nh
+        // ✅ THÊM: Lý do và ảnh
         dto.setLyDo(chiTiet.getLyDo());
         dto.setDuongDanAnh(chiTiet.getDuongDanAnh());
 
-        // ThÃ´ng tin hÃ³a Ä‘Æ¡n
+        // Thông tin hóa đơn
         if (chiTiet.getHoaDon() != null) {
             dto.setHoaDonId(chiTiet.getHoaDon().getId());
             dto.setMaHoaDon(chiTiet.getHoaDon().getMaHoaDon());
         }
 
-        // ThÃ´ng tin chi tiáº¿t sáº£n pháº©m
+        // Thông tin chi tiết sản phẩm
         if (chiTiet.getChiTietSanPham() != null) {
             ChiTietSanPham ctsp = chiTiet.getChiTietSanPham();
             dto.setChiTietSanPhamId(ctsp.getId());
             dto.setMaChiTiet(ctsp.getMaChiTiet());
             dto.setGiaGoc(ctsp.getGiaGoc());
-            dto.setGiaBan(ctsp.getGiaGoc()); // Sá»­ dá»¥ng giÃ¡ gá»‘c lÃ m giÃ¡ bÃ¡n cho tráº£ hÃ ng
+            dto.setGiaBan(ctsp.getGiaGoc()); // Sử dụng giá gốc làm giá bán cho trả hàng
             dto.setHinhAnh(ctsp.getHinhAnh() != null ? ctsp.getHinhAnh().getDuongDan() : null);
 
-            // ThÃ´ng tin sáº£n pháº©m
+            // Thông tin sản phẩm
             if (ctsp.getSanPham() != null) {
                 SanPham sp = ctsp.getSanPham();
                 dto.setTenSanPham(sp.getTenSanPham());
@@ -462,18 +462,18 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
                 dto.setThuongHieu(sp.getThuongHieu() != null ? sp.getThuongHieu().getTenThuongHieu() : "N/A");
                 dto.setDanhMuc(sp.getDanhMuc() != null ? sp.getDanhMuc().getTenDanhMuc() : "N/A");
             } else {
-                dto.setTenSanPham("Sáº£n pháº©m khÃ´ng xÃ¡c Ä‘á»‹nh");
+                dto.setTenSanPham("Sản phẩm không xác định");
                 dto.setMaSanPham("N/A");
                 dto.setThuongHieu("N/A");
                 dto.setDanhMuc("N/A");
             }
 
-            // ThÃ´ng tin mÃ u sáº¯c vÃ  kÃ­ch thÆ°á»›c
+            // Thông tin màu sắc và kích thước
             dto.setMauSac(ctsp.getMauSac() != null ? ctsp.getMauSac().getTenMauSac() : "N/A");
             dto.setKichThuoc(ctsp.getKichCo() != null ? ctsp.getKichCo().getTenKichCo() : "N/A");
         } else {
-            // Fallback náº¿u khÃ´ng cÃ³ thÃ´ng tin chi tiáº¿t sáº£n pháº©m
-            dto.setTenSanPham("Sáº£n pháº©m khÃ´ng xÃ¡c Ä‘á»‹nh");
+            // Fallback nếu không có thông tin chi tiết sản phẩm
+            dto.setTenSanPham("Sản phẩm không xác định");
             dto.setMaSanPham("N/A");
             dto.setMauSac("N/A");
             dto.setKichThuoc("N/A");
@@ -481,14 +481,14 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
             dto.setDanhMuc("N/A");
         }
 
-        // TÃ­nh toÃ¡n cÃ¡c giÃ¡ trá»‹
+        // Tính toán các giá trị
         dto.calculateValues();
 
         return dto;
     }
 
     private String generateMaChiTietTraHang() {
-        // Format: TH + nÄƒm + thÃ¡ng + ngÃ y + sá»‘ random
+        // Format: TH + năm + tháng + ngày + số random
         SimpleDateFormat sdf = new SimpleDateFormat("yyMMdd");
         String date = sdf.format(new Date());
         int random = (int) (Math.random() * 9999) + 1;
@@ -500,11 +500,11 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
             return false;
         }
 
-        // Äá»‹nh nghÄ©a cÃ¡c chuyá»ƒn Ä‘á»•i tráº¡ng thÃ¡i há»£p lá»‡
+        // Định nghĩa các chuyển đổi trạng thái hợp lệ
         Map<String, Set<String>> validTransitions = Map.of(
                 "PENDING", Set.of("APPROVED", "REJECTED"),
-                "APPROVED", Set.of(), // KhÃ´ng thá»ƒ chuyá»ƒn tá»« APPROVED
-                "REJECTED", Set.of()  // KhÃ´ng thá»ƒ chuyá»ƒn tá»« REJECTED
+                "APPROVED", Set.of(), // Không thể chuyển từ APPROVED
+                "REJECTED", Set.of()  // Không thể chuyển từ REJECTED
         );
 
         return validTransitions.getOrDefault(fromStatus, Collections.emptySet()).contains(toStatus);
@@ -519,59 +519,59 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
                 handleRejectReturn(chiTiet, ghiChu);
                 break;
             default:
-                // KhÃ´ng cáº§n xá»­ lÃ½ gÃ¬ Ä‘áº·c biá»‡t
+                // Không cần xử lý gì đặc biệt
                 break;
         }
     }
 
     private void handleApproveReturn(ChiTietTraHang chiTiet, String ghiChu) {
         try {
-            // Chá»‰ ghi log thÃ´ng tin, khÃ´ng cáº­p nháº­t kho
-            // Logic cáº­p nháº­t kho sáº½ Ä‘Æ°á»£c xá»­ lÃ½ riÃªng trong cÃ¡c API má»›i
+            // Chỉ ghi log thông tin, không cập nhật kho
+            // Logic cập nhật kho sẽ được xử lý riêng trong các API mới
 
-            System.out.println("=== Xá»¬ LÃ CHáº¤P NHáº¬N TRáº¢ HÃ€NG ===");
-            System.out.println("MÃ£ tráº£ hÃ ng: " + chiTiet.getMaChiTietTraHang());
-            System.out.println("Sá»‘ lÆ°á»£ng tráº£: " + chiTiet.getSoLuong());
-            System.out.println("Tráº¡ng thÃ¡i: APPROVED");
+            System.out.println("=== XỬ LÝ CHẤP NHẬN TRẢ HÀNG ===");
+            System.out.println("Mã trả hàng: " + chiTiet.getMaChiTietTraHang());
+            System.out.println("Số lượng trả: " + chiTiet.getSoLuong());
+            System.out.println("Trạng thái: APPROVED");
 
-            // Log thÃ´ng tin chi tiáº¿t sáº£n pháº©m náº¿u cÃ³
+            // Log thông tin chi tiết sản phẩm nếu có
             if (chiTiet.getChiTietSanPham() != null) {
                 ChiTietSanPham ctsp = chiTiet.getChiTietSanPham();
-                System.out.println("Sáº£n pháº©m: " + ctsp.getMaChiTiet());
-                System.out.println("Sá»‘ lÆ°á»£ng tá»“n hiá»‡n táº¡i: " + (ctsp.getSoLuong() != null ? ctsp.getSoLuong() : 0));
+                System.out.println("Sản phẩm: " + ctsp.getMaChiTiet());
+                System.out.println("Số lượng tồn hiện tại: " + (ctsp.getSoLuong() != null ? ctsp.getSoLuong() : 0));
 
-                // Log thÃ´ng tin sáº£n pháº©m
+                // Log thông tin sản phẩm
                 if (ctsp.getSanPham() != null) {
-                    System.out.println("TÃªn sáº£n pháº©m: " + ctsp.getSanPham().getTenSanPham());
-                    System.out.println("Tá»•ng sá»‘ lÆ°á»£ng SP: " + (ctsp.getSanPham().getSoLuong() != null ? ctsp.getSanPham().getSoLuong() : 0));
+                    System.out.println("Tên sản phẩm: " + ctsp.getSanPham().getTenSanPham());
+                    System.out.println("Tổng số lượng SP: " + (ctsp.getSanPham().getSoLuong() != null ? ctsp.getSanPham().getSoLuong() : 0));
                 }
             }
 
-            // Log ghi chÃº náº¿u cÃ³
+            // Log ghi chú nếu có
             if (ghiChu != null && !ghiChu.trim().isEmpty()) {
-                System.out.println("Ghi chÃº: " + ghiChu);
+                System.out.println("Ghi chú: " + ghiChu);
             }
 
-            System.out.println("LÆ°u Ã½: Kho CHÆ¯A Ä‘Æ°á»£c cáº­p nháº­t. Sá»­ dá»¥ng API riÃªng Ä‘á»ƒ hoÃ n kho náº¿u cáº§n.");
-            System.out.println("- HoÃ n kho: /approve-with-inventory");
-            System.out.println("- KhÃ´ng hoÃ n kho: /approve-no-inventory");
+            System.out.println("Lưu ý: Kho CHƯA được cập nhật. Sử dụng API riêng để hoàn kho nếu cần.");
+            System.out.println("- Hoàn kho: /approve-with-inventory");
+            System.out.println("- Không hoàn kho: /approve-no-inventory");
             System.out.println("================================");
 
         } catch (Exception e) {
-            System.err.println("Lá»—i xá»­ lÃ½ cháº¥p nháº­n tráº£ hÃ ng: " + e.getMessage());
-            // KhÃ´ng throw exception vÃ¬ Ä‘Ã¢y chá»‰ lÃ  logging
+            System.err.println("Lỗi xử lý chấp nhận trả hàng: " + e.getMessage());
+            // Không throw exception vì đây chỉ là logging
         }
     }
 
     private void handleRejectReturn(ChiTietTraHang chiTiet, String lyDo) {
-        // Log viá»‡c tá»« chá»‘i tráº£ hÃ ng
-        System.out.println("Tá»« chá»‘i tráº£ hÃ ng " + chiTiet.getMaChiTietTraHang() +
-                " vá»›i lÃ½ do: " + (lyDo != null ? lyDo : "KhÃ´ng cÃ³ lÃ½ do"));
+        // Log việc từ chối trả hàng
+        System.out.println("Từ chối trả hàng " + chiTiet.getMaChiTietTraHang() +
+                " với lý do: " + (lyDo != null ? lyDo : "Không có lý do"));
 
-        // CÃ³ thá»ƒ thÃªm logic gá»­i thÃ´ng bÃ¡o cho khÃ¡ch hÃ ng á»Ÿ Ä‘Ã¢y
+        // Có thể thêm logic gửi thông báo cho khách hàng ở đây
     }
 
-    // Utility method Ä‘á»ƒ validate tráº¡ng thÃ¡i
+    // Utility method để validate trạng thái
     private boolean isValidStatus(String status) {
         return Set.of("PENDING", "APPROVED", "REJECTED").contains(status);
     }
@@ -580,10 +580,10 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
         try {
             return chiTietTraHangRepository.searchChiTietTraHang(lyDo, trangThai, hoaDonId).stream()
                     .map(this::convertToDTO)
-                    .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // âœ… Sá»¬A: dÃ¹ng getNgayTao()
+                    .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // ✅ SỬA: dùng getNgayTao()
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ¬m kiáº¿m chi tiáº¿t tráº£ hÃ ng: " + e.getMessage());
+            System.err.println("Lỗi tìm kiếm chi tiết trả hàng: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -591,13 +591,13 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
     public List<ChiTietTraHangDTO> searchChiTietTraHangAdvanced(String lyDo, String trangThai, Integer hoaDonId,
                                                                 Integer chiTietSanPhamId, Boolean hasImage) {
         try {
-            // Táº¡m thá»i dÃ¹ng method cÆ¡ báº£n, bá» qua 2 tham sá»‘ cuá»‘i
+            // Tạm thời dùng method cơ bản, bỏ qua 2 tham số cuối
             return chiTietTraHangRepository.searchChiTietTraHang(lyDo, trangThai, hoaDonId).stream()
                     .map(this::convertToDTO)
-                    .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // âœ… Sá»¬A
+                    .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // ✅ SỬA
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ¬m kiáº¿m nÃ¢ng cao: " + e.getMessage());
+            System.err.println("Lỗi tìm kiếm nâng cao: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -611,10 +611,10 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
 
             return chiTietTraHangRepository.findByLyDoContaining(lyDo).stream()
                     .map(this::convertToDTO)
-                    .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // âœ… Sá»¬A
+                    .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // ✅ SỬA
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            System.err.println("Lá»—i tÃ¬m kiáº¿m theo lÃ½ do: " + e.getMessage());
+            System.err.println("Lỗi tìm kiếm theo lý do: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -625,10 +625,10 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
         try {
             return chiTietTraHangRepository.findAllWithImages().stream()
                     .map(this::convertToDTO)
-                    .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // âœ… Sá»¬A
+                    .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // ✅ SỬA
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            System.err.println("Lá»—i láº¥y danh sÃ¡ch cÃ³ áº£nh: " + e.getMessage());
+            System.err.println("Lỗi lấy danh sách có ảnh: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -638,10 +638,10 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
         try {
             return chiTietTraHangRepository.findAllWithoutImages().stream()
                     .map(this::convertToDTO)
-                    .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // âœ… Sá»¬A
+                    .sorted((a, b) -> b.getNgayTao().compareTo(a.getNgayTao())) // ✅ SỬA
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            System.err.println("Lá»—i láº¥y danh sÃ¡ch khÃ´ng cÃ³ áº£nh: " + e.getMessage());
+            System.err.println("Lỗi lấy danh sách không có ảnh: " + e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -660,7 +660,7 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
 
             return statistics;
         } catch (Exception e) {
-            System.err.println("Lá»—i láº¥y thá»‘ng kÃª lÃ½ do: " + e.getMessage());
+            System.err.println("Lỗi lấy thống kê lý do: " + e.getMessage());
             return new HashMap<>();
         }
     }
@@ -670,7 +670,7 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
         try {
             return chiTietTraHangRepository.countReturnsWithImages();
         } catch (Exception e) {
-            System.err.println("Lá»—i Ä‘áº¿m tráº£ hÃ ng cÃ³ áº£nh: " + e.getMessage());
+            System.err.println("Lỗi đếm trả hàng có ảnh: " + e.getMessage());
             return 0L;
         }
     }
@@ -683,7 +683,7 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
             }
             return chiTietTraHangRepository.countByLyDo(lyDo);
         } catch (Exception e) {
-            System.err.println("Lá»—i Ä‘áº¿m theo lÃ½ do: " + e.getMessage());
+            System.err.println("Lỗi đếm theo lý do: " + e.getMessage());
             return 0L;
         }
     }
@@ -692,11 +692,11 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
     public ChiTietTraHangDTO updateImage(Integer id, String duongDanAnh) {
         try {
             ChiTietTraHang chiTiet = chiTietTraHangRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t tráº£ hÃ ng vá»›i ID: " + id));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết trả hàng với ID: " + id));
 
-            // Chá»‰ cho phÃ©p cáº­p nháº­t áº£nh khi tráº¡ng thÃ¡i lÃ  PENDING hoáº·c APPROVED
+            // Chỉ cho phép cập nhật ảnh khi trạng thái là PENDING hoặc APPROVED
             if (!Set.of("PENDING", "APPROVED").contains(chiTiet.getTrangThaiHoaDon())) {
-                throw new RuntimeException("KhÃ´ng thá»ƒ cáº­p nháº­t áº£nh á»Ÿ tráº¡ng thÃ¡i: " + chiTiet.getTrangThaiHoaDon());
+                throw new RuntimeException("Không thể cập nhật ảnh ở trạng thái: " + chiTiet.getTrangThaiHoaDon());
             }
 
             chiTiet.setDuongDanAnh(duongDanAnh);
@@ -705,7 +705,7 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
             ChiTietTraHang saved = chiTietTraHangRepository.save(chiTiet);
             return convertToDTO(saved);
         } catch (Exception e) {
-            throw new RuntimeException("Lá»—i cáº­p nháº­t áº£nh: " + e.getMessage());
+            throw new RuntimeException("Lỗi cập nhật ảnh: " + e.getMessage());
         }
     }
 
@@ -713,11 +713,11 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
     public ChiTietTraHangDTO removeImage(Integer id) {
         try {
             ChiTietTraHang chiTiet = chiTietTraHangRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t tráº£ hÃ ng vá»›i ID: " + id));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết trả hàng với ID: " + id));
 
-            // Chá»‰ cho phÃ©p xÃ³a áº£nh khi tráº¡ng thÃ¡i lÃ  PENDING
+            // Chỉ cho phép xóa ảnh khi trạng thái là PENDING
             if (!"PENDING".equals(chiTiet.getTrangThaiHoaDon())) {
-                throw new RuntimeException("KhÃ´ng thá»ƒ xÃ³a áº£nh á»Ÿ tráº¡ng thÃ¡i: " + chiTiet.getTrangThaiHoaDon());
+                throw new RuntimeException("Không thể xóa ảnh ở trạng thái: " + chiTiet.getTrangThaiHoaDon());
             }
 
             chiTiet.setDuongDanAnh(null);
@@ -726,28 +726,28 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
             ChiTietTraHang saved = chiTietTraHangRepository.save(chiTiet);
             return convertToDTO(saved);
         } catch (Exception e) {
-            throw new RuntimeException("Lá»—i xÃ³a áº£nh: " + e.getMessage());
+            throw new RuntimeException("Lỗi xóa ảnh: " + e.getMessage());
         }
     }
 
-    // âœ… Cáº¬P NHáº¬T: Method rejectReturn Ä‘á»ƒ lÆ°u lÃ½ do tá»« chá»‘i
+    // ✅ CẬP NHẬT: Method rejectReturn để lưu lý do từ chối
     @Override
     public ChiTietTraHangDTO rejectReturn(Integer id, String lyDoTuChoi) {
         ChiTietTraHang chiTiet = chiTietTraHangRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t tráº£ hÃ ng vá»›i ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết trả hàng với ID: " + id));
 
         if (!"PENDING".equals(chiTiet.getTrangThaiHoaDon())) {
-            throw new RuntimeException("Chá»‰ cÃ³ thá»ƒ tá»« chá»‘i tráº£ hÃ ng á»Ÿ tráº¡ng thÃ¡i PENDING");
+            throw new RuntimeException("Chỉ có thể từ chối trả hàng ở trạng thái PENDING");
         }
 
         if (lyDoTuChoi == null || lyDoTuChoi.trim().isEmpty()) {
-            throw new RuntimeException("LÃ½ do tá»« chá»‘i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            throw new RuntimeException("Lý do từ chối không được để trống");
         }
 
-        // Cáº­p nháº­t tráº¡ng thÃ¡i vÃ  lÃ½ do tá»« chá»‘i
+        // Cập nhật trạng thái và lý do từ chối
         chiTiet.setTrangThaiHoaDon("REJECTED");
-        // CÃ³ thá»ƒ lÆ°u lÃ½ do tá»« chá»‘i vÃ o má»™t trÆ°á»ng riÃªng hoáº·c ghÃ©p vá»›i lÃ½ do hiá»‡n táº¡i
-        String lyDoMoi = chiTiet.getLyDo() + " [Tá»ª CHá»I: " + lyDoTuChoi + "]";
+        // Có thể lưu lý do từ chối vào một trường riêng hoặc ghép với lý do hiện tại
+        String lyDoMoi = chiTiet.getLyDo() + " [TỪ CHỐI: " + lyDoTuChoi + "]";
         chiTiet.setLyDo(lyDoMoi);
         chiTiet.setNgayCapNhat(new Date());
 
@@ -755,46 +755,46 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
         return convertToDTO(saved);
     }
 
-    // âœ… THÃŠM: Method helper Ä‘á»ƒ validate tráº¡ng thÃ¡i cÃ³ thá»ƒ cáº­p nháº­t
+    // ✅ THÊM: Method helper để validate trạng thái có thể cập nhật
     private boolean canUpdateReturn(String trangThai) {
         return Set.of("PENDING").contains(trangThai);
     }
 
-    // âœ… THÃŠM: Method helper Ä‘á»ƒ validate tráº¡ng thÃ¡i cÃ³ thá»ƒ thÃªm áº£nh
+    // ✅ THÊM: Method helper để validate trạng thái có thể thêm ảnh
     private boolean canAddImage(String trangThai) {
         return Set.of("PENDING", "APPROVED").contains(trangThai);
     }
 
-    // âœ… THÃŠM: Method helper Ä‘á»ƒ láº¥y cÃ¡c lÃ½ do tráº£ hÃ ng phá»• biáº¿n
+    // ✅ THÊM: Method helper để lấy các lý do trả hàng phổ biến
     public List<String> getCommonReturnReasons() {
         try {
             List<Object[]> results = chiTietTraHangRepository.getReturnReasonStatistics();
             return results.stream()
-                    .limit(10) // Láº¥y 10 lÃ½ do phá»• biáº¿n nháº¥t
+                    .limit(10) // Lấy 10 lý do phổ biến nhất
                     .map(result -> (String) result[0])
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            // Tráº£ vá» danh sÃ¡ch lÃ½ do máº·c Ä‘á»‹nh
+            // Trả về danh sách lý do mặc định
             return Arrays.asList(
-                    "Sáº£n pháº©m bá»‹ lá»—i",
-                    "KhÃ´ng Ä‘Ãºng mÃ´ táº£",
-                    "KÃ­ch thÆ°á»›c khÃ´ng phÃ¹ há»£p",
-                    "MÃ u sáº¯c khÃ´ng Ä‘Ãºng",
-                    "Cháº¥t lÆ°á»£ng khÃ´ng tá»‘t",
-                    "Thay Ä‘á»•i Ã½ kiáº¿n",
-                    "Giao hÃ ng muá»™n",
-                    "Bao bÃ¬ hÆ° há»ng"
+                    "Sản phẩm bị lỗi",
+                    "Không đúng mô tả",
+                    "Kích thước không phù hợp",
+                    "Màu sắc không đúng",
+                    "Chất lượng không tốt",
+                    "Thay đổi ý kiến",
+                    "Giao hàng muộn",
+                    "Bao bì hư hỏng"
             );
         }
     }
 
-    // âœ… THÃŠM: Method validate file áº£nh tá»« service layer
+    // ✅ THÊM: Method validate file ảnh từ service layer
     public boolean validateImageFile(String duongDanAnh) {
         if (duongDanAnh == null || duongDanAnh.trim().isEmpty()) {
             return false;
         }
 
-        // Kiá»ƒm tra extension
+        // Kiểm tra extension
         String[] allowedExtensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"};
         String lowerPath = duongDanAnh.toLowerCase();
 
@@ -802,22 +802,22 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
                 .anyMatch(lowerPath::endsWith);
     }
 
-    // âœ… THÃŠM: Method táº¡o bÃ¡o cÃ¡o thá»‘ng kÃª tráº£ hÃ ng chi tiáº¿t
+    // ✅ THÊM: Method tạo báo cáo thống kê trả hàng chi tiết
     public Map<String, Object> getDetailedReturnStatistics() {
         try {
             Map<String, Object> stats = new HashMap<>();
 
-            // Thá»‘ng kÃª tá»•ng quan
+            // Thống kê tổng quan
             Long totalReturns = chiTietTraHangRepository.count();
             Long returnsWithImages = countReturnsWithImages();
             Long returnsWithoutImages = totalReturns - returnsWithImages;
 
-            // Thá»‘ng kÃª theo tráº¡ng thÃ¡i
+            // Thống kê theo trạng thái
             Long pendingReturns = chiTietTraHangRepository.countByTrangThaiHoaDon("PENDING");
             Long approvedReturns = chiTietTraHangRepository.countByTrangThaiHoaDon("APPROVED");
             Long rejectedReturns = chiTietTraHangRepository.countByTrangThaiHoaDon("REJECTED");
 
-            // Thá»‘ng kÃª theo lÃ½ do
+            // Thống kê theo lý do
             Map<String, Long> reasonStats = getReturnReasonStatistics();
 
             stats.put("tongSoTraHang", totalReturns);
@@ -832,7 +832,7 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
 
             return stats;
         } catch (Exception e) {
-            System.err.println("Lá»—i táº¡o bÃ¡o cÃ¡o thá»‘ng kÃª: " + e.getMessage());
+            System.err.println("Lỗi tạo báo cáo thống kê: " + e.getMessage());
             return new HashMap<>();
         }
     }
@@ -857,17 +857,17 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
     @Override
     public ChiTietTraHangDTO approveReturnWithInventory(Integer id, String ghiChu) {
         ChiTietTraHang chiTiet = chiTietTraHangRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t tráº£ hÃ ng vá»›i ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết trả hàng với ID: " + id));
 
         if (!"PENDING".equals(chiTiet.getTrangThaiHoaDon())) {
-            throw new RuntimeException("Chá»‰ cÃ³ thá»ƒ cháº¥p nháº­n tráº£ hÃ ng á»Ÿ tráº¡ng thÃ¡i PENDING");
+            throw new RuntimeException("Chỉ có thể chấp nhận trả hàng ở trạng thái PENDING");
         }
 
-        // Cáº­p nháº­t tráº¡ng thÃ¡i
+        // Cập nhật trạng thái
         chiTiet.setTrangThaiHoaDon("APPROVED");
         chiTiet.setNgayCapNhat(new Date());
 
-        // HoÃ n láº¡i kho
+        // Hoàn lại kho
         handleRestoreInventory(chiTiet, ghiChu);
 
         ChiTietTraHang saved = chiTietTraHangRepository.save(chiTiet);
@@ -877,47 +877,47 @@ public class ChiTietTraHangServiceImpl implements ChiTietTraHangService {
     @Override
     public ChiTietTraHangDTO approveReturnNoInventory(Integer id, String ghiChu) {
         ChiTietTraHang chiTiet = chiTietTraHangRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t tráº£ hÃ ng vá»›i ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết trả hàng với ID: " + id));
 
         if (!"PENDING".equals(chiTiet.getTrangThaiHoaDon())) {
-            throw new RuntimeException("Chá»‰ cÃ³ thá»ƒ cháº¥p nháº­n tráº£ hÃ ng á»Ÿ tráº¡ng thÃ¡i PENDING");
+            throw new RuntimeException("Chỉ có thể chấp nhận trả hàng ở trạng thái PENDING");
         }
 
-        // Chá»‰ cáº­p nháº­t tráº¡ng thÃ¡i, khÃ´ng hoÃ n kho
+        // Chỉ cập nhật trạng thái, không hoàn kho
         chiTiet.setTrangThaiHoaDon("APPROVED");
         chiTiet.setNgayCapNhat(new Date());
 
-        System.out.println("Cháº¥p nháº­n tráº£ hÃ ng " + chiTiet.getMaChiTietTraHang() +
-                " KHÃ”NG hoÃ n kho theo yÃªu cáº§u");
+        System.out.println("Chấp nhận trả hàng " + chiTiet.getMaChiTietTraHang() +
+                " KHÔNG hoàn kho theo yêu cầu");
 
         ChiTietTraHang saved = chiTietTraHangRepository.save(chiTiet);
         return convertToDTO(saved);
     }
 
-    // Method helper Ä‘á»ƒ hoÃ n kho
+    // Method helper để hoàn kho
     private void handleRestoreInventory(ChiTietTraHang chiTiet, String ghiChu) {
         try {
             ChiTietSanPham ctsp = chiTiet.getChiTietSanPham();
             if (ctsp != null) {
-                // HoÃ n láº¡i sá»‘ lÆ°á»£ng vÃ o chi tiáº¿t sáº£n pháº©m
+                // Hoàn lại số lượng vào chi tiết sản phẩm
                 Integer currentQty = ctsp.getSoLuong() != null ? ctsp.getSoLuong() : 0;
                 ctsp.setSoLuong(currentQty + chiTiet.getSoLuong());
                 chiTietSanPhamRepository.save(ctsp);
 
-                // Cáº­p nháº­t tá»•ng sá»‘ lÆ°á»£ng sáº£n pháº©m
+                // Cập nhật tổng số lượng sản phẩm
                 if (ctsp.getSanPham() != null) {
                     SanPham sanPham = ctsp.getSanPham();
                     Integer currentSpQty = sanPham.getSoLuong() != null ? sanPham.getSoLuong() : 0;
                     sanPham.setSoLuong(currentSpQty + chiTiet.getSoLuong());
-                    // sanPhamRepository.save(sanPham); // Uncomment náº¿u cÃ³ repository
+                    // sanPhamRepository.save(sanPham); // Uncomment nếu có repository
                 }
 
-                System.out.println("ÄÃ£ hoÃ n láº¡i " + chiTiet.getSoLuong() +
-                        " sáº£n pháº©m " + ctsp.getMaChiTiet() + " vÃ o kho");
+                System.out.println("Đã hoàn lại " + chiTiet.getSoLuong() +
+                        " sản phẩm " + ctsp.getMaChiTiet() + " vào kho");
             }
         } catch (Exception e) {
-            System.err.println("Lá»—i hoÃ n kho: " + e.getMessage());
-            throw new RuntimeException("Lá»—i hoÃ n kho: " + e.getMessage());
+            System.err.println("Lỗi hoàn kho: " + e.getMessage());
+            throw new RuntimeException("Lỗi hoàn kho: " + e.getMessage());
         }
     }
 }

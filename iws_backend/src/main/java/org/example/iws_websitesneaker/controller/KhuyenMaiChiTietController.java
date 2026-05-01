@@ -35,7 +35,7 @@ public class KhuyenMaiChiTietController {
             List<KhuyenMaiChiTiet> details = khuyenMaiChiTietService.getByKhuyenMaiId(khuyenMaiId);
             System.out.println("Found " + details.size() + " promotion details");
 
-            // Convert to safe DTOs Ä‘á»ƒ trÃ¡nh lazy loading issues
+            // Convert to safe DTOs để tránh lazy loading issues
             List<Map<String, Object>> safeDTOs = convertToSafeDTOs(details);
 
             return ResponseEntity.ok(safeDTOs);
@@ -75,7 +75,7 @@ public class KhuyenMaiChiTietController {
                     request.getChiTietSanPhamIds().isEmpty()) {
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("error", "Bad Request");
-                errorResponse.put("message", "ThÃ´ng tin khuyáº¿n mÃ£i vÃ  sáº£n pháº©m lÃ  báº¯t buá»™c");
+                errorResponse.put("message", "Thông tin khuyến mãi và sản phẩm là bắt buộc");
                 return ResponseEntity.badRequest().body(errorResponse);
             }
 
@@ -106,7 +106,7 @@ public class KhuyenMaiChiTietController {
             khuyenMaiChiTietService.removePromotionFromProduct(khuyenMaiId, chiTietSanPhamId);
 
             Map<String, Object> successResponse = new HashMap<>();
-            successResponse.put("message", "Há»§y Ã¡p dá»¥ng khuyáº¿n mÃ£i thÃ nh cÃ´ng");
+            successResponse.put("message", "Hủy áp dụng khuyến mãi thành công");
             return ResponseEntity.ok(successResponse);
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();
@@ -127,7 +127,7 @@ public class KhuyenMaiChiTietController {
             khuyenMaiChiTietService.removeAllPromotionsFromKhuyenMai(khuyenMaiId);
 
             Map<String, Object> successResponse = new HashMap<>();
-            successResponse.put("message", "Há»§y táº¥t cáº£ Ã¡p dá»¥ng khuyáº¿n mÃ£i thÃ nh cÃ´ng");
+            successResponse.put("message", "Hủy tất cả áp dụng khuyến mãi thành công");
             return ResponseEntity.ok(successResponse);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
@@ -221,21 +221,21 @@ public class KhuyenMaiChiTietController {
                 debug.put("giaGoc", product.getGiaGoc());
                 debug.put("soLuong", product.getSoLuong());
 
-                // Debug sáº£n pháº©m
+                // Debug sản phẩm
                 if (product.getSanPham() != null) {
                     Map<String, Object> spInfo = new HashMap<>();
                     spInfo.put("id", product.getSanPham().getId());
                     spInfo.put("tenSanPham", product.getSanPham().getTenSanPham());
                     spInfo.put("maSanPham", product.getSanPham().getMaSanPham());
 
-                    // Debug thÆ°Æ¡ng hiá»‡u
+                    // Debug thương hiệu
                     if (product.getSanPham().getThuongHieu() != null) {
                         spInfo.put("thuongHieu", product.getSanPham().getThuongHieu().getTenThuongHieu());
                     } else {
                         spInfo.put("thuongHieu", "NULL");
                     }
 
-                    // Debug danh má»¥c
+                    // Debug danh mục
                     if (product.getSanPham().getDanhMuc() != null) {
                         spInfo.put("danhMuc", product.getSanPham().getDanhMuc().getTenDanhMuc());
                     } else {
@@ -247,7 +247,7 @@ public class KhuyenMaiChiTietController {
                     debug.put("sanPham", "NULL");
                 }
 
-                // Debug mÃ u sáº¯c
+                // Debug màu sắc
                 if (product.getMauSac() != null) {
                     Map<String, Object> msInfo = new HashMap<>();
                     msInfo.put("id", product.getMauSac().getId());
@@ -258,7 +258,7 @@ public class KhuyenMaiChiTietController {
                     debug.put("mauSac", "NULL");
                 }
 
-                // Debug kÃ­ch cá»¡
+                // Debug kích cỡ
                 if (product.getKichCo() != null) {
                     Map<String, Object> kcInfo = new HashMap<>();
                     kcInfo.put("id", product.getKichCo().getId());
@@ -328,7 +328,7 @@ public class KhuyenMaiChiTietController {
         }
     }
 
-    // Helper methods Ä‘á»ƒ convert entity thÃ nh safe DTO
+    // Helper methods để convert entity thành safe DTO
     private List<Map<String, Object>> convertToSafeDTOs(List<KhuyenMaiChiTiet> details) {
         List<Map<String, Object>> safeDTOs = new ArrayList<>();
         for (KhuyenMaiChiTiet detail : details) {
@@ -344,7 +344,7 @@ public class KhuyenMaiChiTietController {
         dto.put("ngayTao", detail.getNgayTao());
         dto.put("ngayCapNhat", detail.getNgayCapNhat());
 
-        // Safe khuyáº¿n mÃ£i info
+        // Safe khuyến mãi info
         if (detail.getKhuyenMai() != null) {
             Map<String, Object> kmInfo = new HashMap<>();
             kmInfo.put("id", detail.getKhuyenMai().getId());
@@ -357,7 +357,7 @@ public class KhuyenMaiChiTietController {
             dto.put("khuyenMai", kmInfo);
         }
 
-        // Safe chi tiáº¿t sáº£n pháº©m info
+        // Safe chi tiết sản phẩm info
         if (detail.getChiTietSanPham() != null) {
             Map<String, Object> ctspInfo = new HashMap<>();
             ChiTietSanPham ctsp = detail.getChiTietSanPham();
@@ -369,14 +369,14 @@ public class KhuyenMaiChiTietController {
             ctspInfo.put("soLuong", ctsp.getSoLuong());
             ctspInfo.put("trangThai", ctsp.getTrangThai());
 
-            // Safe sáº£n pháº©m info
+            // Safe sản phẩm info
             if (ctsp.getSanPham() != null) {
                 Map<String, Object> spInfo = new HashMap<>();
                 spInfo.put("id", ctsp.getSanPham().getId());
                 spInfo.put("tenSanPham", ctsp.getSanPham().getTenSanPham());
                 spInfo.put("maSanPham", ctsp.getSanPham().getMaSanPham());
 
-                // Safe thÆ°Æ¡ng hiá»‡u
+                // Safe thương hiệu
                 if (ctsp.getSanPham().getThuongHieu() != null) {
                     Map<String, Object> thInfo = new HashMap<>();
                     thInfo.put("id", ctsp.getSanPham().getThuongHieu().getId());
@@ -384,7 +384,7 @@ public class KhuyenMaiChiTietController {
                     spInfo.put("thuongHieu", thInfo);
                 }
 
-                // Safe danh má»¥c
+                // Safe danh mục
                 if (ctsp.getSanPham().getDanhMuc() != null) {
                     Map<String, Object> dmInfo = new HashMap<>();
                     dmInfo.put("id", ctsp.getSanPham().getDanhMuc().getId());
@@ -395,7 +395,7 @@ public class KhuyenMaiChiTietController {
                 ctspInfo.put("sanPham", spInfo);
             }
 
-            // Safe mÃ u sáº¯c
+            // Safe màu sắc
             if (ctsp.getMauSac() != null) {
                 Map<String, Object> msInfo = new HashMap<>();
                 msInfo.put("id", ctsp.getMauSac().getId());
@@ -404,7 +404,7 @@ public class KhuyenMaiChiTietController {
                 ctspInfo.put("mauSac", msInfo);
             }
 
-            // Safe kÃ­ch cá»¡
+            // Safe kích cỡ
             if (ctsp.getKichCo() != null) {
                 Map<String, Object> kcInfo = new HashMap<>();
                 kcInfo.put("id", ctsp.getKichCo().getId());
@@ -425,7 +425,7 @@ public class KhuyenMaiChiTietController {
             khuyenMaiChiTietService.resetPricesForInactivePromotion(promotionId);
 
             Map<String, Object> successResponse = new HashMap<>();
-            successResponse.put("message", "ÄÃ£ reset giÃ¡ vá» giÃ¡ gá»‘c cho khuyáº¿n mÃ£i");
+            successResponse.put("message", "Đã reset giá về giá gốc cho khuyến mãi");
             return ResponseEntity.ok(successResponse);
         } catch (Exception e) {
             System.err.println("Error resetting prices for promotion: " + e.getMessage());
@@ -444,7 +444,7 @@ public class KhuyenMaiChiTietController {
             khuyenMaiChiTietService.resetAllInactivePrices();
 
             Map<String, Object> successResponse = new HashMap<>();
-            successResponse.put("message", "ÄÃ£ reset giÃ¡ vá» giÃ¡ gá»‘c cho táº¥t cáº£ khuyáº¿n mÃ£i khÃ´ng hoáº¡t Ä‘á»™ng");
+            successResponse.put("message", "Đã reset giá về giá gốc cho tất cả khuyến mãi không hoạt động");
             return ResponseEntity.ok(successResponse);
         } catch (Exception e) {
             System.err.println("Error resetting all inactive prices: " + e.getMessage());

@@ -16,7 +16,7 @@ public class addCorsMappings implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        // Cáº¥u hÃ¬nh CORS cho táº¥t cáº£ endpoints, khÃ´ng chá»‰ /api/**
+        // Cấu hình CORS cho tất cả endpoints, không chỉ /api/**
         registry.addMapping("/**")
                 .allowedOriginPatterns("http://localhost:*", "http://127.0.0.1:*")
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD")
@@ -30,21 +30,21 @@ public class addCorsMappings implements WebMvcConfigurer {
     public CorsFilter corsFilter() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Cho phÃ©p origins tá»« localhost vá»›i báº¥t ká»³ port nÃ o
+        // Cho phép origins từ localhost với bất kỳ port nào
         configuration.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:*",
                 "http://127.0.0.1:*"
         ));
 
-        // Cho phÃ©p táº¥t cáº£ HTTP methods
+        // Cho phép tất cả HTTP methods
         configuration.setAllowedMethods(Arrays.asList(
                 "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"
         ));
 
-        // Cho phÃ©p táº¥t cáº£ headers
+        // Cho phép tất cả headers
         configuration.setAllowedHeaders(Arrays.asList("*"));
 
-        // Expose táº¥t cáº£ headers cáº§n thiáº¿t
+        // Expose tất cả headers cần thiết
         configuration.setExposedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Type",
@@ -55,14 +55,14 @@ public class addCorsMappings implements WebMvcConfigurer {
                 "Access-Control-Request-Headers"
         ));
 
-        // Cho phÃ©p credentials (cookies, authorization headers)
+        // Cho phép credentials (cookies, authorization headers)
         configuration.setAllowCredentials(true);
 
-        // Cache preflight response trong 1 giá»
+        // Cache preflight response trong 1 giờ
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // Ãp dá»¥ng cho táº¥t cáº£ endpoints
+        // Áp dụng cho tất cả endpoints
         source.registerCorsConfiguration("/**", configuration);
 
         return new CorsFilter(source);
@@ -72,31 +72,31 @@ public class addCorsMappings implements WebMvcConfigurer {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Cho phÃ©p origins tá»« localhost vá»›i báº¥t ká»³ port nÃ o
+        // Cho phép origins từ localhost với bất kỳ port nào
         configuration.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:*",
                 "http://127.0.0.1:*"
         ));
 
-        // Cho phÃ©p táº¥t cáº£ HTTP methods
+        // Cho phép tất cả HTTP methods
         configuration.setAllowedMethods(Arrays.asList(
                 "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"
         ));
 
-        // Cho phÃ©p táº¥t cáº£ headers
+        // Cho phép tất cả headers
         configuration.setAllowedHeaders(Arrays.asList("*"));
 
-        // Expose táº¥t cáº£ headers
+        // Expose tất cả headers
         configuration.setExposedHeaders(Arrays.asList("*"));
 
-        // Cho phÃ©p credentials (cookies, authorization headers)
+        // Cho phép credentials (cookies, authorization headers)
         configuration.setAllowCredentials(true);
 
-        // Cache preflight response trong 1 giá»
+        // Cache preflight response trong 1 giờ
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // Thay Ä‘á»•i tá»« /api/** thÃ nh /** Ä‘á»ƒ cover táº¥t cáº£ endpoints
+        // Thay đổi từ /api/** thành /** để cover tất cả endpoints
         source.registerCorsConfiguration("/**", configuration);
 
         return source;

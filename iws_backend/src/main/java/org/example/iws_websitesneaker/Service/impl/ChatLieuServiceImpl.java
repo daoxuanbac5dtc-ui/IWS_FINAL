@@ -41,7 +41,7 @@ public class ChatLieuServiceImpl implements ChatLieuService {
 
     @Override
     public void deleteChatLieu(int id) {
-        sanPhamRepository.removeChatLieuReference(id);// Gá»¡ rÃ ng buá»™c khÃ³a ngoáº¡i tá»« báº£ng san_pham
+        sanPhamRepository.removeChatLieuReference(id);// Gỡ ràng buộc khóa ngoại từ bảng san_pham
         chatLieuRepository.deleteById(id);
     }
 }

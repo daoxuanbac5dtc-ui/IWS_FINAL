@@ -28,7 +28,7 @@ public class VietnamAddressController {
     private VietnamAddressService vietnamAddressService;
 
     /**
-     * Láº¥y táº¥t cáº£ tá»‰nh/thÃ nh phá»‘ Viá»‡t Nam
+     * Lấy tất cả tỉnh/thành phố Việt Nam
      */
     @GetMapping("/provinces")
     public ResponseEntity<?> getAllProvinces() {
@@ -39,7 +39,7 @@ public class VietnamAddressController {
                     .header("Cache-Control", CACHE_CONTROL_HEADER)
                     .body(Map.of(
                             "success", true,
-                            "message", "Láº¥y danh sÃ¡ch tá»‰nh/thÃ nh phá»‘ thÃ nh cÃ´ng",
+                            "message", "Lấy danh sách tỉnh/thành phố thành công",
                             "data", provinces,
                             "total", provinces.size(),
                             "cached", true,
@@ -52,7 +52,7 @@ public class VietnamAddressController {
             return ResponseEntity.internalServerError()
                     .body(Map.of(
                             "success", false,
-                            "message", "Lá»—i khi láº¥y danh sÃ¡ch tá»‰nh/thÃ nh phá»‘",
+                            "message", "Lỗi khi lấy danh sách tỉnh/thành phố",
                             "errorCode", "PROVINCES_FETCH_ERROR",
                             "timestamp", System.currentTimeMillis()
                     ));
@@ -60,18 +60,18 @@ public class VietnamAddressController {
     }
 
     /**
-     * Láº¥y danh sÃ¡ch xÃ£/phÆ°á»ng theo mÃ£ tá»‰nh (Bá»Ž HUYá»†N - CHá»ˆ CÃ“N 2 Cáº¤P)
-     * Frontend gá»i: /api/vietnam-address/wards/{provinceCode}
+     * Lấy danh sách xã/phường theo mã tỉnh (BỎ HUYỆN - CHỈ CÓN 2 CẤP)
+     * Frontend gọi: /api/vietnam-address/wards/{provinceCode}
      */
     @GetMapping("/wards/{provinceCode}")
     public ResponseEntity<?> getWardsByProvince(@PathVariable String provinceCode) {
         try {
-            // Validation Ä‘áº§u vÃ o
+            // Validation đầu vào
             if (provinceCode == null || provinceCode.trim().isEmpty()) {
                 return ResponseEntity.badRequest()
                         .body(Map.of(
                                 "success", false,
-                                "message", "MÃ£ tá»‰nh khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng",
+                                "message", "Mã tỉnh không được để trống",
                                 "errorCode", "EMPTY_PROVINCE_CODE",
                                 "timestamp", System.currentTimeMillis()
                         ));
@@ -81,12 +81,12 @@ public class VietnamAddressController {
             try {
                 provinceCodeInt = Integer.parseInt(provinceCode.trim());
 
-                // Validation pháº¡m vi
+                // Validation phạm vi
                 if (provinceCodeInt < MIN_PROVINCE_CODE || provinceCodeInt > MAX_PROVINCE_CODE) {
                     return ResponseEntity.badRequest()
                             .body(Map.of(
                                     "success", false,
-                                    "message", String.format("MÃ£ tá»‰nh pháº£i trong khoáº£ng %d-%d", MIN_PROVINCE_CODE, MAX_PROVINCE_CODE),
+                                    "message", String.format("Mã tỉnh phải trong khoảng %d-%d", MIN_PROVINCE_CODE, MAX_PROVINCE_CODE),
                                     "errorCode", "PROVINCE_CODE_OUT_OF_RANGE",
                                     "providedValue", provinceCode,
                                     "timestamp", System.currentTimeMillis()
@@ -96,7 +96,7 @@ public class VietnamAddressController {
                 return ResponseEntity.badRequest()
                         .body(Map.of(
                                 "success", false,
-                                "message", "MÃ£ tá»‰nh pháº£i lÃ  sá»‘ nguyÃªn há»£p lá»‡: " + provinceCode,
+                                "message", "Mã tỉnh phải là số nguyên hợp lệ: " + provinceCode,
                                 "errorCode", "INVALID_NUMBER_FORMAT",
                                 "providedValue", provinceCode,
                                 "timestamp", System.currentTimeMillis()
@@ -105,13 +105,13 @@ public class VietnamAddressController {
 
             List<WardApiDto> wards = vietnamAddressService.getWardsByProvinceCode(provinceCodeInt);
 
-            // Kiá»ƒm tra káº¿t quáº£
+            // Kiểm tra kết quả
             if (wards == null || wards.isEmpty()) {
                 return ResponseEntity.ok()
                         .header("Cache-Control", CACHE_CONTROL_HEADER)
                         .body(Map.of(
                                 "success", true,
-                                "message", "KhÃ´ng tÃ¬m tháº¥y xÃ£/phÆ°á»ng cho mÃ£ tá»‰nh: " + provinceCodeInt,
+                                "message", "Không tìm thấy xã/phường cho mã tỉnh: " + provinceCodeInt,
                                 "data", List.of(),
                                 "total", 0,
                                 "provinceCode", provinceCodeInt,
@@ -123,7 +123,7 @@ public class VietnamAddressController {
                     .header("Cache-Control", CACHE_CONTROL_HEADER)
                     .body(Map.of(
                             "success", true,
-                            "message", "Láº¥y danh sÃ¡ch xÃ£/phÆ°á»ng thÃ nh cÃ´ng",
+                            "message", "Lấy danh sách xã/phường thành công",
                             "data", wards,
                             "total", wards.size(),
                             "provinceCode", provinceCodeInt,
@@ -137,7 +137,7 @@ public class VietnamAddressController {
             return ResponseEntity.internalServerError()
                     .body(Map.of(
                             "success", false,
-                            "message", "Lá»—i há»‡ thá»‘ng khi láº¥y danh sÃ¡ch xÃ£/phÆ°á»ng",
+                            "message", "Lỗi hệ thống khi lấy danh sách xã/phường",
                             "errorCode", "WARDS_FETCH_ERROR",
                             "provinceCode", provinceCode,
                             "timestamp", System.currentTimeMillis()
@@ -146,13 +146,13 @@ public class VietnamAddressController {
     }
 
     /**
-     * DEPRECATED: Endpoint cÅ© cho districts - giá»¯ láº¡i Ä‘á»ƒ tÆ°Æ¡ng thÃ­ch ngÆ°á»£c
+     * DEPRECATED: Endpoint cũ cho districts - giữ lại để tương thích ngược
      */
     @GetMapping("/districts/{provinceCode}")
     public ResponseEntity<?> getDistrictsByProvince(@PathVariable String provinceCode) {
         return ResponseEntity.ok(Map.of(
                 "success", false,
-                "message", "Endpoint nÃ y Ä‘Ã£ bá»‹ vÃ´ hiá»‡u hÃ³a. Há»‡ thá»‘ng chá»‰ sá»­ dá»¥ng 2 cáº¥p Ä‘á»‹a chá»‰: Tá»‰nh/TP vÃ  XÃ£/PhÆ°á»ng",
+                "message", "Endpoint này đã bị vô hiệu hóa. Hệ thống chỉ sử dụng 2 cấp địa chỉ: Tỉnh/TP và Xã/Phường",
                 "deprecated", true,
                 "newEndpoint", "/api/vietnam-address/wards/" + provinceCode,
                 "timestamp", System.currentTimeMillis()
@@ -160,12 +160,12 @@ public class VietnamAddressController {
     }
 
     /**
-     * Health check chi tiáº¿t
+     * Health check chi tiết
      */
     @GetMapping("/health")
     public ResponseEntity<?> healthCheck() {
         try {
-            // Test káº¿t ná»‘i Ä‘áº¿n API bÃªn ngoÃ i
+            // Test kết nối đến API bên ngoài
             List<ProvinceApiDto> provinces = vietnamAddressService.getAllProvinces();
             boolean isHealthy = provinces != null && !provinces.isEmpty();
 
@@ -199,7 +199,7 @@ public class VietnamAddressController {
     }
 
     /**
-     * API endpoint Ä‘á»ƒ test connection
+     * API endpoint để test connection
      */
     @GetMapping("/ping")
     public ResponseEntity<?> ping() {
@@ -218,7 +218,7 @@ public class VietnamAddressController {
     }
 
     /**
-     * API Ä‘á»ƒ láº¥y thÃ´ng tin summary
+     * API để lấy thông tin summary
      */
     @GetMapping("/summary")
     public ResponseEntity<?> getSummary() {
@@ -229,13 +229,13 @@ public class VietnamAddressController {
                     .header("Cache-Control", CACHE_CONTROL_HEADER)
                     .body(Map.of(
                             "success", true,
-                            "message", "ThÃ´ng tin tá»•ng quan Ä‘á»‹a chá»‰ Viá»‡t Nam",
+                            "message", "Thông tin tổng quan địa chỉ Việt Nam",
                             "timestamp", System.currentTimeMillis(),
                             "data", Map.of(
                                     "totalProvinces", provinces.size(),
                                     "structure", "2-level addressing",
-                                    "levels", List.of("Tá»‰nh/ThÃ nh phá»‘", "XÃ£/PhÆ°á»ng"),
-                                    "note", "ÄÃ£ bá» cáº¥p Quáº­n/Huyá»‡n Ä‘á»ƒ Ä‘Æ¡n giáº£n hÃ³a",
+                                    "levels", List.of("Tỉnh/Thành phố", "Xã/Phường"),
+                                    "note", "Đã bỏ cấp Quận/Huyện để đơn giản hóa",
                                     "caching", "24 hours cache duration",
                                     "apiVersion", "2.0"
                             )
@@ -245,7 +245,7 @@ public class VietnamAddressController {
             return ResponseEntity.internalServerError()
                     .body(Map.of(
                             "success", false,
-                            "message", "Lá»—i khi láº¥y thÃ´ng tin tá»•ng quan",
+                            "message", "Lỗi khi lấy thông tin tổng quan",
                             "errorCode", "SUMMARY_FETCH_ERROR",
                             "timestamp", System.currentTimeMillis()
                     ));
@@ -253,8 +253,8 @@ public class VietnamAddressController {
     }
 
     /**
-     * Clear cache - chá»‰ dÃ¹ng cho development/testing
-     * CÃ³ thá»ƒ báº£o vá»‡ báº±ng authentication trong production
+     * Clear cache - chỉ dùng cho development/testing
+     * Có thể bảo vệ bằng authentication trong production
      */
     @PostMapping("/clear-cache")
     public ResponseEntity<?> clearCache() {
@@ -262,16 +262,16 @@ public class VietnamAddressController {
             vietnamAddressService.clearCache();
             return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", "Cache Ä‘Ã£ Ä‘Æ°á»£c xÃ³a thÃ nh cÃ´ng",
+                    "message", "Cache đã được xóa thành công",
                     "timestamp", System.currentTimeMillis(),
-                    "note", "Dá»¯ liá»‡u má»›i sáº½ Ä‘Æ°á»£c táº£i tá»« API bÃªn ngoÃ i trong láº§n gá»i tiáº¿p theo"
+                    "note", "Dữ liệu mới sẽ được tải từ API bên ngoài trong lần gọi tiếp theo"
             ));
         } catch (Exception e) {
             System.err.println("Error clearing cache: " + e.getMessage());
             return ResponseEntity.internalServerError()
                     .body(Map.of(
                             "success", false,
-                            "message", "Lá»—i khi xÃ³a cache",
+                            "message", "Lỗi khi xóa cache",
                             "errorCode", "CACHE_CLEAR_ERROR",
                             "error", e.getMessage(),
                             "timestamp", System.currentTimeMillis()
@@ -285,10 +285,10 @@ public class VietnamAddressController {
     @GetMapping("/cache-stats")
     public ResponseEntity<?> getCacheStats() {
         try {
-            // ÄÃ¢y lÃ  method giáº£ Ä‘á»‹nh - báº¡n cÃ³ thá»ƒ implement trong service
+            // Đây là method giả định - bạn có thể implement trong service
             return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", "ThÃ´ng tin cache",
+                    "message", "Thông tin cache",
                     "timestamp", System.currentTimeMillis(),
                     "data", Map.of(
                             "cacheEnabled", true,
@@ -300,7 +300,7 @@ public class VietnamAddressController {
             return ResponseEntity.internalServerError()
                     .body(Map.of(
                             "success", false,
-                            "message", "Lá»—i khi láº¥y thÃ´ng tin cache",
+                            "message", "Lỗi khi lấy thông tin cache",
                             "timestamp", System.currentTimeMillis()
                     ));
         }

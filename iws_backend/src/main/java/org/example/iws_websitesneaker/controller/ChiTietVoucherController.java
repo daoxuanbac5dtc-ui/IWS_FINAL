@@ -37,7 +37,7 @@ public class ChiTietVoucherController {
         return ResponseEntity.noContent().build();
     }
 
-    // APIs tÃ¬m kiáº¿m
+    // APIs tìm kiếm
     @GetMapping("/search/by-ma-ctv")
     public ResponseEntity<List<ChiTietVoucherDTO>> searchByMaChiTietVoucher(@RequestParam String keyword) {
         return ResponseEntity.ok(chiTietVoucherService.searchByMaChiTietVoucher(keyword));
@@ -55,17 +55,17 @@ public class ChiTietVoucherController {
     @GetMapping("/hoa-don/{hoaDonId}")
     public ResponseEntity<Map<String, Object>> getChiTietVoucherByHoaDon(@PathVariable Integer hoaDonId) {
         try {
-            log.info("ðŸ” Láº¥y chi tiáº¿t voucher cho hÃ³a Ä‘Æ¡n ID: {}", hoaDonId);
+            log.info("🔍 Lấy chi tiết voucher cho hóa đơn ID: {}", hoaDonId);
 
             List<ChiTietVoucherDTO> chiTietVoucherList = chiTietVoucherService.findByHoaDonId(hoaDonId);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "Láº¥y chi tiáº¿t voucher thÃ nh cÃ´ng");
+            response.put("message", "Lấy chi tiết voucher thành công");
             response.put("data", chiTietVoucherList);
             response.put("count", chiTietVoucherList.size());
 
-            // TÃ­nh tá»•ng tiáº¿t kiá»‡m
+            // Tính tổng tiết kiệm
             BigDecimal tongTietKiem = chiTietVoucherList.stream()
                     .map(ChiTietVoucherDTO::getSoTienGiam)
                     .filter(Objects::nonNull)
@@ -73,17 +73,17 @@ public class ChiTietVoucherController {
 
             response.put("tongTietKiem", tongTietKiem);
 
-            log.info("âœ… TÃ¬m tháº¥y {} chi tiáº¿t voucher, tá»•ng tiáº¿t kiá»‡m: {}",
+            log.info("✅ Tìm thấy {} chi tiết voucher, tổng tiết kiệm: {}",
                     chiTietVoucherList.size(), tongTietKiem);
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i láº¥y chi tiáº¿t voucher cho hÃ³a Ä‘Æ¡n {}: {}", hoaDonId, e.getMessage());
+            log.error("❌ Lỗi lấy chi tiết voucher cho hóa đơn {}: {}", hoaDonId, e.getMessage());
 
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("message", "Lá»—i láº¥y chi tiáº¿t voucher: " + e.getMessage());
+            errorResponse.put("message", "Lỗi lấy chi tiết voucher: " + e.getMessage());
             errorResponse.put("data", Collections.emptyList());
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
@@ -91,7 +91,7 @@ public class ChiTietVoucherController {
     }
 
     /**
-     * Láº¥y táº¥t cáº£ chi tiáº¿t voucher (phÃ¢n trang)
+     * Lấy tất cả chi tiết voucher (phân trang)
      */
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllChiTietVoucher(
@@ -101,7 +101,7 @@ public class ChiTietVoucherController {
             @RequestParam(defaultValue = "desc") String sortDir) {
 
         try {
-            log.info("ðŸ“„ Láº¥y danh sÃ¡ch chi tiáº¿t voucher - Page: {}, Size: {}", page, size);
+            log.info("📄 Lấy danh sách chi tiết voucher - Page: {}, Size: {}", page, size);
 
             Pageable pageable = PageRequest.of(page, size,
                     Sort.by(sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy));
@@ -110,7 +110,7 @@ public class ChiTietVoucherController {
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "Láº¥y danh sÃ¡ch thÃ nh cÃ´ng");
+            response.put("message", "Lấy danh sách thành công");
             response.put("data", chiTietVoucherPage.getContent());
             response.put("currentPage", chiTietVoucherPage.getNumber());
             response.put("totalPages", chiTietVoucherPage.getTotalPages());
@@ -120,83 +120,83 @@ public class ChiTietVoucherController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i láº¥y danh sÃ¡ch chi tiáº¿t voucher: {}", e.getMessage());
+            log.error("❌ Lỗi lấy danh sách chi tiết voucher: {}", e.getMessage());
 
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("message", "Lá»—i láº¥y danh sÃ¡ch: " + e.getMessage());
+            errorResponse.put("message", "Lỗi lấy danh sách: " + e.getMessage());
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
     /**
-     * Láº¥y chi tiáº¿t voucher theo ID
+     * Lấy chi tiết voucher theo ID
      */
     @GetMapping("/{id}")
     public ResponseEntity<Map<String, Object>> getChiTietVoucherById(@PathVariable Integer id) {
         try {
-            log.info("ðŸ” Láº¥y chi tiáº¿t voucher ID: {}", id);
+            log.info("🔍 Lấy chi tiết voucher ID: {}", id);
 
             ChiTietVoucherDTO chiTietVoucher = chiTietVoucherService.getById(id);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "Láº¥y chi tiáº¿t voucher thÃ nh cÃ´ng");
+            response.put("message", "Lấy chi tiết voucher thành công");
             response.put("data", chiTietVoucher);
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i láº¥y chi tiáº¿t voucher ID {}: {}", id, e.getMessage());
+            log.error("❌ Lỗi lấy chi tiết voucher ID {}: {}", id, e.getMessage());
 
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("message", "KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t voucher: " + e.getMessage());
+            errorResponse.put("message", "Không tìm thấy chi tiết voucher: " + e.getMessage());
 
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         }
     }
 
     /**
-     * Táº¡o chi tiáº¿t voucher thá»§ cÃ´ng (náº¿u cáº§n)
+     * Tạo chi tiết voucher thủ công (nếu cần)
      */
     @PostMapping
     public ResponseEntity<Map<String, Object>> createChiTietVoucher(@RequestBody ChiTietVoucherDTO dto) {
         try {
-            log.info("âž• Táº¡o chi tiáº¿t voucher má»›i: {}", dto.getMaChiTietVoucher());
+            log.info("➕ Tạo chi tiết voucher mới: {}", dto.getMaChiTietVoucher());
 
             ChiTietVoucherDTO created = chiTietVoucherService.create(dto);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "Táº¡o chi tiáº¿t voucher thÃ nh cÃ´ng");
+            response.put("message", "Tạo chi tiết voucher thành công");
             response.put("data", created);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i táº¡o chi tiáº¿t voucher: {}", e.getMessage());
+            log.error("❌ Lỗi tạo chi tiết voucher: {}", e.getMessage());
 
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("message", "Lá»—i táº¡o chi tiáº¿t voucher: " + e.getMessage());
+            errorResponse.put("message", "Lỗi tạo chi tiết voucher: " + e.getMessage());
 
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
     /**
-     * Láº¥y thá»‘ng kÃª voucher theo hÃ³a Ä‘Æ¡n
+     * Lấy thống kê voucher theo hóa đơn
      */
     @GetMapping("/hoa-don/{hoaDonId}/thong-ke")
     public ResponseEntity<Map<String, Object>> getThongKeVoucherByHoaDon(@PathVariable Integer hoaDonId) {
         try {
-            log.info("ðŸ“Š Láº¥y thá»‘ng kÃª voucher cho hÃ³a Ä‘Æ¡n ID: {}", hoaDonId);
+            log.info("📊 Lấy thống kê voucher cho hóa đơn ID: {}", hoaDonId);
 
             List<ChiTietVoucherDTO> chiTietVoucherList = chiTietVoucherService.findByHoaDonId(hoaDonId);
 
-            // TÃ­nh toÃ¡n thá»‘ng kÃª
+            // Tính toán thống kê
             BigDecimal tongTietKiem = chiTietVoucherList.stream()
                     .map(ChiTietVoucherDTO::getSoTienGiam)
                     .filter(Objects::nonNull)
@@ -205,14 +205,14 @@ public class ChiTietVoucherController {
             BigDecimal tongGiaTriDonHang = chiTietVoucherList.stream()
                     .map(ChiTietVoucherDTO::getGiaTriDonHang)
                     .filter(Objects::nonNull)
-                    .reduce(BigDecimal.ZERO, BigDecimal::max); // Láº¥y giÃ¡ trá»‹ lá»›n nháº¥t (tá»•ng Ä‘Æ¡n hÃ ng)
+                    .reduce(BigDecimal.ZERO, BigDecimal::max); // Lấy giá trị lớn nhất (tổng đơn hàng)
 
             BigDecimal tongThanhTien = chiTietVoucherList.stream()
                     .map(ChiTietVoucherDTO::getThanhTien)
                     .filter(Objects::nonNull)
-                    .reduce(BigDecimal.ZERO, BigDecimal::min); // Láº¥y giÃ¡ trá»‹ nhá» nháº¥t (sau cÃ¹ng)
+                    .reduce(BigDecimal.ZERO, BigDecimal::min); // Lấy giá trị nhỏ nhất (sau cùng)
 
-            // TÃ­nh % tiáº¿t kiá»‡m
+            // Tính % tiết kiệm
             double phanTramTietKiem = 0.0;
             if (tongGiaTriDonHang.compareTo(BigDecimal.ZERO) > 0) {
                 phanTramTietKiem = tongTietKiem.divide(tongGiaTriDonHang, 4, RoundingMode.HALF_UP)
@@ -228,17 +228,17 @@ public class ChiTietVoucherController {
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "Láº¥y thá»‘ng kÃª thÃ nh cÃ´ng");
+            response.put("message", "Lấy thống kê thành công");
             response.put("data", thongKe);
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            log.error("âŒ Lá»—i láº¥y thá»‘ng kÃª voucher: {}", e.getMessage());
+            log.error("❌ Lỗi lấy thống kê voucher: {}", e.getMessage());
 
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("message", "Lá»—i láº¥y thá»‘ng kÃª: " + e.getMessage());
+            errorResponse.put("message", "Lỗi lấy thống kê: " + e.getMessage());
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }

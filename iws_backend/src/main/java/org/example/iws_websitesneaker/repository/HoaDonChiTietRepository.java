@@ -29,7 +29,7 @@ public interface HoaDonChiTietRepository extends JpaRepository<HoaDonChiTiet, In
     @Query("SELECT SUM(h.soLuong) FROM HoaDonChiTiet h WHERE h.hoaDon.ngayTao BETWEEN :startDate AND :endDate")
     Long getTotalQuantityByDate(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
-    // XÃ³a Chi tiáº¿t sáº£n pháº©m  - - sá»­a id cl trong báº£ng ctsp vá» null
+    // Xóa Chi tiết sản phẩm  - - sửa id cl trong bảng ctsp về null
     @Modifying
     @Transactional
     @Query("UPDATE HoaDonChiTiet hdct SET hdct.chiTietSanPham = NULL WHERE hdct.chiTietSanPham.id = :id")

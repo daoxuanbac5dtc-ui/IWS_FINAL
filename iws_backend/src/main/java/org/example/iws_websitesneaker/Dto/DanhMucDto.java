@@ -13,11 +13,11 @@ import lombok.Setter;
 @AllArgsConstructor
 public class DanhMucDto {
     private Integer id;;
-    @NotBlank(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng mÃ£ danh má»¥c ")
+    @NotBlank(message = "Không được để trống mã danh mục ")
     private String maDanhMuc;
-    @NotBlank(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng tÃªn danh má»¥c ")
+    @NotBlank(message = "Không được để trống tên danh mục ")
     private String tenDanhMuc;
-    @NotNull(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng tráº¡ng thÃ¡i danh má»¥c ")
+    @NotNull(message = "Không được để trống trạng thái danh mục ")
     private Integer trangThai;
 }
 

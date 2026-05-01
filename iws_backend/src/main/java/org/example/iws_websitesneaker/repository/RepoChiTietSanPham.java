@@ -16,7 +16,7 @@ public interface RepoChiTietSanPham extends JpaRepository<ChiTietSanPham, Intege
 
     Optional<ChiTietSanPham> findByMaChiTiet(String maChiTiet);
 
-    // Sá»¬A: Thay method findBySanPhamId máº·c Ä‘á»‹nh báº±ng query cÃ³ JOIN FETCH
+    // SỬA: Thay method findBySanPhamId mặc định bằng query có JOIN FETCH
     @Query("SELECT DISTINCT ctsp FROM ChiTietSanPham ctsp " +
             "LEFT JOIN FETCH ctsp.sanPham sp " +
             "LEFT JOIN FETCH ctsp.mauSac ms " +
@@ -26,7 +26,7 @@ public interface RepoChiTietSanPham extends JpaRepository<ChiTietSanPham, Intege
             "ORDER BY ctsp.id")
     List<ChiTietSanPham> findBySanPhamId(@Param("sanPhamId") Integer sanPhamId);
 
-    // THÃŠM: Method Ä‘á»ƒ debug vÃ  kiá»ƒm tra dá»¯ liá»‡u
+    // THÊM: Method để debug và kiểm tra dữ liệu
     @Query("SELECT DISTINCT ctsp FROM ChiTietSanPham ctsp " +
             "LEFT JOIN FETCH ctsp.sanPham sp " +
             "LEFT JOIN FETCH ctsp.mauSac ms " +
@@ -37,7 +37,7 @@ public interface RepoChiTietSanPham extends JpaRepository<ChiTietSanPham, Intege
             "AND ctsp.kichCo IS NOT NULL")
     List<ChiTietSanPham> findBySanPhamIdWithValidData(@Param("sanPhamId") Integer sanPhamId);
 
-    // THÃŠM: Method tÃ¬m theo ID vá»›i Ä‘áº§y Ä‘á»§ thÃ´ng tin
+    // THÊM: Method tìm theo ID với đầy đủ thông tin
     @Query("SELECT ctsp FROM ChiTietSanPham ctsp " +
             "LEFT JOIN FETCH ctsp.sanPham sp " +
             "LEFT JOIN FETCH ctsp.mauSac ms " +
@@ -46,25 +46,25 @@ public interface RepoChiTietSanPham extends JpaRepository<ChiTietSanPham, Intege
             "WHERE ctsp.id = :id")
     Optional<ChiTietSanPham> findByIdWithDetails(@Param("id") Integer id);
 
-    // XÃ³a MÃ u sáº¯c - sá»­a id mÃ u sáº¯c trong báº£ng ctsp vá» null
+    // Xóa Màu sắc - sửa id màu sắc trong bảng ctsp về null
     @Modifying
     @Transactional
     @Query("UPDATE ChiTietSanPham ctsp SET ctsp.mauSac = NULL WHERE ctsp.mauSac.id = :id")
     void removeMauSacReference(@Param("id") int id);
 
-    // XÃ³a KÃ­ch cá»¡ - sá»­a id kc trong báº£ng ctsp vá» null
+    // Xóa Kích cỡ - sửa id kc trong bảng ctsp về null
     @Modifying
     @Transactional
     @Query("UPDATE ChiTietSanPham ctsp SET ctsp.kichCo = NULL WHERE ctsp.kichCo.id = :id")
     void removeKichCoReference(@Param("id") int id);
 
-    // XÃ³a sáº£n pháº©m - - sá»­a id sp trong báº£ng ctsp vá» null
+    // Xóa sản phẩm - - sửa id sp trong bảng ctsp về null
     @Modifying
     @Transactional
     @Query("UPDATE ChiTietSanPham ctsp SET ctsp.sanPham = NULL WHERE ctsp.sanPham.id = :id")
     void removeSanPhamReference(@Param("id") int id);
 
-    // XÃ³a hÃ¬nh áº£nh  - - sá»­a id hÃ¬nh áº£nh trong báº£ng ctsp vá» null
+    // Xóa hình ảnh  - - sửa id hình ảnh trong bảng ctsp về null
     @Modifying
     @Transactional
     @Query("UPDATE ChiTietSanPham ctsp SET ctsp.hinhAnh = NULL WHERE ctsp.hinhAnh.id = :id")

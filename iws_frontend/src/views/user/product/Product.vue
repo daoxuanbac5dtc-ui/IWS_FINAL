@@ -4,11 +4,19 @@
     <!-- Navigation -->
     <Nav />
 
-    <Hero />
+    <HeroSection />
 
     <!-- Main Product Content -->
     <div class="product-main">
       <div class="container" v-if="product && !loading">
+        <div class="product-nav-actions">
+          <button class="back-to-products-btn" @click="goBack" type="button">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            </svg>
+            <span>Tất cả sản phẩm</span>
+          </button>
+        </div>
         <div class="product-wrapper">
           <!-- Left Side - Product Images -->
           <div class="product-gallery">
@@ -500,7 +508,7 @@ import Nav from '@/components/user/Nav.vue';
 import Footer from '@/views/user/Footer.vue';
 import { createSvgPlaceholder, resolveProductImageUrl } from '@/utils/productMedia';
 import axios from 'axios';
-import Hero from '../Hero.vue';
+import HeroSection from '../HeroSection.vue';
 
 // Helper functions - đặt ngoài export default
 const API_BASE_URL = 'http://localhost:8080';
@@ -523,7 +531,7 @@ export default {
   components: {
     Nav,
     Footer,
-    Hero,
+    HeroSection,
     ChatBot,
     ReviewProducts
   },
@@ -1542,6 +1550,40 @@ padding: 2rem 0 4rem;
 max-width: 1200px;
 margin: 0 auto;
 padding: 0 20px;
+}
+
+.product-nav-actions {
+display: flex;
+justify-content: flex-start;
+margin-bottom: 1rem;
+}
+
+.back-to-products-btn {
+display: inline-flex;
+align-items: center;
+gap: 0.5rem;
+height: 44px;
+padding: 0 1rem;
+border: 1px solid #e5e7eb;
+border-radius: 999px;
+background: #ffffff;
+color: #1f2937;
+font-weight: 700;
+cursor: pointer;
+box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+transition: all 0.2s ease;
+}
+
+.back-to-products-btn svg {
+width: 18px;
+height: 18px;
+color: #ff6452;
+}
+
+.back-to-products-btn:hover {
+border-color: #ff6452;
+color: #ff6452;
+transform: translateY(-1px);
 }
 
 /* Product Wrapper */

@@ -21,10 +21,10 @@ public class NhanVienDto {
     private String email;
 
     // Employee personal information - can be null initially, completed later
-    @Size(max = 225, message = "Há» tÃªn khÃ´ng Ä‘Æ°á»£c quÃ¡ 225 kÃ½ tá»±")
+    @Size(max = 225, message = "Họ tên không được quá 225 ký tự")
     private String hoTen;
 
-    @Pattern(regexp = "^0\\d{9,10}$|^$", message = "Sá»‘ Ä‘iá»‡n thoáº¡i pháº£i cÃ³ 10-11 sá»‘ vÃ  báº¯t Ä‘áº§u báº±ng 0")
+    @Pattern(regexp = "^0\\d{9,10}$|^$", message = "Số điện thoại phải có 10-11 số và bắt đầu bằng 0")
     private String sdt;
 
     // Status and audit fields
@@ -98,7 +98,7 @@ public class NhanVienDto {
         if (email != null && !email.trim().isEmpty()) {
             return email;
         }
-        return maNhanVien != null ? maNhanVien : "NhÃ¢n viÃªn";
+        return maNhanVien != null ? maNhanVien : "Nhân viên";
     }
 
     /**
@@ -109,7 +109,7 @@ public class NhanVienDto {
     }
 
     /**
-     * Get default address for display - Sá»¬A Äá»‚ HIá»‚N THá»Š Äá»ŠA CHá»ˆ
+     * Get default address for display - SỬA ĐỂ HIỂN THỊ ĐỊA CHỈ
      */
     public String getDefaultAddressDisplay() {
         if (diaChiMacDinh != null && diaChiMacDinh.getDiaChiDayDu() != null && !diaChiMacDinh.getDiaChiDayDu().trim().isEmpty()) {
@@ -123,15 +123,15 @@ public class NhanVienDto {
             }
         }
 
-        return "ChÆ°a cÃ³ Ä‘á»‹a chá»‰";
+        return "Chưa có địa chỉ";
     }
 
     /**
-     * THÃŠM: Get full address for table display
+     * THÊM: Get full address for table display
      */
     public String getFullAddressForTable() {
         String address = getDefaultAddressDisplay();
-        if ("ChÆ°a cÃ³ Ä‘á»‹a chá»‰".equals(address)) {
+        if ("Chưa có địa chỉ".equals(address)) {
             return address;
         }
 
@@ -144,14 +144,14 @@ public class NhanVienDto {
     }
 
     /**
-     * THÃŠM: Check if has address
+     * THÊM: Check if has address
      */
     public boolean hasAddress() {
-        return !getDefaultAddressDisplay().equals("ChÆ°a cÃ³ Ä‘á»‹a chá»‰");
+        return !getDefaultAddressDisplay().equals("Chưa có địa chỉ");
     }
 
     /**
-     * THÃŠM: Get province name for filtering/display
+     * THÊM: Get province name for filtering/display
      */
     public String getProvinceName() {
         if (diaChiMacDinh != null && diaChiMacDinh.getTenTinh() != null) {
@@ -165,11 +165,11 @@ public class NhanVienDto {
             }
         }
 
-        return "ChÆ°a xÃ¡c Ä‘á»‹nh";
+        return "Chưa xác định";
     }
 
     /**
-     * THÃŠM: Get ward name for filtering/display
+     * THÊM: Get ward name for filtering/display
      */
     public String getWardName() {
         if (diaChiMacDinh != null && diaChiMacDinh.getTenPhuong() != null) {
@@ -183,7 +183,7 @@ public class NhanVienDto {
             }
         }
 
-        return "ChÆ°a xÃ¡c Ä‘á»‹nh";
+        return "Chưa xác định";
     }
 
     /**
@@ -210,7 +210,7 @@ public class NhanVienDto {
      */
     public String getFormattedPhone() {
         if (sdt == null || sdt.trim().isEmpty()) {
-            return "ChÆ°a cáº­p nháº­t";
+            return "Chưa cập nhật";
         }
 
         String phone = sdt.trim();
@@ -239,15 +239,15 @@ public class NhanVienDto {
         List<String> errors = new java.util.ArrayList<>();
 
         if (hoTen == null || hoTen.trim().isEmpty()) {
-            errors.add("Há» tÃªn khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            errors.add("Họ tên không được để trống");
         } else if (hoTen.length() > 225) {
-            errors.add("Há» tÃªn khÃ´ng Ä‘Æ°á»£c quÃ¡ 225 kÃ½ tá»±");
+            errors.add("Họ tên không được quá 225 ký tự");
         }
 
         if (sdt == null || sdt.trim().isEmpty()) {
-            errors.add("Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            errors.add("Số điện thoại không được để trống");
         } else if (!sdt.matches("^0\\d{9,10}$")) {
-            errors.add("Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng Ä‘Ãºng Ä‘á»‹nh dáº¡ng");
+            errors.add("Số điện thoại không đúng định dạng");
         }
 
         return errors;
@@ -289,35 +289,35 @@ public class NhanVienDto {
     }
 
     /**
-     * THÃŠM: Get status display text
+     * THÊM: Get status display text
      */
     public String getStatusDisplayText() {
-        return isActive() ? "Äang lÃ m viá»‡c" : "Nghá»‰ viá»‡c";
+        return isActive() ? "Đang làm việc" : "Nghỉ việc";
     }
 
     /**
-     * THÃŠM: Get badge class for status
+     * THÊM: Get badge class for status
      */
     public String getStatusBadgeClass() {
         return isActive() ? "badge-success" : "badge-danger";
     }
 
     /**
-     * THÃŠM: Get detailed summary for admin view
+     * THÊM: Get detailed summary for admin view
      */
     public String getDetailedSummary() {
         StringBuilder summary = new StringBuilder();
 
-        summary.append("NhÃ¢n viÃªn ").append(getDisplayName());
+        summary.append("Nhân viên ").append(getDisplayName());
 
         if (hasAddress()) {
-            summary.append(" táº¡i ").append(getProvinceName());
+            summary.append(" tại ").append(getProvinceName());
         }
 
         summary.append(" - ").append(getStatusDisplayText());
 
         if (needsAdminAttention()) {
-            summary.append(" (Cáº§n xem xÃ©t)");
+            summary.append(" (Cần xem xét)");
         }
 
         return summary.toString();

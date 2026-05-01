@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.iws_websitesneaker.util.TextEncodingGuard;
 
 import java.util.Date;
 
@@ -56,6 +57,7 @@ public class DiaChi {
 
     @PrePersist
     protected void onCreate() {
+        normalizeAndValidateText();
         Date now = new Date();
         if (this.ngayTao == null) {
             this.ngayTao = now;
@@ -73,7 +75,14 @@ public class DiaChi {
 
     @PreUpdate
     protected void onUpdate() {
+        normalizeAndValidateText();
         this.ngayCapNhat = new Date();
+    }
+
+    private void normalizeAndValidateText() {
+        this.tenTinh = TextEncodingGuard.normalizeAndRejectCorrupted("Tỉnh/TP", this.tenTinh);
+        this.tenPhuong = TextEncodingGuard.normalizeAndRejectCorrupted("Phường/Xã", this.tenPhuong);
+        this.diaChiChiTiet = TextEncodingGuard.normalizeAndRejectCorrupted("Địa chỉ chi tiết", this.diaChiChiTiet);
     }
 
     // ===== HELPER METHODS =====
@@ -99,7 +108,7 @@ public class DiaChi {
             result = result.substring(0, result.length() - 2);
         }
 
-        return result.isEmpty() ? "ChÆ°a cÃ³ Ä‘á»‹a chá»‰" : result;
+        return result.isEmpty() ? "Chưa có địa chỉ" : result;
     }
 
     /**
@@ -120,7 +129,7 @@ public class DiaChi {
      * Get display name for status
      */
     public String getStatusDisplayName() {
-        return isActive() ? "Hoáº¡t Ä‘á»™ng" : "KhÃ´ng hoáº¡t Ä‘á»™ng";
+        return isActive() ? "Hoạt động" : "Không hoạt động";
     }
 
     /**

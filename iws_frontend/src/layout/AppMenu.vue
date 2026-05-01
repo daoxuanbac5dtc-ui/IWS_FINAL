@@ -51,12 +51,12 @@ const model = ref([
                     {
                         label: 'Đế giày',
                         icon: 'pi pi-fw pi-shield',
-                        to: 'de-giay'
+                        to: '/de-giay'
                     },
                     {
                         label: 'Hình ảnh',
                         icon: 'pi pi-fw pi-image',
-                        to: 'hinh-anh'
+                        to: '/hinh-anh'
                     }
                 ]
             },

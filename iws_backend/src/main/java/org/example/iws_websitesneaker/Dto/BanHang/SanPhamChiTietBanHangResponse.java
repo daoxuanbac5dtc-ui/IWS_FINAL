@@ -27,7 +27,7 @@ public class SanPhamChiTietBanHangResponse {
     private Date ngayCapNhat;
     private String maSanPham;
 
-    // ThÃ´ng tin sáº£n pháº©m vÃ  thuá»™c tÃ­nh
+    // Thông tin sản phẩm và thuộc tính
     private SanPhamInfoResponse sanPham;
     private MauSacResponse mauSac;
     private KichCoResponse kichCo;
@@ -36,17 +36,17 @@ public class SanPhamChiTietBanHangResponse {
     private ChatLieuResponse chatLieu;
     private DeGiayResponse deGiay;
 
-    // Sá»¬A: Thay Ä‘á»•i cáº¥u trÃºc hÃ¬nh áº£nh Ä‘á»ƒ giá»‘ng quáº£n lÃ½ sáº£n pháº©m
-    private List<HinhAnhResponse> danhSachHinhAnh; // THAY Äá»”I: tá»« hinhAnh thÃ nh danhSachHinhAnh
-    private String hinhAnhChinh; // THÃŠM: URL cá»§a hÃ¬nh áº£nh chÃ­nh
+    // SỬA: Thay đổi cấu trúc hình ảnh để giống quản lý sản phẩm
+    private List<HinhAnhResponse> danhSachHinhAnh; // THAY ĐỔI: từ hinhAnh thành danhSachHinhAnh
+    private String hinhAnhChinh; // THÊM: URL của hình ảnh chính
 
-    // ThÃ´ng tin khuyáº¿n mÃ£i
+    // Thông tin khuyến mãi
     private List<KhuyenMaiSanPhamResponse> danhSachKhuyenMai;
     private BigDecimal tongTietKiem;
     private Float phanTramGiam;
     private Boolean coKhuyenMai;
 
-    // ThÃ´ng tin tá»“n kho
+    // Thông tin tồn kho
     private Boolean conHang;
     private String tinhTrangKho;
 }

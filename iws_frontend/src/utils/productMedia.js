@@ -48,3 +48,111 @@ export const resolveProductImageUrl = (image) => {
 
     return `${API_BASE_URL}/hinh-anh/images/${cleanPath}`;
 };
+
+const normalizeProductText = (value = '') =>
+    String(value)
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+
+const getCodeSuffix = (value = '') => {
+    const match = String(value).match(/(\d+)$/);
+    return match ? match[1] : '';
+};
+
+const getProductText = (product = {}) =>
+    normalizeProductText(
+        [
+            product.tenSanPham,
+            product.name,
+            product.label,
+            product.thuongHieu?.tenThuongHieu,
+            product.brand,
+            product.brandName
+        ]
+            .filter(Boolean)
+            .join(' ')
+    );
+
+const getImageText = (image = {}) =>
+    normalizeProductText([image.tenHinhAnh, image.duongDan, image.path, image.url].filter(Boolean).join(' '));
+
+export const createProductImageLookup = (images = []) => {
+    const byId = new Map();
+    const byCodeSuffix = new Map();
+    const searchableImages = [];
+
+    images.forEach((image) => {
+        const imageUrl = resolveProductImageUrl(image);
+        if (!imageUrl) return;
+
+        if (image?.id !== undefined && image?.id !== null) {
+            byId.set(String(image.id), imageUrl);
+        }
+
+        const normalizedText = getImageText(image);
+        const tokens = new Set(normalizedText.split(' ').filter((token) => token.length > 1));
+        const searchableImage = { imageUrl, normalizedText, tokens };
+        searchableImages.push(searchableImage);
+
+        const codeSuffix = getCodeSuffix(image?.maHinhAnh);
+        if (codeSuffix && !byCodeSuffix.has(codeSuffix)) {
+            byCodeSuffix.set(codeSuffix, searchableImage);
+        }
+    });
+
+    const findById = (id) => {
+        if (id === undefined || id === null) return null;
+        return byId.get(String(id)) || null;
+    };
+
+    const findForProduct = (product = {}) => {
+        const directImageUrl = resolveProductImageUrl(product.hinhAnh || product.imgUrl || product.imgURL);
+        if (directImageUrl) {
+            return directImageUrl;
+        }
+
+        const productText = getProductText(product);
+        const productCodeSuffix = getCodeSuffix(product.maSanPham || product.code || product.ma);
+
+        if (!productText) {
+            return byCodeSuffix.get(productCodeSuffix)?.imageUrl || null;
+        }
+
+        const productTokens = productText.split(' ').filter((token) => token.length > 1);
+        if (!productTokens.length) {
+            return byCodeSuffix.get(productCodeSuffix)?.imageUrl || null;
+        }
+
+        let bestMatch = null;
+        let bestScore = 0;
+
+        searchableImages.forEach((image) => {
+            let score = productTokens.reduce((total, token) => total + (image.tokens.has(token) ? 1 : 0), 0);
+
+            if (image.normalizedText.includes(productText) || productText.includes(image.normalizedText)) {
+                score += 3;
+            }
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestMatch = image.imageUrl;
+            }
+        });
+
+        if (bestScore >= Math.min(2, productTokens.length)) {
+            return bestMatch;
+        }
+
+        return byCodeSuffix.get(productCodeSuffix)?.imageUrl || null;
+    };
+
+    return {
+        findById,
+        findForProduct
+    };
+};

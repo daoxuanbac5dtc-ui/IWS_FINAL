@@ -16,17 +16,17 @@ import java.util.Optional;
 public interface ChiTietSanPhamBHRepository extends JpaRepository<ChiTietSanPham, Integer>, JpaSpecificationExecutor<ChiTietSanPham> {
 
     /**
-     * TÃ¬m theo mÃ£ QR
+     * Tìm theo mã QR
      */
     Optional<ChiTietSanPham> findByMaQR(String maQR);
 
     /**
-     * TÃ¬m theo mÃ£ chi tiáº¿t
+     * Tìm theo mã chi tiết
      */
     Optional<ChiTietSanPham> findByMaChiTiet(String maChiTiet);
 
     /**
-     * Láº¥y sáº£n pháº©m tÆ°Æ¡ng tá»±
+     * Lấy sản phẩm tương tự
      */
     @Query("SELECT ctsp FROM ChiTietSanPham ctsp " +
             "WHERE (ctsp.sanPham.danhMuc.id = :danhMucId " +
@@ -42,17 +42,17 @@ public interface ChiTietSanPhamBHRepository extends JpaRepository<ChiTietSanPham
             Pageable pageable);
 
     /**
-     * TÃ¬m theo sáº£n pháº©m vÃ  tráº¡ng thÃ¡i
+     * Tìm theo sản phẩm và trạng thái
      */
     List<ChiTietSanPham> findBySanPhamIdAndTrangThai(Integer sanPhamId, Integer trangThai);
 
     /**
-     * Äáº¿m theo tráº¡ng thÃ¡i
+     * Đếm theo trạng thái
      */
     Long countByTrangThai(Integer trangThai);
 
     /**
-     * Láº¥y sáº£n pháº©m sáº¯p háº¿t hÃ ng
+     * Lấy sản phẩm sắp hết hàng
      */
     @Query("SELECT ctsp FROM ChiTietSanPham ctsp " +
             "WHERE ctsp.soLuong <= :soLuongToiThieu " +
@@ -61,7 +61,7 @@ public interface ChiTietSanPhamBHRepository extends JpaRepository<ChiTietSanPham
     List<ChiTietSanPham> findSanPhamSapHetHang(@Param("soLuongToiThieu") Integer soLuongToiThieu);
 
     /**
-     * TÃ¬m vá»›i filter nÃ¢ng cao
+     * Tìm với filter nâng cao
      */
     @Query("SELECT ctsp FROM ChiTietSanPham ctsp " +
             "WHERE (:keyword IS NULL OR " +

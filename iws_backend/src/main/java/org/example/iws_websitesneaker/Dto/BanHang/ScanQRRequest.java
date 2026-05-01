@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ScanQRRequest {
-    @NotBlank(message = "QR Code khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
+    @NotBlank(message = "QR Code không được để trống")
     private String qrCode;
 }
 

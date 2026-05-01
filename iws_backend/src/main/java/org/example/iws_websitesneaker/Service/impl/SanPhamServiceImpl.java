@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import jakarta.persistence.criteria.Predicate; // Sá»­ dá»¥ng jakarta.persistence
+import jakarta.persistence.criteria.Predicate; // Sử dụng jakarta.persistence
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -67,7 +67,7 @@ public class SanPhamServiceImpl implements SanPhamService {
 
     @Override
     public void delete(Integer id) {
-        chiTietSanPhamRepository.removeSanPhamReference(id); // Gá»¡ rÃ ng buá»™c khÃ³a ngoáº¡i tá»« báº£ng ctsp
+        chiTietSanPhamRepository.removeSanPhamReference(id); // Gỡ ràng buộc khóa ngoại từ bảng ctsp
         sanPhamRepository.deleteById(id);
     }
     @Override

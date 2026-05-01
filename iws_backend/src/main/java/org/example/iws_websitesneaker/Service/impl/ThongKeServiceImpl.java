@@ -22,8 +22,8 @@ public class ThongKeServiceImpl implements ThongKeService {
 
     @Override
     public Integer getTongDoanhThu() {
-        Integer doanhThu = thongKeRepository.getTongDoanhThu();
-        return doanhThu != null ? doanhThu : 0;
+        Double doanhThu = thongKeRepository.getTongDoanhThu();
+        return doanhThu != null ? doanhThu.intValue() : 0;
     }
 
     @Override

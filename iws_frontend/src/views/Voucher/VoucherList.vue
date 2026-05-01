@@ -5,6 +5,22 @@ import { InputText } from 'primevue';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref, watch } from 'vue';
 
+const API_BASE_URL = 'http://localhost:8080';
+const VOUCHER_IMAGE_PLACEHOLDER = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><rect width="160" height="160" rx="8" fill="#f8fafc"/><rect x="24" y="42" width="112" height="76" rx="10" fill="#ffffff" stroke="#cbd5e1"/><path d="M36 66h88M36 94h56" stroke="#94a3b8" stroke-width="8" stroke-linecap="round"/><circle cx="116" cy="94" r="11" fill="#f97316"/></svg>'
+)}`;
+
+function createVoucherImageUrl(imagePath) {
+    const rawPath = String(imagePath || '').trim();
+    if (!rawPath) return '';
+    if (/^(https?:|data:|blob:)/i.test(rawPath)) return rawPath;
+    if (rawPath.startsWith('/voucher/images/')) return `${API_BASE_URL}${rawPath}`;
+    if (rawPath.startsWith('/voucher/')) return `${API_BASE_URL}${rawPath.replace('/voucher/', '/voucher/images/')}`;
+    if (rawPath.startsWith('voucher/')) return `${API_BASE_URL}/${rawPath.replace(/^voucher\//, 'voucher/images/')}`;
+    if (rawPath.startsWith('/')) return `${API_BASE_URL}${rawPath}`;
+    return `${API_BASE_URL}/voucher/images/${rawPath}`;
+}
+
 // ===== REACTIVE VARIABLES =====
 const toast = useToast();
 const dt = ref();
@@ -450,7 +466,7 @@ function editVoucher(voucherData) {
     imagePreview.value = '';
 
     if (voucherData.duongDanHinhAnh) {
-        imagePreview.value = `http://localhost:8080${voucherData.duongDanHinhAnh}`;
+        imagePreview.value = createVoucherImageUrl(voucherData.duongDanHinhAnh);
         selectedFileName.value = voucherData.tenVoucher;
     }
 
@@ -733,7 +749,7 @@ async function deleteSelectedVouchers() {
 // ===== IMAGE PREVIEW =====
 function previewImage(voucherData) {
     if (voucherData.duongDanHinhAnh) {
-        previewImageSrc.value = `http://localhost:8080${voucherData.duongDanHinhAnh}`;
+        previewImageSrc.value = createVoucherImageUrl(voucherData.duongDanHinhAnh);
         previewImageName.value = voucherData.tenVoucher;
         previewImagePath.value = voucherData.duongDanHinhAnh;
         imagePreviewDialog.value = true;
@@ -742,7 +758,7 @@ function previewImage(voucherData) {
 
 function handleImageError(event) {
     console.error('❌ Image load failed:', event.target.src);
-    event.target.src = '/images/placeholder.png';
+    event.target.src = VOUCHER_IMAGE_PLACEHOLDER;
     event.target.onerror = null;
 }
 
@@ -904,7 +920,7 @@ function exportCSV() {
                     <div class="flex justify-center">
                         <img
                             v-if="slotProps.data.duongDanHinhAnh"
-                            :src="`http://localhost:8080${slotProps.data.duongDanHinhAnh}`"
+                            :src="createVoucherImageUrl(slotProps.data.duongDanHinhAnh)"
                             :alt="slotProps.data.tenVoucher"
                             class="h-16 w-16 cursor-pointer rounded border object-cover shadow-sm transition-transform hover:scale-105"
                             @click="previewImage(slotProps.data)"
@@ -1183,7 +1199,7 @@ function exportCSV() {
         <!-- DIALOG XEM HÌNH ẢNH FULL SIZE -->
         <Dialog v-model:visible="imagePreviewDialog" :style="{ width: '800px' }" header="Xem hình ảnh voucher" :modal="true">
             <div class="text-center">
-                <img :src="previewImageSrc" :alt="previewImageName" class="max-h-96 max-w-full rounded object-contain shadow" />
+                <img :src="previewImageSrc" :alt="previewImageName" class="max-h-96 max-w-full rounded object-contain shadow" @error="handleImageError" />
                 <div class="mt-4 text-sm text-gray-600">
                     <p><strong>Voucher:</strong> {{ previewImageName }}</p>
                     <p><strong>Đường dẫn:</strong> {{ previewImagePath }}</p>

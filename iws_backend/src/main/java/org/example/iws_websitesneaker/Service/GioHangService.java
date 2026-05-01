@@ -1,7 +1,7 @@
 package org.example.iws_websitesneaker.Service;
 
 import org.example.iws_websitesneaker.Dto.AddToCartRequest;
-import org.example.iws_websitesneaker.Dto.CartItemResponse; // THÃŠM IMPORT
+import org.example.iws_websitesneaker.Dto.CartItemResponse; // THÊM IMPORT
 import org.example.iws_websitesneaker.entity.GioHangChiTIet;
 
 import java.util.List;
@@ -9,42 +9,42 @@ import java.util.List;
 public interface GioHangService {
 
     /**
-     * Láº¥y danh sÃ¡ch sáº£n pháº©m trong giá» hÃ ng cá»§a user
+     * Lấy danh sách sản phẩm trong giỏ hàng của user
      */
-    List<CartItemResponse> getCartByUserId(Integer userId); // Äá»”I RETURN TYPE
+    List<CartItemResponse> getCartByUserId(Integer userId); // ĐỔI RETURN TYPE
 
     /**
-     * ThÃªm sáº£n pháº©m vÃ o giá» hÃ ng
+     * Thêm sản phẩm vào giỏ hàng
      */
-    CartItemResponse addToCart(Integer userId, AddToCartRequest request); // Äá»”I RETURN TYPE
+    CartItemResponse addToCart(Integer userId, AddToCartRequest request); // ĐỔI RETURN TYPE
 
     /**
-     * Cáº­p nháº­t sá»‘ lÆ°á»£ng sáº£n pháº©m trong giá» hÃ ng
+     * Cập nhật số lượng sản phẩm trong giỏ hàng
      */
-    CartItemResponse updateCartItem(Integer cartItemId, Integer newQuantity); // Äá»”I RETURN TYPE
+    CartItemResponse updateCartItem(Integer cartItemId, Integer newQuantity); // ĐỔI RETURN TYPE
 
     /**
-     * XÃ³a má»™t sáº£n pháº©m khá»i giá» hÃ ng
+     * Xóa một sản phẩm khỏi giỏ hàng
      */
     void removeCartItem(Integer cartItemId);
 
     /**
-     * XÃ³a toÃ n bá»™ giá» hÃ ng cá»§a user
+     * Xóa toàn bộ giỏ hàng của user
      */
     void clearCart(Integer userId);
 
     /**
-     * Äáº¿m tá»•ng sá»‘ lÆ°á»£ng sáº£n pháº©m trong giá» hÃ ng
+     * Đếm tổng số lượng sản phẩm trong giỏ hàng
      */
     Integer getTotalQuantity(Integer userId);
 
     /**
-     * TÃ­nh tá»•ng tiá»n cá»§a giá» hÃ ng
+     * Tính tổng tiền của giỏ hàng
      */
     Double getTotalAmount(Integer userId);
 
     /**
-     * Kiá»ƒm tra sáº£n pháº©m cÃ³ trong giá» hÃ ng khÃ´ng
+     * Kiểm tra sản phẩm có trong giỏ hàng không
      */
     boolean isProductInCart(Integer userId, Integer productDetailId);
 }

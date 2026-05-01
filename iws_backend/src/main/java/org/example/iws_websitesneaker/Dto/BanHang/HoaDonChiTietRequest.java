@@ -8,15 +8,15 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class HoaDonChiTietRequest {
-    @NotNull(message = "ID chi tiáº¿t sáº£n pháº©m khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
+    @NotNull(message = "ID chi tiết sản phẩm không được để trống")
     private Integer chiTietSanPhamId;
 
-    @NotNull(message = "Sá»‘ lÆ°á»£ng khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
-    @Min(value = 1, message = "Sá»‘ lÆ°á»£ng pháº£i lá»›n hÆ¡n 0")
+    @NotNull(message = "Số lượng không được để trống")
+    @Min(value = 1, message = "Số lượng phải lớn hơn 0")
     private Integer soLuong;
 
-    @NotNull(message = "ÄÆ¡n giÃ¡ khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
-    @DecimalMin(value = "0.0", inclusive = false, message = "ÄÆ¡n giÃ¡ pháº£i lá»›n hÆ¡n 0")
+    @NotNull(message = "Đơn giá không được để trống")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Đơn giá phải lớn hơn 0")
     private Double donGia;
 
     private String ghiChu;

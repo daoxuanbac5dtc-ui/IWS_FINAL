@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.iws_websitesneaker.util.TextEncodingGuard;
 
 import java.util.Date;
 
@@ -55,6 +56,7 @@ public class KhachHang {
 
     @PrePersist
     protected void onCreate() {
+        normalizeAndValidateText();
         Date now = new Date();
         if (this.ngayTao == null) {
             this.ngayTao = now;
@@ -63,19 +65,24 @@ public class KhachHang {
             this.ngayCapNhat = now;
         }
         if (this.trangThai == null) {
-            this.trangThai = 1; // Máº·c Ä‘á»‹nh active
+            this.trangThai = 1; // Mặc định active
         }
     }
 
     @PreUpdate
     protected void onUpdate() {
+        normalizeAndValidateText();
         this.ngayCapNhat = new Date();
     }
 
-    // ===== SAFE METHODS - KhÃ´ng gÃ¢y LazyInitializationException =====
+    private void normalizeAndValidateText() {
+        this.hoTen = TextEncodingGuard.normalizeAndRejectCorrupted("Họ tên khách hàng", this.hoTen);
+    }
+
+    // ===== SAFE METHODS - Không gây LazyInitializationException =====
 
     /**
-     * Láº¥y email má»™t cÃ¡ch an toÃ n tá»« TaiKhoan
+     * Lấy email một cách an toàn từ TaiKhoan
      */
     public String getEmailSafe() {
         try {
@@ -87,14 +94,14 @@ public class KhachHang {
     }
 
     /**
-     * Kiá»ƒm tra khÃ¡ch hÃ ng cÃ³ Ä‘ang hoáº¡t Ä‘á»™ng khÃ´ng
+     * Kiểm tra khách hàng có đang hoạt động không
      */
     public boolean isActive() {
         return this.trangThai != null && this.trangThai == 1;
     }
 
     /**
-     * Kiá»ƒm tra profile Ä‘Ã£ hoÃ n thiá»‡n chÆ°a
+     * Kiểm tra profile đã hoàn thiện chưa
      */
     public boolean isProfileCompleted() {
         return this.hoTen != null && !this.hoTen.trim().isEmpty() &&
@@ -103,7 +110,7 @@ public class KhachHang {
     }
 
     /**
-     * Láº¥y tÃªn hiá»ƒn thá»‹
+     * Lấy tên hiển thị
      */
     public String getDisplayName() {
         if (this.hoTen != null && !this.hoTen.trim().isEmpty()) {
@@ -113,20 +120,20 @@ public class KhachHang {
         if (email != null && !email.trim().isEmpty()) {
             return email;
         }
-        return this.maKhachHang != null ? this.maKhachHang : "KhÃ¡ch hÃ ng";
+        return this.maKhachHang != null ? this.maKhachHang : "Khách hàng";
     }
 
     /**
-     * Get display name cho tráº¡ng thÃ¡i
+     * Get display name cho trạng thái
      */
     public String getStatusDisplayName() {
-        return this.isActive() ? "Äang hoáº¡t Ä‘á»™ng" : "NgÆ°ng hoáº¡t Ä‘á»™ng";
+        return this.isActive() ? "Đang hoạt động" : "Ngưng hoạt động";
     }
 
     // ===== BUSINESS LOGIC METHODS =====
 
     /**
-     * Cáº­p nháº­t thÃ´ng tin cÆ¡ báº£n
+     * Cập nhật thông tin cơ bản
      */
     public void updateBasicInfo(String hoTen, String sdt) {
         if (hoTen != null && !hoTen.trim().isEmpty()) {
@@ -139,7 +146,7 @@ public class KhachHang {
     }
 
     /**
-     * Toggle tráº¡ng thÃ¡i
+     * Toggle trạng thái
      */
     public void toggleStatus() {
         this.trangThai = this.trangThai == 1 ? 0 : 1;
@@ -147,7 +154,7 @@ public class KhachHang {
     }
 
     /**
-     * Deactivate khÃ¡ch hÃ ng
+     * Deactivate khách hàng
      */
     public void deactivate() {
         this.trangThai = 0;
@@ -155,7 +162,7 @@ public class KhachHang {
     }
 
     /**
-     * Reactivate khÃ¡ch hÃ ng
+     * Reactivate khách hàng
      */
     public void reactivate() {
         this.trangThai = 1;
@@ -165,22 +172,22 @@ public class KhachHang {
     // ===== VALIDATION METHODS =====
 
     /**
-     * Validate sá»‘ Ä‘iá»‡n thoáº¡i
+     * Validate số điện thoại
      */
     public boolean hasValidPhoneNumber() {
         return this.sdt != null && this.sdt.matches("^0\\d{9,10}$");
     }
 
     /**
-     * Validate há» tÃªn
+     * Validate họ tên
      */
     public boolean hasValidName() {
         return this.hoTen != null &&
-                this.hoTen.matches("^[a-zA-ZÃ€ÃÃ‚ÃƒÃˆÃ‰ÃŠÃŒÃÃ’Ã“Ã”Ã•Ã™ÃšÄ‚ÄÄ¨Å¨Æ Ã Ã¡Ã¢Ã£Ã¨Ã©ÃªÃ¬Ã­Ã²Ã³Ã´ÃµÃ¹ÃºÄƒÄ‘Ä©Å©Æ¡Æ¯Ä‚áº áº¢áº¤áº¦áº¨áºªáº¬áº®áº°áº²áº´áº¶áº¸áººáº¼á»€á»€á»‚Æ°Äƒáº¡áº£áº¥áº§áº©áº«áº­áº¯áº±áº³áºµáº·áº¹áº»áº½á»áº¿á»ƒá»„á»†á»ˆá»Šá»Œá»Žá»á»’á»”á»–á»˜á»šá»œá»žá» á»¢á»¤á»¦á»¨á»ªá»…á»‡á»‰á»‹á»á»á»‘á»“á»•á»—á»™á»›á»á»Ÿá»¡á»£á»¥á»§á»©á»«á»¬á»®á»°á»²á»´Ãá»¶á»¸á»­á»¯á»±á»³á»µÃ½á»·á»¹\\s]+$");
+                this.hoTen.matches("^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềếểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵýỷỹ\\s]+$");
     }
 
     /**
-     * Validate dá»¯ liá»‡u cÆ¡ báº£n
+     * Validate dữ liệu cơ bản
      */
     public boolean isValidForSave() {
         return this.hoTen != null && !this.hoTen.trim().isEmpty() &&
@@ -190,10 +197,10 @@ public class KhachHang {
                 this.trangThai != null;
     }
 
-    // Legacy method - Ä‘á»ƒ compatibility
+    // Legacy method - để compatibility
     public void setIdDiaChi(Integer diaChiId) {
         // Empty implementation for compatibility
-        // Äá»‹a chá»‰ giá» Ä‘Æ°á»£c quáº£n lÃ½ qua TaiKhoan
+        // Địa chỉ giờ được quản lý qua TaiKhoan
     }
 
     // ===== SAFE TOSTRING =====

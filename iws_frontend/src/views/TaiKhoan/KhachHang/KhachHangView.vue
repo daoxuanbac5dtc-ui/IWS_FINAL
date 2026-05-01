@@ -1572,39 +1572,14 @@ const changeStatus = async (customerData) => {
     try {
         const newStatus = customerData.trangThai === 1 ? 0 : 1
         
-        // Cập nhật trạng thái khách hàng
-        await axios.patch(`http://localhost:8080/api/khach-hang/${customerData.id}/status`, { 
-            trangThai: newStatus 
+        await axios.patch(`http://localhost:8080/api/khach-hang/${customerData.id}/status`, {
+            trangThai: newStatus
         }, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
             }
         })
-
-        // Đồng bộ trạng thái tài khoản nếu có
-        if (customerData.idTaiKhoan) {
-            try {
-                await axios.patch(`http://localhost:8080/api/tai-khoan/${customerData.idTaiKhoan}/trang-thai`, {
-                    trangThai: newStatus
-                }, {
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-                    },
-                    timeout: 10000
-                })
-                console.log('✅ Đã đồng bộ trạng thái tài khoản')
-            } catch (error) {
-                console.warn('⚠️ Không thể đồng bộ trạng thái tài khoản:', error)
-                toast.add({
-                    severity: 'warn',
-                    summary: 'Cảnh báo đồng bộ',
-                    detail: 'Đã cập nhật khách hàng nhưng không thể đồng bộ trạng thái tài khoản',
-                    life: 4000
-                })
-            }
-        }
 
         toast.add({
             severity: 'success',

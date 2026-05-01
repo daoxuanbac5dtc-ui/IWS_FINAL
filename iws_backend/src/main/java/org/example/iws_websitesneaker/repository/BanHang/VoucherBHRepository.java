@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface VoucherBHRepository extends JpaRepository<Voucher, Integer> {
 
-    // âœ… Sá»¬A: Query vá»›i handling null tongTien
+    // ✅ SỬA: Query với handling null tongTien
     @Query("SELECT v FROM Voucher v " +
             "WHERE v.trangThai = 1 " +
             "AND v.soLuong > 0 " +
@@ -24,7 +24,7 @@ public interface VoucherBHRepository extends JpaRepository<Voucher, Integer> {
     List<Voucher> findAvailableVouchers(@Param("currentDate") Date currentDate,
                                         @Param("tongTien") Double tongTien);
 
-    // âœ… THÃŠM: Query láº¥y táº¥t cáº£ voucher kháº£ dá»¥ng (khÃ´ng filter theo tongTien)
+    // ✅ THÊM: Query lấy tất cả voucher khả dụng (không filter theo tongTien)
     @Query("SELECT v FROM Voucher v " +
             "WHERE v.trangThai = 1 " +
             "AND v.soLuong > 0 " +
@@ -33,10 +33,10 @@ public interface VoucherBHRepository extends JpaRepository<Voucher, Integer> {
             "ORDER BY v.giaTriGiam DESC")
     List<Voucher> findAllAvailableVouchers(@Param("currentDate") Date currentDate);
 
-    // TÃ¬m voucher theo mÃ£
+    // Tìm voucher theo mã
     Optional<Voucher> findByMaVoucher(String maVoucher);
 
-    // âœ… Sá»¬A: Kiá»ƒm tra voucher cÃ³ thá»ƒ sá»­ dá»¥ng khÃ´ng
+    // ✅ SỬA: Kiểm tra voucher có thể sử dụng không
     @Query("SELECT CASE WHEN COUNT(v) > 0 THEN true ELSE false END FROM Voucher v " +
             "WHERE v.maVoucher = :maVoucher " +
             "AND v.trangThai = 1 " +
@@ -46,6 +46,6 @@ public interface VoucherBHRepository extends JpaRepository<Voucher, Integer> {
     boolean isVoucherUsable(@Param("maVoucher") String maVoucher,
                             @Param("currentDate") Date currentDate);
 
-    // Láº¥y voucher hoáº¡t Ä‘á»™ng
+    // Lấy voucher hoạt động
     List<Voucher> findByTrangThaiOrderByNgayTaoDesc(Integer trangThai);
 }

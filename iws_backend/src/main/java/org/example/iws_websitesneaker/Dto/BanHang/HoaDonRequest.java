@@ -10,28 +10,28 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class HoaDonRequest {
-    @NotBlank(message = "TÃªn khÃ¡ch khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
+    @NotBlank(message = "Tên khách không được để trống")
     private String tenKhach;
 
-    @NotBlank(message = "Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
-    @Pattern(regexp = "^[0-9]{10}$", message = "Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng há»£p lá»‡")
+    @NotBlank(message = "Số điện thoại không được để trống")
+    @Pattern(regexp = "^[0-9]{10}$", message = "Số điện thoại không hợp lệ")
     private String sdt;
 
-    @Email(message = "Email khÃ´ng há»£p lá»‡")
+    @Email(message = "Email không hợp lệ")
     private String email;
 
     private String diaChi;
     private String ghiChu;
 
-    @NotNull(message = "Tá»•ng tiá»n khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Tá»•ng tiá»n pháº£i lá»›n hÆ¡n 0")
+    @NotNull(message = "Tổng tiền không được để trống")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Tổng tiền phải lớn hơn 0")
     private Double tongTien;
 
     private Integer khachHangId;
     private Integer nhanVienId;
     private Integer voucherId;
 
-    @NotEmpty(message = "Danh sÃ¡ch chi tiáº¿t khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
+    @NotEmpty(message = "Danh sách chi tiết không được để trống")
     private List<HoaDonChiTietRequest> chiTiets;
 }
 

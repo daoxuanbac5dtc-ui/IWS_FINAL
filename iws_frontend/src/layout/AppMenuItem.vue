@@ -29,18 +29,56 @@ const props = defineProps({
 const isActiveMenu = ref(false);
 const itemKey = ref(null);
 
+function normalizeMenuPath(path) {
+    if (typeof path !== 'string' || !path.length) {
+        return path;
+    }
+
+    if (path.startsWith('/') || path.startsWith('#') || /^[a-z]+:/i.test(path)) {
+        return path;
+    }
+
+    return `/${path}`;
+}
+
+function matchesRoute(path) {
+    const normalizedPath = normalizeMenuPath(path);
+    return typeof normalizedPath === 'string' && route.path === normalizedPath;
+}
+
+function itemMatchesCurrentRoute(item) {
+    if (!item) {
+        return false;
+    }
+
+    if (matchesRoute(item.to)) {
+        return true;
+    }
+
+    return Array.isArray(item.items) && item.items.some((child) => itemMatchesCurrentRoute(child));
+}
+
+function syncActiveState(activeItem = layoutState.activeMenuItem) {
+    const keyMatch = typeof activeItem === 'string' && (activeItem === itemKey.value || activeItem.startsWith(itemKey.value + '-'));
+    isActiveMenu.value = itemMatchesCurrentRoute(props.item) || keyMatch;
+}
+
 onBeforeMount(() => {
     itemKey.value = props.parentItemKey ? props.parentItemKey + '-' + props.index : String(props.index);
-
-    const activeItem = layoutState.activeMenuItem;
-
-    isActiveMenu.value = activeItem === itemKey.value || activeItem ? activeItem.startsWith(itemKey.value + '-') : false;
+    syncActiveState();
 });
 
 watch(
     () => layoutState.activeMenuItem,
     (newVal) => {
-        isActiveMenu.value = newVal === itemKey.value || newVal.startsWith(itemKey.value + '-');
+        syncActiveState(newVal);
+    }
+);
+
+watch(
+    () => route.path,
+    () => {
+        syncActiveState();
     }
 );
 
@@ -63,8 +101,12 @@ function itemClick(event, item) {
     setActiveMenuItem(foundItemKey);
 }
 
+function resolveRouteTarget(item) {
+    return normalizeMenuPath(item?.to);
+}
+
 function checkActiveRoute(item) {
-    return route.path === item.to;
+    return matchesRoute(item?.to);
 }
 </script>
 
@@ -76,7 +118,13 @@ function checkActiveRoute(item) {
             <span class="layout-menuitem-text">{{ item.label }}</span>
             <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>
         </a>
-        <router-link v-if="item.to && !item.items && item.visible !== false" @click="itemClick($event, item, index)" :class="[item.class, { 'active-route': checkActiveRoute(item) }]" tabindex="0" :to="item.to">
+        <router-link
+            v-if="item.to && !item.items && item.visible !== false"
+            @click="itemClick($event, item, index)"
+            :class="[item.class, { 'active-route': checkActiveRoute(item) }]"
+            tabindex="0"
+            :to="resolveRouteTarget(item)"
+        >
             <i :class="item.icon" class="layout-menuitem-icon"></i>
             <span class="layout-menuitem-text">{{ item.label }}</span>
             <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>

@@ -25,13 +25,13 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
     @Override
     public KhuyenMai getById(Integer id) {
         return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y khuyáº¿n mÃ£i vá»›i ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khuyến mãi với ID: " + id));
     }
 
     @Override
     public KhuyenMai create(KhuyenMaiRequest request) {
         if (repository.findByMaKhuyenMai(request.getMaKhuyenMai()).isPresent()) {
-            throw new RuntimeException("MÃ£ khuyáº¿n mÃ£i Ä‘Ã£ tá»“n táº¡i: " + request.getMaKhuyenMai());
+            throw new RuntimeException("Mã khuyến mãi đã tồn tại: " + request.getMaKhuyenMai());
         }
 
         KhuyenMai khuyenMai = new KhuyenMai();
@@ -52,7 +52,7 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
 
         if (!khuyenMai.getMaKhuyenMai().equals(request.getMaKhuyenMai())) {
             if (repository.findByMaKhuyenMai(request.getMaKhuyenMai()).isPresent()) {
-                throw new RuntimeException("MÃ£ khuyáº¿n mÃ£i Ä‘Ã£ tá»“n táº¡i: " + request.getMaKhuyenMai());
+                throw new RuntimeException("Mã khuyến mãi đã tồn tại: " + request.getMaKhuyenMai());
             }
         }
 

@@ -8,11 +8,11 @@ import java.util.Optional;
 public interface DeGiayService {
     List<DeGiay> getAllDeGiay();
     Optional<DeGiay> getDeGiayById(int id);
-    // ThÃªm
+    // Thêm
     void addDeGiay(DeGiay deGiay);
-    // Sá»­a
+    // Sửa
     void updateDeGiay(DeGiay deGiay);
-    //XÃ³a
+    //Xóa
     void deleteDeGiay(int id);
 }
 

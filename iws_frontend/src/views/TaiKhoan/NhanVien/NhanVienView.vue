@@ -1022,10 +1022,9 @@ const fetchData = async () => {
             page: Math.max(0, pagination.value.page || 0),
             size: Math.min(Math.max(1, pagination.value.size || 10), 100),
             sortBy: pagination.value.sortField || 'id',
-            sortDir: pagination.value.sortOrder === 1 ? 'asc' : 'desc'
+            sortDir: pagination.value.sortOrder === 1 ? 'asc' : 'desc',
+            _ts: Date.now()
         }
-
-        let endpoint = 'http://localhost:8080/api/nhan-vien'
         
         // Global search
          if (globalSearch.value && typeof globalSearch.value === 'string' && globalSearch.value.trim()) {
@@ -1349,7 +1348,6 @@ const changeStatus = async (employeeData) => {
     try {
         const newStatus = employeeData.trangThai === 1 ? 0 : 1
         
-        // Cập nhật trạng thái nhân viên
         await axios.patch(`http://localhost:8080/api/nhan-vien/${employeeData.id}/status`, {
             trangThai: newStatus
         }, {
@@ -1358,11 +1356,6 @@ const changeStatus = async (employeeData) => {
                 'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
             }
         })
-        
-        // Đồng bộ trạng thái tài khoản nếu có
-        if (employeeData.idTaiKhoan) {
-            await syncAccountStatus(employeeData.idTaiKhoan, newStatus)
-        }
         
         const statusText = newStatus === 1 ? 'kích hoạt' : 'cho nghỉ việc'
         toast.add({
@@ -1378,7 +1371,6 @@ const changeStatus = async (employeeData) => {
         handleApiError(error, 'Thay đổi trạng thái thất bại')
     }
 }
-
 // ===== ADDRESS MANAGEMENT - FIXED =====
 const updateEmployeeAddressesIntelligently = async (employeeId, newAddresses) => {
     try {

@@ -27,7 +27,7 @@ public class DiaChiServiceImpl implements DiaChiService {
     @Autowired
     private RepoNhanVien repoNhanVien;
 
-    // ====== CÃC METHOD DTO-BASED (GIá»® NGUYÃŠN) ======
+    // ====== CÁC METHOD DTO-BASED (GIỮ NGUYÊN) ======
     @Override
     public Optional<DiaChi> findDefaultByTaiKhoanId(Integer taiKhoanId) {
         try {
@@ -39,7 +39,7 @@ public class DiaChiServiceImpl implements DiaChiService {
     }
 
     /**
-     * Láº¥y táº¥t cáº£ Ä‘á»‹a chá»‰ theo ID tÃ i khoáº£n
+     * Lấy tất cả địa chỉ theo ID tài khoản
      */
     @Override
     public List<DiaChi> findByTaiKhoanId(Integer taiKhoanId) {
@@ -61,7 +61,7 @@ public class DiaChiServiceImpl implements DiaChiService {
     @Override
     public DiaChiDto getById(Integer id) {
         DiaChi diaChi = repoDiaChi.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y Ä‘á»‹a chá»‰ vá»›i ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy địa chỉ với ID: " + id));
         return convertToDto(diaChi);
     }
 
@@ -77,9 +77,9 @@ public class DiaChiServiceImpl implements DiaChiService {
     @Override
     public DiaChiDto update(Integer id, DiaChiDto diachiDto) {
         DiaChi existingDiaChi = repoDiaChi.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y Ä‘á»‹a chá»‰ vá»›i ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy địa chỉ với ID: " + id));
 
-        // Chá»‰ cáº­p nháº­t cÃ¡c trÆ°á»ng cÃ³ trong DTO (Bá»Ž HUYá»†N)
+        // Chỉ cập nhật các trường có trong DTO (BỎ HUYỆN)
         existingDiaChi.setTenTinh(diachiDto.getTenTinh());
         existingDiaChi.setTenPhuong(diachiDto.getTenPhuong());
         existingDiaChi.setNgayCapNhat(new Date());
@@ -91,7 +91,7 @@ public class DiaChiServiceImpl implements DiaChiService {
     @Override
     public void delete(Integer id) {
         if (!repoDiaChi.existsById(id)) {
-            throw new RuntimeException("KhÃ´ng tÃ¬m tháº¥y Ä‘á»‹a chá»‰ vá»›i ID: " + id);
+            throw new RuntimeException("Không tìm thấy địa chỉ với ID: " + id);
         }
         repoDiaChi.deleteById(id);
     }
@@ -120,7 +120,7 @@ public class DiaChiServiceImpl implements DiaChiService {
                 .collect(Collectors.toList());
     }
 
-    // ====== CÃC METHOD ENTITY-BASED (GIá»® NGUYÃŠN) ======
+    // ====== CÁC METHOD ENTITY-BASED (GIỮ NGUYÊN) ======
     @Override
     public Optional<DiaChi> findById(Integer id) {
         return repoDiaChi.findById(id);
@@ -152,7 +152,7 @@ public class DiaChiServiceImpl implements DiaChiService {
         return repoDiaChi.existsById(id);
     }
 
-    // âœ… THÃŠM: Method tÃ¬m Ä‘á»‹a chá»‰ máº·c Ä‘á»‹nh
+    // ✅ THÊM: Method tìm địa chỉ mặc định
     public Optional<DiaChi> findByTaiKhoanIdAndIsDefaultTrue(Integer taiKhoanId) {
         return repoDiaChi.findByTaiKhoanIdAndIsDefaultTrue(taiKhoanId);
     }
@@ -171,14 +171,14 @@ public class DiaChiServiceImpl implements DiaChiService {
                 System.out.println("Deleted address: " + diaChi.getId());
             }
 
-            System.out.println("âœ… All addresses deleted successfully");
+            System.out.println("✅ All addresses deleted successfully");
         } catch (Exception e) {
-            System.out.println("âŒ Error deleting addresses: " + e.getMessage());
+            System.out.println("❌ Error deleting addresses: " + e.getMessage());
             throw new RuntimeException("Failed to delete addresses: " + e.getMessage(), e);
         }
     }
 
-    // ====== HELPER METHODS (Cáº¬P NHáº¬T - Bá»Ž HUYá»†N) ======
+    // ====== HELPER METHODS (CẬP NHẬT - BỎ HUYỆN) ======
     private DiaChiDto convertToDto(DiaChi diaChi) {
         DiaChiDto dto = new DiaChiDto();
         dto.setId(diaChi.getId());
@@ -192,12 +192,12 @@ public class DiaChiServiceImpl implements DiaChiService {
         if (diaChi.getTaiKhoan() != null) {
             dto.setIdTaiKhoan(diaChi.getTaiKhoan().getId());
 
-            // TÃ¬m KhachHang theo TaiKhoan
+            // Tìm KhachHang theo TaiKhoan
             var kh = repoKhachHang.findByTaiKhoanId(diaChi.getTaiKhoan().getId());
             if (kh.isPresent()) {
                 dto.setTenKhachHang(kh.get().getHoTen());
             } else {
-                // Náº¿u khÃ´ng pháº£i KhachHang, kiá»ƒm tra cÃ³ pháº£i NhÃ¢nViÃªn khÃ´ng
+                // Nếu không phải KhachHang, kiểm tra có phải NhânViên không
                 var nv = repoNhanVien.findByTaiKhoan_Id(diaChi.getTaiKhoan().getId());
                 nv.ifPresent(nhanVien -> dto.setTenKhachHang(nhanVien.getHoTen()));
             }
@@ -211,13 +211,13 @@ public class DiaChiServiceImpl implements DiaChiService {
         diaChi.setId(dto.getId());
         diaChi.setTenTinh(dto.getTenTinh());
         diaChi.setTenPhuong(dto.getTenPhuong());
-        // Set cÃ¡c trÆ°á»ng khÃ¡c náº¿u cÃ³ trong DTO (Bá»Ž HUYá»†N)
+        // Set các trường khác nếu có trong DTO (BỎ HUYỆN)
         diaChi.setMaTinh(dto.getMaTinh() != null ? dto.getMaTinh() : "01");
         diaChi.setMaPhuong(dto.getMaPhuong() != null ? dto.getMaPhuong() : "00001");
         diaChi.setDiaChiChiTiet(dto.getDiaChiChiTiet() != null ? dto.getDiaChiChiTiet() : "");
         diaChi.setTrangThai(dto.getTrangThai() != null ? dto.getTrangThai() : 1);
 
-        // Set TaiKhoan náº¿u cÃ³ ID
+        // Set TaiKhoan nếu có ID
         if (dto.getIdTaiKhoan() != null) {
             TaiKhoan taiKhoan = new TaiKhoan();
             taiKhoan.setId(dto.getIdTaiKhoan());

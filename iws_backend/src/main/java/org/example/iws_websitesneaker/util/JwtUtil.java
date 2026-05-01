@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class JwtUtil {
 
-    // Secret key Ä‘á»§ máº¡nh (256 bits)
+    // Secret key đủ mạnh (256 bits)
     @Value("${jwt.secret:myVeryLongSecretKeyThatIsAtLeast256BitsLongForSecurityPurposesAndShouldBeKeptSecretInProduction1234567890}")
     private String secret;
 
@@ -32,12 +32,12 @@ public class JwtUtil {
         Date expiryDate = new Date(now.getTime() + expiration);
 
         return Jwts.builder()
-                .subject(user.getEmail())  // Sá»­ dá»¥ng API má»›i
+                .subject(user.getEmail())  // Sử dụng API mới
                 .claim("userId", user.getId())
                 .claim("vaiTro", user.getVaiTro().name())
                 .claim("maTaiKhoan", user.getMaTaiKhoan())
                 .issuedAt(now)
-                .expiration(expiryDate)  // Sá»­ dá»¥ng API má»›i
+                .expiration(expiryDate)  // Sử dụng API mới
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -69,11 +69,11 @@ public class JwtUtil {
 
     private Claims extractAllClaims(String token) {
         try {
-            return Jwts.parser()  // Sá»­ dá»¥ng API má»›i nháº¥t quÃ¡n
+            return Jwts.parser()  // Sử dụng API mới nhất quán
                     .verifyWith(getSigningKey())
                     .build()
                     .parseSignedClaims(token)
-                    .getPayload();  // Sá»­ dá»¥ng getPayload() thay vÃ¬ getBody()
+                    .getPayload();  // Sử dụng getPayload() thay vì getBody()
         } catch (JwtException e) {
             throw new RuntimeException("Invalid JWT token", e);
         }
@@ -83,7 +83,7 @@ public class JwtUtil {
         try {
             return extractExpiration(token).before(new Date());
         } catch (Exception e) {
-            return true;  // Coi nhÆ° expired náº¿u cÃ³ lá»—i
+            return true;  // Coi như expired nếu có lỗi
         }
     }
 
@@ -97,18 +97,18 @@ public class JwtUtil {
 
     public boolean validateToken(String token) {
         try {
-            // Kiá»ƒm tra blacklist trÆ°á»›c
+            // Kiểm tra blacklist trước
             if (isTokenBlacklisted(token)) {
                 return false;
             }
 
-            // Parse vÃ  validate token
+            // Parse và validate token
             Jwts.parser()
                     .verifyWith(getSigningKey())
                     .build()
                     .parseSignedClaims(token);
 
-            // Kiá»ƒm tra expiration
+            // Kiểm tra expiration
             return !isTokenExpired(token);
 
         } catch (JwtException | IllegalArgumentException e) {
@@ -120,7 +120,7 @@ public class JwtUtil {
         return expiration;
     }
 
-    // Utility method Ä‘á»ƒ debug token
+    // Utility method để debug token
     public void printTokenClaims(String token) {
         try {
             Claims claims = extractAllClaims(token);

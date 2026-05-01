@@ -13,7 +13,7 @@ public class ChatLieuResponse {
     private String maChatLieu;
     private String tenChatLieu;
     private Integer trangThai;
-    private Date ngayTao;           // â† THÃŠM field nÃ y
-    private Date ngayCapNhat;       // â† THÃŠM field nÃ y
+    private Date ngayTao;           // ← THÊM field này
+    private Date ngayCapNhat;       // ← THÊM field này
 }
 

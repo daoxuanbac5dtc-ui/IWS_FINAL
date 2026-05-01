@@ -43,7 +43,7 @@ public class ChiTietVoucherServiceImpl implements ChiTietVoucherService {
             if (dto.getHoaDonId() != null) {
                 log.info("Finding HoaDon with ID: {}", dto.getHoaDonId());
                 HoaDon hoaDon = hoaDonRepository.findById(dto.getHoaDonId())
-                        .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n ID: " + dto.getHoaDonId()));
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn ID: " + dto.getHoaDonId()));
                 entity.setHoaDon(hoaDon);
                 log.info("HoaDon set successfully");
             }
@@ -51,12 +51,12 @@ public class ChiTietVoucherServiceImpl implements ChiTietVoucherService {
             if (dto.getVoucherId() != null) {
                 log.info("Finding Voucher with ID: {}", dto.getVoucherId());
                 Voucher voucher = voucherRepository.findById(dto.getVoucherId())
-                        .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y voucher ID: " + dto.getVoucherId()));
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy voucher ID: " + dto.getVoucherId()));
                 entity.setVoucher(voucher);
                 log.info("Voucher set successfully");
             }
 
-            // Set thá»i gian táº¡o
+            // Set thời gian tạo
             entity.setNgayTao(new Date());
 
             log.info("Saving entity: {}", entity.getMaChiTietVoucher());
@@ -67,7 +67,7 @@ public class ChiTietVoucherServiceImpl implements ChiTietVoucherService {
 
         } catch (Exception e) {
             log.error("Error creating ChiTietVoucher: ", e);
-            throw new RuntimeException("Lá»—i táº¡o chi tiáº¿t voucher: " + e.getMessage());
+            throw new RuntimeException("Lỗi tạo chi tiết voucher: " + e.getMessage());
         }
     }
 
@@ -78,13 +78,13 @@ public class ChiTietVoucherServiceImpl implements ChiTietVoucherService {
             log.info("Finding ChiTietVoucher by ID: {}", id);
 
             ChiTietVoucher entity = repository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t voucher ID: " + id));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết voucher ID: " + id));
 
             return convertToDTO(entity);
 
         } catch (Exception e) {
             log.error("Error finding ChiTietVoucher by ID {}: {}", id, e.getMessage());
-            throw new RuntimeException("Lá»—i tÃ¬m chi tiáº¿t voucher: " + e.getMessage());
+            throw new RuntimeException("Lỗi tìm chi tiết voucher: " + e.getMessage());
         }
     }
 
@@ -106,7 +106,7 @@ public class ChiTietVoucherServiceImpl implements ChiTietVoucherService {
 
         } catch (Exception e) {
             log.error("Error finding ChiTietVoucher by HoaDon {}: {}", hoaDonId, e.getMessage());
-            throw new RuntimeException("Lá»—i tÃ¬m chi tiáº¿t voucher: " + e.getMessage());
+            throw new RuntimeException("Lỗi tìm chi tiết voucher: " + e.getMessage());
         }
     }
 
@@ -122,7 +122,7 @@ public class ChiTietVoucherServiceImpl implements ChiTietVoucherService {
 
         } catch (Exception e) {
             log.error("Error finding all ChiTietVoucher: {}", e.getMessage());
-            throw new RuntimeException("Lá»—i láº¥y danh sÃ¡ch: " + e.getMessage());
+            throw new RuntimeException("Lỗi lấy danh sách: " + e.getMessage());
         }
     }
 
@@ -140,7 +140,7 @@ public class ChiTietVoucherServiceImpl implements ChiTietVoucherService {
 
         } catch (Exception e) {
             log.error("Error getting all ChiTietVoucher: {}", e.getMessage());
-            throw new RuntimeException("Lá»—i láº¥y táº¥t cáº£ chi tiáº¿t voucher: " + e.getMessage());
+            throw new RuntimeException("Lỗi lấy tất cả chi tiết voucher: " + e.getMessage());
         }
     }
 
@@ -158,7 +158,7 @@ public class ChiTietVoucherServiceImpl implements ChiTietVoucherService {
 
         } catch (Exception e) {
             log.error("Error finding ChiTietVoucher by Voucher {}: {}", voucherId, e.getMessage());
-            throw new RuntimeException("Lá»—i tÃ¬m chi tiáº¿t voucher: " + e.getMessage());
+            throw new RuntimeException("Lỗi tìm chi tiết voucher: " + e.getMessage());
         }
     }
 
@@ -169,20 +169,20 @@ public class ChiTietVoucherServiceImpl implements ChiTietVoucherService {
             log.info("Updating ChiTietVoucher ID: {}", id);
 
             ChiTietVoucher entity = repository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t voucher ID: " + id));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết voucher ID: " + id));
 
             updateEntityFromDTO(entity, dto);
 
             // Update relationships if needed
             if (dto.getHoaDonId() != null) {
                 HoaDon hoaDon = hoaDonRepository.findById(dto.getHoaDonId())
-                        .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n ID: " + dto.getHoaDonId()));
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn ID: " + dto.getHoaDonId()));
                 entity.setHoaDon(hoaDon);
             }
 
             if (dto.getVoucherId() != null) {
                 Voucher voucher = voucherRepository.findById(dto.getVoucherId())
-                        .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y voucher ID: " + dto.getVoucherId()));
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy voucher ID: " + dto.getVoucherId()));
                 entity.setVoucher(voucher);
             }
 
@@ -194,7 +194,7 @@ public class ChiTietVoucherServiceImpl implements ChiTietVoucherService {
 
         } catch (Exception e) {
             log.error("Error updating ChiTietVoucher ID {}: {}", id, e.getMessage());
-            throw new RuntimeException("Lá»—i cáº­p nháº­t chi tiáº¿t voucher: " + e.getMessage());
+            throw new RuntimeException("Lỗi cập nhật chi tiết voucher: " + e.getMessage());
         }
     }
 
@@ -212,7 +212,7 @@ public class ChiTietVoucherServiceImpl implements ChiTietVoucherService {
 
         } catch (Exception e) {
             log.error("Error searching ChiTietVoucher by MaChiTietVoucher {}: {}", keyword, e.getMessage());
-            throw new RuntimeException("Lá»—i tÃ¬m kiáº¿m chi tiáº¿t voucher: " + e.getMessage());
+            throw new RuntimeException("Lỗi tìm kiếm chi tiết voucher: " + e.getMessage());
         }
     }
 
@@ -230,7 +230,7 @@ public class ChiTietVoucherServiceImpl implements ChiTietVoucherService {
 
         } catch (Exception e) {
             log.error("Error searching ChiTietVoucher by MaVoucher {}: {}", keyword, e.getMessage());
-            throw new RuntimeException("Lá»—i tÃ¬m kiáº¿m chi tiáº¿t voucher: " + e.getMessage());
+            throw new RuntimeException("Lỗi tìm kiếm chi tiết voucher: " + e.getMessage());
         }
     }
 
@@ -248,7 +248,7 @@ public class ChiTietVoucherServiceImpl implements ChiTietVoucherService {
 
         } catch (Exception e) {
             log.error("Error searching ChiTietVoucher by TenVoucher {}: {}", keyword, e.getMessage());
-            throw new RuntimeException("Lá»—i tÃ¬m kiáº¿m chi tiáº¿t voucher: " + e.getMessage());
+            throw new RuntimeException("Lỗi tìm kiếm chi tiết voucher: " + e.getMessage());
         }
     }
 
@@ -259,7 +259,7 @@ public class ChiTietVoucherServiceImpl implements ChiTietVoucherService {
             log.info("Deleting ChiTietVoucher ID: {}", id);
 
             if (!repository.existsById(id)) {
-                throw new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t voucher ID: " + id);
+                throw new RuntimeException("Không tìm thấy chi tiết voucher ID: " + id);
             }
 
             repository.deleteById(id);
@@ -268,7 +268,7 @@ public class ChiTietVoucherServiceImpl implements ChiTietVoucherService {
 
         } catch (Exception e) {
             log.error("Error deleting ChiTietVoucher ID {}: {}", id, e.getMessage());
-            throw new RuntimeException("Lá»—i xÃ³a chi tiáº¿t voucher: " + e.getMessage());
+            throw new RuntimeException("Lỗi xóa chi tiết voucher: " + e.getMessage());
         }
     }
 

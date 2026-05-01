@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface RepoHoaDon extends JpaRepository<HoaDon, Integer> {
 
-    // TÃ¬m kiáº¿m vÃ  sáº¯p xáº¿p cÆ¡ báº£n
+    // Tìm kiếm và sắp xếp cơ bản
     @Query("SELECT h FROM HoaDon h ORDER BY h.ngayTao DESC")
     List<HoaDon> findAllOrderByNgayTaoDesc();
 
@@ -26,7 +26,7 @@ public interface RepoHoaDon extends JpaRepository<HoaDon, Integer> {
     @Query("SELECT h FROM HoaDon h WHERE h.loaiHoaDon = 'ONLINE' ORDER BY h.ngayTao DESC")
     List<HoaDon> findOnlineInvoices();
 
-    // TÃ¬m kiáº¿m vá»›i Ä‘iá»u kiá»‡n
+    // Tìm kiếm với điều kiện
     @Query("SELECT h FROM HoaDon h WHERE " +
             "(:keyword IS NULL OR :keyword = '' OR " +
             "h.maHoaDon LIKE %:keyword% OR " +
@@ -40,45 +40,142 @@ public interface RepoHoaDon extends JpaRepository<HoaDon, Integer> {
                                 @Param("trangThai") String trangThai,
                                 @Param("loaiHoaDon") String loaiHoaDon);
 
-    // Äáº¿m theo tráº¡ng thÃ¡i
+    // Đếm theo trạng thái
     Long countByTrangThaiHoaDon(String trangThai);
 
-    // âœ… QUERY AN TOÃ€N - TÃ­nh tá»•ng tiá»n theo tráº¡ng thÃ¡i
-    @Query("SELECT COALESCE(SUM(h.tongTien), 0.0) FROM HoaDon h WHERE h.trangThaiHoaDon = :status")
+    @Query(value = """
+            SELECT COUNT(*)
+            FROM hoa_don h
+            WHERE h.trang_thai_hoa_don IN ('COMPLETED', 'DA_THANH_TOAN', 'HOAN_THANH')
+               OR HEX(h.trang_thai_hoa_don) = '486FC3A06E207468C3A06E68'
+            """, nativeQuery = true)
+    Long countCompletedInvoices();
+
+    // ✅ QUERY AN TOÀN - Tính tổng tiền theo trạng thái
+    @Query(value = """
+            SELECT GREATEST(
+                COALESCE((
+                    SELECT SUM(COALESCE(h.tong_thanh_toan, h.tong_tien, 0))
+                    FROM hoa_don h
+                    WHERE h.trang_thai_hoa_don = :status
+                       OR (:status = 'COMPLETED' AND (
+                            h.trang_thai_hoa_don IN ('DA_THANH_TOAN', 'HOAN_THANH')
+                            OR HEX(h.trang_thai_hoa_don) = '486FC3A06E207468C3A06E68'
+                       ))
+                ), 0)
+                -
+                CASE WHEN :status = 'COMPLETED' THEN COALESCE((
+                    SELECT SUM(ctt.so_luong * COALESCE(hdct.gia, ctsp.gia_goc, 0))
+                    FROM chi_tiet_tra_hang ctt
+                    JOIN chi_tiet_san_pham ctsp ON ctt.id_ctsp = ctsp.id
+                    LEFT JOIN hoa_don_chi_tiet hdct ON hdct.id_hoa_don = ctt.id_hoa_don AND hdct.id_ctsp = ctt.id_ctsp
+                    WHERE ctt.trang_thai_hoa_don = 'APPROVED'
+                ), 0) ELSE 0 END,
+            0)
+            """, nativeQuery = true)
     Double sumTotalAmountByStatus(@Param("status") String status);
 
-    // âœ… QUERY AN TOÃ€N - Doanh thu theo thÃ¡ng vá»›i tham sá»‘
-    @Query("SELECT COALESCE(SUM(h.tongTien), 0.0) FROM HoaDon h WHERE " +
-            "h.trangThaiHoaDon = 'COMPLETED' AND " +
-            "FUNCTION('YEAR', h.ngayTao) = :year AND " +
-            "FUNCTION('MONTH', h.ngayTao) = :month")
+    // ✅ QUERY AN TOÀN - Doanh thu theo tháng với tham số
+    @Query(value = """
+            SELECT GREATEST(
+                COALESCE((
+                    SELECT SUM(COALESCE(h.tong_thanh_toan, h.tong_tien, 0))
+                    FROM hoa_don h
+                    WHERE (h.trang_thai_hoa_don IN ('COMPLETED', 'DA_THANH_TOAN', 'HOAN_THANH')
+                           OR HEX(h.trang_thai_hoa_don) = '486FC3A06E207468C3A06E68')
+                      AND YEAR(h.ngay_tao) = :year
+                      AND MONTH(h.ngay_tao) = :month
+                ), 0)
+                -
+                COALESCE((
+                    SELECT SUM(ctt.so_luong * COALESCE(hdct.gia, ctsp.gia_goc, 0))
+                    FROM chi_tiet_tra_hang ctt
+                    JOIN chi_tiet_san_pham ctsp ON ctt.id_ctsp = ctsp.id
+                    LEFT JOIN hoa_don_chi_tiet hdct ON hdct.id_hoa_don = ctt.id_hoa_don AND hdct.id_ctsp = ctt.id_ctsp
+                    WHERE ctt.trang_thai_hoa_don = 'APPROVED'
+                      AND YEAR(ctt.ngay_tao_tra_hang) = :year
+                      AND MONTH(ctt.ngay_tao_tra_hang) = :month
+                ), 0),
+            0)
+            """, nativeQuery = true)
     Double sumMonthlyRevenue(@Param("year") int year, @Param("month") int month);
 
-    // âœ… QUERY AN TOÃ€N - Doanh thu theo ngÃ y vá»›i tham sá»‘
-    @Query("SELECT COALESCE(SUM(h.tongTien), 0.0) FROM HoaDon h WHERE " +
-            "h.trangThaiHoaDon = 'COMPLETED' AND " +
-            "h.ngayTao >= :startOfDay AND h.ngayTao < :endOfDay")
+    // ✅ QUERY AN TOÀN - Doanh thu theo ngày với tham số
+    @Query(value = """
+            SELECT GREATEST(
+                COALESCE((
+                    SELECT SUM(COALESCE(h.tong_thanh_toan, h.tong_tien, 0))
+                    FROM hoa_don h
+                    WHERE (h.trang_thai_hoa_don IN ('COMPLETED', 'DA_THANH_TOAN', 'HOAN_THANH')
+                           OR HEX(h.trang_thai_hoa_don) = '486FC3A06E207468C3A06E68')
+                      AND h.ngay_tao >= :startOfDay AND h.ngay_tao < :endOfDay
+                ), 0)
+                -
+                COALESCE((
+                    SELECT SUM(ctt.so_luong * COALESCE(hdct.gia, ctsp.gia_goc, 0))
+                    FROM chi_tiet_tra_hang ctt
+                    JOIN chi_tiet_san_pham ctsp ON ctt.id_ctsp = ctsp.id
+                    LEFT JOIN hoa_don_chi_tiet hdct ON hdct.id_hoa_don = ctt.id_hoa_don AND hdct.id_ctsp = ctt.id_ctsp
+                    WHERE ctt.trang_thai_hoa_don = 'APPROVED'
+                      AND ctt.ngay_tao_tra_hang >= :startOfDay AND ctt.ngay_tao_tra_hang < :endOfDay
+                ), 0),
+            0)
+            """, nativeQuery = true)
     Double sumDailyRevenue(@Param("startOfDay") Date startOfDay, @Param("endOfDay") Date endOfDay);
 
-    // âœ… QUERY ÄÆ N GIáº¢N NHáº¤T - Doanh thu theo nÄƒm
-    @Query("SELECT COALESCE(SUM(h.tongTien), 0.0) FROM HoaDon h WHERE " +
-            "h.trangThaiHoaDon = 'COMPLETED' AND " +
-            "FUNCTION('YEAR', h.ngayTao) = :year")
+    // ✅ QUERY ĐƠN GIẢN NHẤT - Doanh thu theo năm
+    @Query(value = """
+            SELECT GREATEST(
+                COALESCE((
+                    SELECT SUM(COALESCE(h.tong_thanh_toan, h.tong_tien, 0))
+                    FROM hoa_don h
+                    WHERE (h.trang_thai_hoa_don IN ('COMPLETED', 'DA_THANH_TOAN', 'HOAN_THANH')
+                           OR HEX(h.trang_thai_hoa_don) = '486FC3A06E207468C3A06E68')
+                      AND YEAR(h.ngay_tao) = :year
+                ), 0)
+                -
+                COALESCE((
+                    SELECT SUM(ctt.so_luong * COALESCE(hdct.gia, ctsp.gia_goc, 0))
+                    FROM chi_tiet_tra_hang ctt
+                    JOIN chi_tiet_san_pham ctsp ON ctt.id_ctsp = ctsp.id
+                    LEFT JOIN hoa_don_chi_tiet hdct ON hdct.id_hoa_don = ctt.id_hoa_don AND hdct.id_ctsp = ctt.id_ctsp
+                    WHERE ctt.trang_thai_hoa_don = 'APPROVED'
+                      AND YEAR(ctt.ngay_tao_tra_hang) = :year
+                ), 0),
+            0)
+            """, nativeQuery = true)
     Double sumYearlyRevenue(@Param("year") int year);
 
-    // âœ… DOANH THU THEO KHOáº¢NG THá»œI GIAN - AN TOÃ€N NHáº¤T
-    @Query("SELECT COALESCE(SUM(h.tongTien), 0.0) FROM HoaDon h WHERE " +
-            "h.trangThaiHoaDon = 'COMPLETED' AND " +
-            "h.ngayTao >= :startDate AND h.ngayTao <= :endDate")
+    // ✅ DOANH THU THEO KHOẢNG THỜI GIAN - AN TOÀN NHẤT
+    @Query(value = """
+            SELECT GREATEST(
+                COALESCE((
+                    SELECT SUM(COALESCE(h.tong_thanh_toan, h.tong_tien, 0))
+                    FROM hoa_don h
+                    WHERE (h.trang_thai_hoa_don IN ('COMPLETED', 'DA_THANH_TOAN', 'HOAN_THANH')
+                           OR HEX(h.trang_thai_hoa_don) = '486FC3A06E207468C3A06E68')
+                      AND h.ngay_tao >= :startDate AND h.ngay_tao <= :endDate
+                ), 0)
+                -
+                COALESCE((
+                    SELECT SUM(ctt.so_luong * COALESCE(hdct.gia, ctsp.gia_goc, 0))
+                    FROM chi_tiet_tra_hang ctt
+                    JOIN chi_tiet_san_pham ctsp ON ctt.id_ctsp = ctsp.id
+                    LEFT JOIN hoa_don_chi_tiet hdct ON hdct.id_hoa_don = ctt.id_hoa_don AND hdct.id_ctsp = ctt.id_ctsp
+                    WHERE ctt.trang_thai_hoa_don = 'APPROVED'
+                      AND ctt.ngay_tao_tra_hang >= :startDate AND ctt.ngay_tao_tra_hang <= :endDate
+                ), 0),
+            0)
+            """, nativeQuery = true)
     Double sumRevenueByDateRange(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
     Optional<HoaDon> findByEmailAndMaHoaDon(String email, String maHoaDon);
-    // âœ… XÃ“A method sumTodayRevenue() vÃ¬ nÃ³ gÃ¢y lá»—i
-    // Method nÃ y sáº½ Ä‘Æ°á»£c thay tháº¿ báº±ng sumDailyRevenue() vá»›i startOfDay vÃ  endOfDay
+    // ✅ XÓA method sumTodayRevenue() vì nó gây lỗi
+    // Method này sẽ được thay thế bằng sumDailyRevenue() với startOfDay và endOfDay
     @Query("SELECT h FROM HoaDon h WHERE h.khachHang.id = :khachHangId ORDER BY h.ngayTao DESC")
     List<HoaDon> findByKhachHangId(@Param("khachHangId") Integer khachHangId);
 
-    // Kiá»ƒm tra guest orders
+    // Kiểm tra guest orders
     boolean existsByEmailAndKhachHangIsNull(String email);
     boolean existsBySdtAndKhachHangIsNull(String sdt);
     boolean existsByEmailAndSdtAndKhachHangIsNull(String email, String sdt);

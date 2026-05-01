@@ -6,20 +6,20 @@ import java.util.List;
 import java.util.Optional;
 
 public interface HinhAnhService {
-    // Láº¥y táº¥t cáº£ cÃ¡c hÃ¬nh áº£nh
+    // Lấy tất cả các hình ảnh
     List<HinhAnh> getAllHinhanh();
     // Detail
     Optional<HinhAnh> getHinhanhById(int id);
-    //ThÃªm
+    //Thêm
     void addHinhAnh(HinhAnh hinhAnh);
-    // Sá»­a
+    // Sửa
     void updateHinhAnh(HinhAnh hinhAnh);
-    //XÃ³a
+    //Xóa
     void deleteHinhAnh(int id);
 
     Optional<HinhAnh> findByTenHinhAnh(String tenHinhAnh);
 
-    // TÃ¬m hÃ¬nh áº£nh theo ID chi tiáº¿t sáº£n pháº©m
+    // Tìm hình ảnh theo ID chi tiết sản phẩm
 //    List<HinhAnh> findByChiTietSanPhamId(Integer chiTietSanPhamId);
 }
 

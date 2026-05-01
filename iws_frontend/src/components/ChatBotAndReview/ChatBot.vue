@@ -266,14 +266,14 @@ export default {
 
 .chatbot-container {
   position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  z-index: 1000;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 1100;
 }
 
 .chat-toggle-btn {
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: linear-gradient(135deg, #FF6452, #ff8a80);
   border: none;
@@ -314,9 +314,10 @@ export default {
 
 .chat-window {
   position: absolute;
-  bottom: 80px;
+  bottom: 72px;
   right: 0;
   width: 380px;
+  max-width: calc(100vw - 2rem);
   height: 500px;
   background: white;
   border-radius: 20px;
@@ -637,11 +638,16 @@ export default {
     bottom: 1rem;
     right: 1rem;
   }
+
+  .chat-toggle-btn {
+    width: 50px;
+    height: 50px;
+  }
   
   .chat-window {
     width: calc(100vw - 2rem);
     height: 70vh;
-    bottom: 70px;
+    bottom: 62px;
     right: 0;
   }
 }

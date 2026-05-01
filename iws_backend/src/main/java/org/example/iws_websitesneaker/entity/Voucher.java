@@ -26,10 +26,10 @@ public class Voucher {
     private String tenVoucher;
 
     @Column(name = "loai_giam_gia", nullable = false, length = 25)
-    private String loaiGiamGia; // PHAN_TRAM hoáº·c TIEN_MAT
+    private String loaiGiamGia; // PHAN_TRAM hoặc TIEN_MAT
 
     @Column(name = "trang_thai", nullable = false)
-    private Integer trangThai; // 1: Hoáº¡t Ä‘á»™ng, 0: KhÃ´ng hoáº¡t Ä‘á»™ng
+    private Integer trangThai; // 1: Hoạt động, 0: Không hoạt động
 
     @Column(name = "duong_dan_hinh_anh", length = 500)
     private String duongDanHinhAnh;
@@ -41,7 +41,7 @@ public class Voucher {
     private Double giaTriGiam;
 
     @Column(name = "gia_tri_giam_toi_thieu", nullable = false)
-    private Double giaTriGiamToiThieu; // GiÃ¡ trá»‹ Ä‘Æ¡n hÃ ng tá»‘i thiá»ƒu Ä‘á»ƒ Ã¡p dá»¥ng voucher
+    private Double giaTriGiamToiThieu; // Giá trị đơn hàng tối thiểu để áp dụng voucher
 
     @Column(name = "so_luong", nullable = false)
     private Integer soLuong;

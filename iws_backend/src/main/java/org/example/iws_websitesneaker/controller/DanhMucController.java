@@ -35,29 +35,29 @@ public class DanhMucController {
     public String addDanhMuc(@Valid @RequestBody DanhMuc danhMuc){
         danhMuc.setNgayTao(new Date());
         danhMucService.addDanhMuc(danhMuc);
-        return "ThÃªm thÃ nh cÃ´ng danh má»¥c";
+        return "Thêm thành công danh mục";
     }
-    //Update cháº¥t liá»‡u
+    //Update chất liệu
     @PutMapping("/{id}")
     public String updateDanhMuc(@PathVariable int id,@Valid @RequestBody  DanhMuc danhMuc){
         Optional<DanhMuc> optional = danhMucService.getDanhMucById(id);
         if (optional.isEmpty()) {
-            return "KhÃ´ng tÃ¬m tháº¥y danh má»¥c vá»›i ID: " + id;
+            return "Không tìm thấy danh mục với ID: " + id;
         }
         danhMuc.setId(id);
         danhMuc.setNgayCapNhat(new Date());
         danhMucService.updateDanhMuc(danhMuc);
-        return "ÄÃ£ sá»­a thÃ nh cÃ´ng danh má»¥c vá»›i id : " +id;
+        return "Đã sửa thành công danh mục với id : " +id;
     }
-    //Delete cháº¥t liá»‡u
+    //Delete chất liệu
     @DeleteMapping("/{id}")
     public String deleteChatLieu(@PathVariable int id){
         Optional<DanhMuc> optional = danhMucService.getDanhMucById(id);
         if (optional.isEmpty()) {
-            return "KhÃ´ng tÃ¬m tháº¥y danh má»¥c vá»›i ID: " + id;
+            return "Không tìm thấy danh mục với ID: " + id;
         }
         danhMucService.deleteDanhMuc(id);
-        return "ÄÃ£ xÃ³a danh má»¥c vá»›i id : " +id;
+        return "Đã xóa danh mục với id : " +id;
     }
 
 }

@@ -38,18 +38,18 @@ public class SanPhamRestController {
     public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody SanPham sanPham) {
         Optional<SanPham> optional = sanPhamService.getById(id);
         if (optional.isEmpty()) {
-            return ResponseEntity.ok("KhÃ´ng tÃ¬m tháº¥y sáº£n pháº©m vá»›i ID: " + id);
+            return ResponseEntity.ok("Không tìm thấy sản phẩm với ID: " + id);
         }
         sanPham.setId(id);
         sanPham.setNgayCapNhat(new Date());
         sanPhamService.save(sanPham);
-        return ResponseEntity.ok("KhÃ´ng tÃ¬m tháº¥y sáº£n pháº©m vá»›i ID: " + id);
+        return ResponseEntity.ok("Không tìm thấy sản phẩm với ID: " + id);
     }
     @DeleteMapping("delete/{id}")
     public ResponseEntity<?> delete(@PathVariable Integer id) {
         if (sanPhamService.getById(id).isPresent()) {
             sanPhamService.delete(id);
-            return ResponseEntity.ok().body("XoÃ¡ thÃ nh cÃ´ng!");
+            return ResponseEntity.ok().body("Xoá thành công!");
         } else {
             return ResponseEntity.notFound().build();
         }

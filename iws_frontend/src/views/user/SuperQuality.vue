@@ -720,6 +720,20 @@ const testimonials = [
     transform: translateY(-4px);
     background: linear-gradient(135deg, #FF6452, #ff8a80);
     color: white;
+    box-shadow: 0 16px 36px rgba(255, 100, 82, 0.28);
+  }
+
+  &:hover .stat-number {
+    background: none;
+    -webkit-background-clip: initial;
+    -webkit-text-fill-color: #ffffff;
+    background-clip: initial;
+    color: #ffffff;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+  }
+
+  &:hover .stat-label {
+    color: rgba(255, 255, 255, 0.92);
   }
   
   .stat-number {
@@ -1331,6 +1345,14 @@ const testimonials = [
     
     .feature-card-description {
       color: #a0aec0;
+    }
+  }
+  
+  .features-section,
+  .testimonials-section {
+    .section-title {
+      color: #f8fafc;
+      text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
     }
   }
   

@@ -27,20 +27,20 @@ public class HinhAnhServiceImpl implements HinhAnhService {
         return repoHinhAnh.findById(id);
     }
 
-    //ThÃªm
+    //Thêm
     @Override
     public void addHinhAnh(HinhAnh hinhAnh) {
         repoHinhAnh.save(hinhAnh);
     }
-    //Sá»­a
+    //Sửa
     @Override
     public void updateHinhAnh(HinhAnh hinhAnh) {
         repoHinhAnh.save(hinhAnh);
     }
-    //XÃ³a
+    //Xóa
     @Override
     public void deleteHinhAnh(int id) {
-        repoChiTietSanPham.removeHinhAnhReference(id);// XÃ³a ctsp trc
+        repoChiTietSanPham.removeHinhAnhReference(id);// Xóa ctsp trc
         repoHinhAnh.deleteById(id);
     }
 

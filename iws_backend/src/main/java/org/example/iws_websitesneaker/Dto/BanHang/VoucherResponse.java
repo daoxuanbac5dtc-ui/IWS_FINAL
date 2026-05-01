@@ -16,7 +16,7 @@ public class VoucherResponse {
     private Integer id;
     private String maVoucher;
     private String tenVoucher;
-    // KhÃ´ng cÃ³ field mÃ´ táº£ trong database
+    // Không có field mô tả trong database
     private String loaiGiamGia;
     private Integer trangThai;
     private String duongDanHinhAnh;
@@ -25,8 +25,8 @@ public class VoucherResponse {
     private BigDecimal giaTriGiam;
     private BigDecimal giaTriGiamToiThieu;
 
-    // âœ… THÃŠM: Field frontend expect
-    private BigDecimal giaTriDonHangToiThieu; // Map tá»« giaTriGiamToiThieu
+    // ✅ THÊM: Field frontend expect
+    private BigDecimal giaTriDonHangToiThieu; // Map từ giaTriGiamToiThieu
 
     private Integer soLuong;
     private Date ngayBatDau;

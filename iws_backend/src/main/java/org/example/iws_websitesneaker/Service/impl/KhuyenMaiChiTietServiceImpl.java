@@ -43,7 +43,7 @@ public class KhuyenMaiChiTietServiceImpl implements KhuyenMaiChiTietService {
             System.out.println("Loading promotion details for ID: " + khuyenMaiId);
             List<KhuyenMaiChiTiet> details = repository.findDetailsByKhuyenMaiId(khuyenMaiId);
 
-            // Force load táº¥t cáº£ lazy associations
+            // Force load tất cả lazy associations
             for (KhuyenMaiChiTiet detail : details) {
                 forceLoadPromotionDetailAssociations(detail);
             }
@@ -61,54 +61,54 @@ public class KhuyenMaiChiTietServiceImpl implements KhuyenMaiChiTietService {
     @Override
     public List<KhuyenMaiChiTiet> applyPromotionToProducts(ApplyPromotionRequest request) {
         KhuyenMai khuyenMai = khuyenMaiRepository.findById(request.getKhuyenMaiId())
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y khuyáº¿n mÃ£i vá»›i ID: " + request.getKhuyenMaiId()));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khuyến mãi với ID: " + request.getKhuyenMaiId()));
 
         List<KhuyenMaiChiTiet> results = new ArrayList<>();
 
         for (Integer chiTietSanPhamId : request.getChiTietSanPhamIds()) {
             ChiTietSanPham chiTietSanPham = chiTietSanPhamService.getById(chiTietSanPhamId);
 
-            // Kiá»ƒm tra xem sáº£n pháº©m Ä‘Ã£ cÃ³ khuyáº¿n mÃ£i active chÆ°a
+            // Kiểm tra xem sản phẩm đã có khuyến mãi active chưa
             List<KhuyenMaiChiTiet> existingPromotions =
                     repository.findActivePromotionsByProductDetail(chiTietSanPhamId);
 
             if (!existingPromotions.isEmpty()) {
-                throw new RuntimeException("Sáº£n pháº©m " + chiTietSanPham.getMaChiTiet() +
-                        " Ä‘Ã£ cÃ³ khuyáº¿n mÃ£i Ä‘ang Ã¡p dá»¥ng");
+                throw new RuntimeException("Sản phẩm " + chiTietSanPham.getMaChiTiet() +
+                        " đã có khuyến mãi đang áp dụng");
             }
 
-            // Kiá»ƒm tra xem Ä‘Ã£ tá»“n táº¡i báº£n ghi nÃ y chÆ°a
+            // Kiểm tra xem đã tồn tại bản ghi này chưa
             if (repository.findByKhuyenMaiAndChiTietSanPham(khuyenMai, chiTietSanPham).isPresent()) {
                 continue;
             }
 
-            // Xá»­ lÃ½ giÃ¡ vá»›i Double
+            // Xử lý giá với Double
             Double giaGoc = chiTietSanPham.getGiaGoc();
 
-            // Náº¿u chÆ°a cÃ³ giÃ¡ gá»‘c, láº¥y giÃ¡ bÃ¡n hiá»‡n táº¡i lÃ m giÃ¡ gá»‘c
+            // Nếu chưa có giá gốc, lấy giá bán hiện tại làm giá gốc
             if (giaGoc == null || giaGoc <= 0) {
                 giaGoc = chiTietSanPham.getGiaBan();
                 if (giaGoc == null || giaGoc <= 0) {
-                    throw new RuntimeException("Sáº£n pháº©m " + chiTietSanPham.getMaChiTiet() +
-                            " khÃ´ng cÃ³ giÃ¡ há»£p lá»‡");
+                    throw new RuntimeException("Sản phẩm " + chiTietSanPham.getMaChiTiet() +
+                            " không có giá hợp lệ");
                 }
                 chiTietSanPham.setGiaGoc(giaGoc);
             }
 
-            // TÃ­nh giÃ¡ bÃ¡n má»›i: giaBan = giaGoc * (1 - discount)
+            // Tính giá bán mới: giaBan = giaGoc * (1 - discount)
             Double discountRate = khuyenMai.getGiaTri().doubleValue() / 100.0;
             Double multiplier = 1.0 - discountRate;
             Double giaBanMoi = giaGoc * multiplier;
 
-            // LÃ m trÃ²n Ä‘áº¿n 2 chá»¯ sá»‘ tháº­p phÃ¢n
+            // Làm tròn đến 2 chữ số thập phân
             giaBanMoi = Math.round(giaBanMoi * 100.0) / 100.0;
 
-            // Cáº­p nháº­t giÃ¡ bÃ¡n
+            // Cập nhật giá bán
             chiTietSanPham.setGiaBan(giaBanMoi);
             chiTietSanPham.setNgayCapNhat(new Date());
             chiTietSanPhamRepository.save(chiTietSanPham);
 
-            // Táº¡o báº£n ghi khuyáº¿n mÃ£i chi tiáº¿t
+            // Tạo bản ghi khuyến mãi chi tiết
             KhuyenMaiChiTiet khuyenMaiChiTiet = new KhuyenMaiChiTiet();
             khuyenMaiChiTiet.setKhuyenMai(khuyenMai);
             khuyenMaiChiTiet.setChiTietSanPham(chiTietSanPham);
@@ -127,12 +127,12 @@ public class KhuyenMaiChiTietServiceImpl implements KhuyenMaiChiTietService {
     @Override
     public void removePromotionFromProduct(Integer khuyenMaiId, Integer chiTietSanPhamId) {
         KhuyenMai khuyenMai = khuyenMaiRepository.findById(khuyenMaiId)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y khuyáº¿n mÃ£i vá»›i ID: " + khuyenMaiId));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khuyến mãi với ID: " + khuyenMaiId));
         ChiTietSanPham chiTietSanPham = chiTietSanPhamService.getById(chiTietSanPhamId);
 
         repository.findByKhuyenMaiAndChiTietSanPham(khuyenMai, chiTietSanPham)
                 .ifPresent(kmct -> {
-                    // KhÃ´i phá»¥c giÃ¡ bÃ¡n vá» giÃ¡ gá»‘c
+                    // Khôi phục giá bán về giá gốc
                     if (chiTietSanPham.getGiaGoc() != null && chiTietSanPham.getGiaGoc() > 0) {
                         chiTietSanPham.setGiaBan(chiTietSanPham.getGiaGoc());
                         chiTietSanPham.setNgayCapNhat(new Date());
@@ -168,7 +168,7 @@ public class KhuyenMaiChiTietServiceImpl implements KhuyenMaiChiTietService {
     @Transactional(readOnly = true)
     public KhuyenMaiChiTiet getDetailById(Integer id) {
         KhuyenMaiChiTiet detail = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y chi tiáº¿t khuyáº¿n mÃ£i vá»›i ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết khuyến mãi với ID: " + id));
 
         // Force load associations
         forceLoadPromotionDetailAssociations(detail);
@@ -179,7 +179,7 @@ public class KhuyenMaiChiTietServiceImpl implements KhuyenMaiChiTietService {
     @Override
     public void recalculatePricesForPromotion(Integer khuyenMaiId) {
         KhuyenMai khuyenMai = khuyenMaiRepository.findById(khuyenMaiId)
-                .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y khuyáº¿n mÃ£i vá»›i ID: " + khuyenMaiId));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khuyến mãi với ID: " + khuyenMaiId));
 
         List<KhuyenMaiChiTiet> promotionDetails = repository.findByKhuyenMaiId(khuyenMaiId);
 
@@ -192,7 +192,7 @@ public class KhuyenMaiChiTietServiceImpl implements KhuyenMaiChiTietService {
                 Double multiplier = 1.0 - discountRate;
                 Double giaBanMoi = giaGoc * multiplier;
 
-                // LÃ m trÃ²n Ä‘áº¿n 2 chá»¯ sá»‘ tháº­p phÃ¢n
+                // Làm tròn đến 2 chữ số thập phân
                 giaBanMoi = Math.round(giaBanMoi * 100.0) / 100.0;
 
                 chiTietSanPham.setGiaBan(giaBanMoi);
@@ -206,45 +206,45 @@ public class KhuyenMaiChiTietServiceImpl implements KhuyenMaiChiTietService {
     }
 
     /**
-     * Force load táº¥t cáº£ lazy associations cho KhuyenMaiChiTiet
+     * Force load tất cả lazy associations cho KhuyenMaiChiTiet
      */
     private void forceLoadPromotionDetailAssociations(KhuyenMaiChiTiet detail) {
         try {
-            // Force load khuyáº¿n mÃ£i
+            // Force load khuyến mãi
             if (detail.getKhuyenMai() != null) {
                 String maKhuyenMai = detail.getKhuyenMai().getMaKhuyenMai();
                 String tenKhuyenMai = detail.getKhuyenMai().getTenKhuyenMai();
                 Float giaTri = detail.getKhuyenMai().getGiaTri();
             }
 
-            // Force load chi tiáº¿t sáº£n pháº©m vÃ  associations
+            // Force load chi tiết sản phẩm và associations
             if (detail.getChiTietSanPham() != null) {
                 ChiTietSanPham ctsp = detail.getChiTietSanPham();
                 String maChiTiet = ctsp.getMaChiTiet();
 
-                // Force load sáº£n pháº©m
+                // Force load sản phẩm
                 if (ctsp.getSanPham() != null) {
                     String tenSanPham = ctsp.getSanPham().getTenSanPham();
                     String maSanPham = ctsp.getSanPham().getMaSanPham();
 
-                    // Force load thÆ°Æ¡ng hiá»‡u
+                    // Force load thương hiệu
                     if (ctsp.getSanPham().getThuongHieu() != null) {
                         String tenThuongHieu = ctsp.getSanPham().getThuongHieu().getTenThuongHieu();
                     }
 
-                    // Force load danh má»¥c
+                    // Force load danh mục
                     if (ctsp.getSanPham().getDanhMuc() != null) {
                         String tenDanhMuc = ctsp.getSanPham().getDanhMuc().getTenDanhMuc();
                     }
                 }
 
-                // Force load mÃ u sáº¯c
+                // Force load màu sắc
                 if (ctsp.getMauSac() != null) {
                     String tenMauSac = ctsp.getMauSac().getTenMauSac();
                     String maMau = ctsp.getMauSac().getMaMauSac();
                 }
 
-                // Force load kÃ­ch cá»¡
+                // Force load kích cỡ
                 if (ctsp.getKichCo() != null) {
                     String tenKichCo = ctsp.getKichCo().getTenKichCo();
                 }
@@ -257,24 +257,24 @@ public class KhuyenMaiChiTietServiceImpl implements KhuyenMaiChiTietService {
     @Transactional
     public void resetPricesForInactivePromotion(Integer promotionId) {
         try {
-            // Láº¥y thÃ´ng tin khuyáº¿n mÃ£i
+            // Lấy thông tin khuyến mãi
             KhuyenMai khuyenMai = khuyenMaiRepository.findById(promotionId)
-                    .orElseThrow(() -> new RuntimeException("KhÃ´ng tÃ¬m tháº¥y khuyáº¿n mÃ£i"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy khuyến mãi"));
 
-            // Kiá»ƒm tra tráº¡ng thÃ¡i khuyáº¿n mÃ£i
+            // Kiểm tra trạng thái khuyến mãi
             Date now = new Date();
             boolean isActive = khuyenMai.getTrangThai() == 1 &&
                     khuyenMai.getNgayBatDau().before(now) &&
                     khuyenMai.getNgayKetThuc().after(now);
 
             if (!isActive) {
-                // Láº¥y táº¥t cáº£ sáº£n pháº©m cá»§a khuyáº¿n mÃ£i nÃ y
+                // Lấy tất cả sản phẩm của khuyến mãi này
                 List<KhuyenMaiChiTiet> details = repository.findByKhuyenMaiId(promotionId);
 
                 for (KhuyenMaiChiTiet detail : details) {
                     ChiTietSanPham chiTiet = detail.getChiTietSanPham();
                     if (chiTiet != null) {
-                        // Reset giÃ¡ bÃ¡n vá» giÃ¡ gá»‘c
+                        // Reset giá bán về giá gốc
                         chiTiet.setGiaBan(chiTiet.getGiaGoc());
                         chiTietSanPhamRepository.save(chiTiet);
                     }
@@ -284,7 +284,7 @@ public class KhuyenMaiChiTietServiceImpl implements KhuyenMaiChiTietService {
             }
         } catch (Exception e) {
             System.err.println("Error resetting prices for promotion " + promotionId + ": " + e.getMessage());
-            throw new RuntimeException("Lá»—i khi reset giÃ¡ cho khuyáº¿n mÃ£i: " + e.getMessage());
+            throw new RuntimeException("Lỗi khi reset giá cho khuyến mãi: " + e.getMessage());
         }
     }
 
@@ -292,25 +292,25 @@ public class KhuyenMaiChiTietServiceImpl implements KhuyenMaiChiTietService {
     @Transactional
     public void resetAllInactivePrices() {
         try {
-            // Láº¥y táº¥t cáº£ khuyáº¿n mÃ£i
+            // Lấy tất cả khuyến mãi
             List<KhuyenMai> allPromotions = khuyenMaiRepository.findAll();
             Date now = new Date();
             int resetCount = 0;
 
             for (KhuyenMai khuyenMai : allPromotions) {
-                // Kiá»ƒm tra tráº¡ng thÃ¡i khuyáº¿n mÃ£i
+                // Kiểm tra trạng thái khuyến mãi
                 boolean isActive = khuyenMai.getTrangThai() == 1 &&
                         khuyenMai.getNgayBatDau().before(now) &&
                         khuyenMai.getNgayKetThuc().after(now);
 
                 if (!isActive) {
-                    // Láº¥y táº¥t cáº£ sáº£n pháº©m cá»§a khuyáº¿n mÃ£i nÃ y
+                    // Lấy tất cả sản phẩm của khuyến mãi này
                     List<KhuyenMaiChiTiet> details = repository.findByKhuyenMaiId(khuyenMai.getId());
 
                     for (KhuyenMaiChiTiet detail : details) {
                         ChiTietSanPham chiTiet = detail.getChiTietSanPham();
                         if (chiTiet != null && !chiTiet.getGiaBan().equals(chiTiet.getGiaGoc())) {
-                            // Reset giÃ¡ bÃ¡n vá» giÃ¡ gá»‘c
+                            // Reset giá bán về giá gốc
                             chiTiet.setGiaBan(chiTiet.getGiaGoc());
                             chiTietSanPhamRepository.save(chiTiet);
                             resetCount++;
@@ -322,7 +322,7 @@ public class KhuyenMaiChiTietServiceImpl implements KhuyenMaiChiTietService {
             System.out.println("Reset prices for " + resetCount + " products from inactive promotions");
         } catch (Exception e) {
             System.err.println("Error resetting all inactive prices: " + e.getMessage());
-            throw new RuntimeException("Lá»—i khi reset táº¥t cáº£ giÃ¡ khÃ´ng hoáº¡t Ä‘á»™ng: " + e.getMessage());
+            throw new RuntimeException("Lỗi khi reset tất cả giá không hoạt động: " + e.getMessage());
         }
     }
 }

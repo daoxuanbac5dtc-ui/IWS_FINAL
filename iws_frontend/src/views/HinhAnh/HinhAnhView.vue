@@ -3,6 +3,7 @@ import { FilterMatchMode } from '@primevue/core/api';
 import axios from 'axios';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
+import { resolveProductImageUrl } from '@/utils/productMedia';
 
 const toast = useToast();
 const dt = ref();
@@ -30,6 +31,7 @@ const selectedFile = ref(null);
 const selectedFileName = ref('');
 const imagePreview = ref('');
 const uploading = ref(false);
+const imageUrlVersion = ref(Date.now());
 
 // CÁC REF CHO PREVIEW HÌNH ẢNH
 const imagePreviewDialog = ref(false);
@@ -40,6 +42,12 @@ const previewImagePath = ref('');
 onMounted(() => {
     fetchData();
 });
+
+function getImageUrl(imageData) {
+    const resolvedUrl = resolveProductImageUrl(imageData) || '/placeholder-shoe.png';
+    const separator = resolvedUrl.includes('?') ? '&' : '?';
+    return `${resolvedUrl}${separator}v=${imageUrlVersion.value}`;
+}
 
 // Hàm tính toán số thứ tự với pagination
 function getRowIndex(index) {
@@ -53,6 +61,7 @@ async function fetchData() {
     try {
         const res = await axios.get('http://localhost:8080/hinh-anh');
         ListHinhAnh.value = res.data;
+        imageUrlVersion.value = Date.now();
     } catch (error) {
         console.error('Error fetching data:', error);
         toast.add({
@@ -281,7 +290,7 @@ function editHinhAnh(ha) {
 
     // Hiển thị hình ảnh hiện có nếu có
     if (ha.duongDan) {
-        imagePreview.value = `http://localhost:8080${ha.duongDan}`;
+        imagePreview.value = getImageUrl(ha);
         selectedFileName.value = ha.tenHinhAnh;
     }
 
@@ -369,14 +378,14 @@ async function changeStatus(ha) {
 
 // XEM HÌNH ẢNH FULL SIZE
 function previewImage(imageData) {
-    previewImageSrc.value = `http://localhost:8080${imageData.duongDan}`;
+    previewImageSrc.value = getImageUrl(imageData);
     previewImageName.value = imageData.tenHinhAnh;
     previewImagePath.value = imageData.duongDan;
     imagePreviewDialog.value = true;
 }
 
 function handleImageError(event) {
-    event.target.src = '/images/placeholder.png';
+    event.target.src = '/placeholder-shoe.png';
     event.target.onerror = null;
 }
 
@@ -511,7 +520,7 @@ function exportCSV() {
                 <template #body="slotProps">
                     <div class="justify flex">
                         <img
-                            :src="`http://localhost:8080${slotProps.data.duongDan}`"
+                            :src="getImageUrl(slotProps.data)"
                             :alt="slotProps.data.tenHinhAnh"
                             class="h-20 w-20 cursor-pointer rounded border object-cover shadow-sm transition-transform hover:scale-105"
                             @click="previewImage(slotProps.data)"

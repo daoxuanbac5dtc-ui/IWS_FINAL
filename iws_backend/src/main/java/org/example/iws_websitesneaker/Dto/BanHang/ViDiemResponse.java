@@ -17,7 +17,7 @@ public class ViDiemResponse {
     private Date ngayTao;
     private Date ngayCapNhat;
 
-    // ThÃ´ng tin bá»• sung
+    // Thông tin bổ sung
     private Double diemKhaDung;
 }
 

@@ -12,7 +12,7 @@ import java.util.List;
 
 @Repository
 public interface RepoTaiKhoanVoucher extends JpaRepository<TaiKhoanVoucher, Integer> {
-    // XÃ³a voucher - sá»­a id voucher trong báº£ng ctsp vá» null
+    // Xóa voucher - sửa id voucher trong bảng ctsp về null
     @Modifying
     @Transactional
     @Query("UPDATE TaiKhoanVoucher tkv SET tkv.voucher = NULL WHERE tkv.voucher.id = :id")

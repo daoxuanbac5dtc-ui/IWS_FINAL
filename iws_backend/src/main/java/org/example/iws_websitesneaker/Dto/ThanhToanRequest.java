@@ -5,17 +5,17 @@ import lombok.Data;
 
 @Data
 public class ThanhToanRequest {
-    @NotBlank(message = "PhÆ°Æ¡ng thá»©c thanh toÃ¡n khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
+    @NotBlank(message = "Phương thức thanh toán không được để trống")
     private String phuongThucThanhToan; // TIEN_MAT, CHUYEN_KHOAN
 
-    private Double tienNhan; // Chá»‰ cáº§n thiáº¿t khi thanh toÃ¡n tiá»n máº·t
+    private Double tienNhan; // Chỉ cần thiết khi thanh toán tiền mặt
 
     private String ghiChu;
 
-    @NotNull(message = "KhÃ¡ch hÃ ng ID khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng")
+    @NotNull(message = "Khách hàng ID không được để trống")
     private Integer khachHangId;
 
-    private Integer voucherId; // TÃ¹y chá»n
+    private Integer voucherId; // Tùy chọn
 
-    private Integer diemSuDung; // TÃ¹y chá»n
+    private Integer diemSuDung; // Tùy chọn
 }

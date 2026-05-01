@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 public class BanHangConstants {
 
-    // Tráº¡ng thÃ¡i hÃ³a Ä‘Æ¡n
+    // Trạng thái hóa đơn
     public static final String TRANG_THAI_HOA_DON_CHO = "CHO";
     public static final String TRANG_THAI_HOA_DON_HOAN_THANH = "HOAN_THANH";
     public static final String TRANG_THAI_HOA_DON_HUY = "HUY";
@@ -12,49 +12,49 @@ public class BanHangConstants {
     public static final String TRANG_THAI_HOA_DON_DANG_GIAO = "DANG_GIAO";
     public static final String TRANG_THAI_HOA_DON_DA_GIAO = "DA_GIAO";
 
-    // Tráº¡ng thÃ¡i sáº£n pháº©m
+    // Trạng thái sản phẩm
     public static final int TRANG_THAI_ACTIVE = 1;
     public static final int TRANG_THAI_INACTIVE = 0;
 
-    // Loáº¡i hÃ³a Ä‘Æ¡n
+    // Loại hóa đơn
     public static final String LOAI_HOA_DON_OFFLINE = "OFFLINE";
     public static final String LOAI_HOA_DON_ONLINE = "ONLINE";
 
-    // Loáº¡i khuyáº¿n mÃ£i
+    // Loại khuyến mãi
     public static final String LOAI_KHUYEN_MAI_PERCENT = "PERCENT";
     public static final String LOAI_KHUYEN_MAI_FIXED = "FIXED";
 
-    // Loáº¡i voucher
+    // Loại voucher
     public static final String LOAI_VOUCHER_PERCENT = "PERCENT";
     public static final String LOAI_VOUCHER_FIXED = "FIXED";
 
-    // PhÆ°Æ¡ng thá»©c thanh toÃ¡n
+    // Phương thức thanh toán
     public static final String PHUONG_THUC_TIEN_MAT = "TIEN_MAT";
     public static final String PHUONG_THUC_CHUYEN_KHOAN = "CHUYEN_KHOAN";
     public static final String PHUONG_THUC_DIEM = "DIEM";
     public static final String PHUONG_THUC_KET_HOP = "KET_HOP";
 
-    // Vai trÃ² ngÆ°á»i dÃ¹ng
+    // Vai trò người dùng
     public static final boolean VAI_TRO_ADMIN = true;
     public static final boolean VAI_TRO_CUSTOMER = false;
 
-    // Sá»‘ lÆ°á»£ng tá»‘i Ä‘a hÃ³a Ä‘Æ¡n chá»
+    // Số lượng tối đa hóa đơn chờ
     public static final int MAX_HOA_DON_CHO = 5;
 
-    // Sá»‘ lÆ°á»£ng sáº£n pháº©m gá»£i Ã½
+    // Số lượng sản phẩm gợi ý
     public static final int SO_LUONG_SAN_PHAM_GOI_Y = 8;
 
-    // Thá»i gian háº¿t háº¡n hÃ³a Ä‘Æ¡n chá» (phÃºt)
+    // Thời gian hết hạn hóa đơn chờ (phút)
     public static final int THOI_GIAN_HET_HAN_HOA_DON_CHO = 30;
 
-    // Sá»‘ lÆ°á»£ng tá»‘i thiá»ƒu Ä‘á»ƒ cáº£nh bÃ¡o háº¿t hÃ ng
+    // Số lượng tối thiểu để cảnh báo hết hàng
     public static final int SO_LUONG_TOI_THIEU_CANH_BAO = 5;
 
-    // GiÃ¡ trá»‹ Ä‘iá»ƒm quy Ä‘á»•i
-    public static final int TY_LE_DIEM_TIEN = 1000; // 1000 VND = 1 Ä‘iá»ƒm
-    public static final int DIEM_TOI_THIEU_SU_DUNG = 100; // Tá»‘i thiá»ƒu 100 Ä‘iá»ƒm má»›i Ä‘Æ°á»£c sá»­ dá»¥ng
+    // Giá trị điểm quy đổi
+    public static final int TY_LE_DIEM_TIEN = 1000; // 1000 VND = 1 điểm
+    public static final int DIEM_TOI_THIEU_SU_DUNG = 100; // Tối thiểu 100 điểm mới được sử dụng
 
-    // Giá»›i háº¡n sáº£n pháº©m
+    // Giới hạn sản phẩm
     public static final int SO_LUONG_TOI_DA_MUA = 999;
     public static final int SO_LUONG_TOI_THIEU_MUA = 1;
 
@@ -75,11 +75,11 @@ public class BanHangConstants {
     public static final int QR_CODE_SIZE = 200;
 
     // Validation messages
-    public static final String MSG_REQUIRED = "TrÆ°á»ng nÃ y khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng";
-    public static final String MSG_EMAIL_INVALID = "Email khÃ´ng há»£p lá»‡";
-    public static final String MSG_PHONE_INVALID = "Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng há»£p lá»‡";
-    public static final String MSG_QUANTITY_INVALID = "Sá»‘ lÆ°á»£ng pháº£i lá»›n hÆ¡n 0";
-    public static final String MSG_PRICE_INVALID = "GiÃ¡ pháº£i lá»›n hÆ¡n 0";
+    public static final String MSG_REQUIRED = "Trường này không được để trống";
+    public static final String MSG_EMAIL_INVALID = "Email không hợp lệ";
+    public static final String MSG_PHONE_INVALID = "Số điện thoại không hợp lệ";
+    public static final String MSG_QUANTITY_INVALID = "Số lượng phải lớn hơn 0";
+    public static final String MSG_PRICE_INVALID = "Giá phải lớn hơn 0";
 
     // Private constructor to prevent instantiation
     private BanHangConstants() {
@@ -87,7 +87,7 @@ public class BanHangConstants {
     }
 
     /**
-     * Kiá»ƒm tra tráº¡ng thÃ¡i hÃ³a Ä‘Æ¡n cÃ³ há»£p lá»‡ khÃ´ng
+     * Kiểm tra trạng thái hóa đơn có hợp lệ không
      */
     public static boolean isValidHoaDonStatus(String trangThai) {
         return TRANG_THAI_HOA_DON_CHO.equals(trangThai) ||
@@ -99,28 +99,28 @@ public class BanHangConstants {
     }
 
     /**
-     * Kiá»ƒm tra loáº¡i khuyáº¿n mÃ£i cÃ³ há»£p lá»‡ khÃ´ng
+     * Kiểm tra loại khuyến mãi có hợp lệ không
      */
     public static boolean isValidKhuyenMaiType(String loai) {
         return LOAI_KHUYEN_MAI_PERCENT.equals(loai) || LOAI_KHUYEN_MAI_FIXED.equals(loai);
     }
 
     /**
-     * Kiá»ƒm tra loáº¡i voucher cÃ³ há»£p lá»‡ khÃ´ng
+     * Kiểm tra loại voucher có hợp lệ không
      */
     public static boolean isValidVoucherType(String loai) {
         return LOAI_VOUCHER_PERCENT.equals(loai) || LOAI_VOUCHER_FIXED.equals(loai);
     }
 
     /**
-     * Kiá»ƒm tra sá»‘ lÆ°á»£ng cÃ³ há»£p lá»‡ khÃ´ng
+     * Kiểm tra số lượng có hợp lệ không
      */
     public static boolean isValidQuantity(Integer soLuong) {
         return soLuong != null && soLuong >= SO_LUONG_TOI_THIEU_MUA && soLuong <= SO_LUONG_TOI_DA_MUA;
     }
 
     /**
-     * Kiá»ƒm tra file áº£nh cÃ³ há»£p lá»‡ khÃ´ng
+     * Kiểm tra file ảnh có hợp lệ không
      */
     public static boolean isValidImageType(String fileName) {
         if (fileName == null || fileName.isEmpty()) {
@@ -137,14 +137,14 @@ public class BanHangConstants {
     }
 
     /**
-     * Táº¡o mÃ£ QR cho sáº£n pháº©m
+     * Tạo mã QR cho sản phẩm
      */
     public static String generateQRCode(String maChiTiet) {
         return QR_PREFIX + maChiTiet + "_" + System.currentTimeMillis();
     }
 
     /**
-     * TÃ­nh Ä‘iá»ƒm tá»« tiá»n
+     * Tính điểm từ tiền
      */
     public static int tinhDiemTuTien(BigDecimal tien) {
         if (tien == null || tien.compareTo(BigDecimal.ZERO) <= 0) {
@@ -154,7 +154,7 @@ public class BanHangConstants {
     }
 
     /**
-     * TÃ­nh tiá»n tá»« Ä‘iá»ƒm
+     * Tính tiền từ điểm
      */
     public static BigDecimal tinhTienTuDiem(int diem) {
         if (diem <= 0) {
@@ -164,7 +164,7 @@ public class BanHangConstants {
     }
 
     /**
-     * Kiá»ƒm tra Ä‘iá»ƒm cÃ³ Ä‘á»§ Ä‘á»ƒ sá»­ dá»¥ng khÃ´ng
+     * Kiểm tra điểm có đủ để sử dụng không
      */
     public static boolean isDiemDuDeSuDung(int diem) {
         return diem >= DIEM_TOI_THIEU_SU_DUNG;

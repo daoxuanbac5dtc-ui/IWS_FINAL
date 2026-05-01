@@ -14,10 +14,10 @@ import java.util.Optional;
 @Repository
 public interface KhachHangBHRepository extends JpaRepository<KhachHang, Integer> {
 
-    // âœ… Äáº¿m khÃ¡ch hÃ ng má»›i trong khoáº£ng thá»i gian
+    // ✅ Đếm khách hàng mới trong khoảng thời gian
     Long countByNgayTaoBetween(Date start, Date end);
 
-    // âœ… TÃ¬m khÃ¡ch hÃ ng theo ID vá»›i fetch
+    // ✅ Tìm khách hàng theo ID với fetch
     @Query("""
         SELECT kh FROM KhachHang kh 
         LEFT JOIN FETCH kh.taiKhoan tk
@@ -26,10 +26,10 @@ public interface KhachHangBHRepository extends JpaRepository<KhachHang, Integer>
     """)
     Optional<KhachHang> findByIdWithDetails(@Param("id") Integer id);
 
-    // âœ… Láº¥y khÃ¡ch hÃ ng theo mÃ£
+    // ✅ Lấy khách hàng theo mã
     Optional<KhachHang> findByMaKhachHangAndTrangThai(String maKhachHang, Integer trangThai);
 
-    // âœ… Láº¥y khÃ¡ch hÃ ng theo SÄT
+    // ✅ Lấy khách hàng theo SĐT
     Optional<KhachHang> findBySdtAndTrangThai(String sdt, Integer trangThai);
 
     @Query("SELECT DISTINCT kh FROM KhachHang kh " +
@@ -39,7 +39,7 @@ public interface KhachHangBHRepository extends JpaRepository<KhachHang, Integer>
             "ORDER BY kh.ngayTao DESC")
     Page<KhachHang> findAllActive(Pageable pageable);
 
-    // âœ… Sá»¬A: Query tÃ¬m kiáº¿m an toÃ n vá»›i JOIN
+    // ✅ SỬA: Query tìm kiếm an toàn với JOIN
     @Query("SELECT DISTINCT kh FROM KhachHang kh " +
             "LEFT JOIN FETCH kh.taiKhoan tk " +
             "LEFT JOIN FETCH kh.viDiem vd " +
@@ -50,7 +50,7 @@ public interface KhachHangBHRepository extends JpaRepository<KhachHang, Integer>
             "ORDER BY kh.ngayTao DESC")
     Page<KhachHang> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
-    // âœ… THÃŠM: Query Ä‘Æ¡n giáº£n lÃ m fallback khi JOIN fail
+    // ✅ THÊM: Query đơn giản làm fallback khi JOIN fail
     @Query("SELECT kh FROM KhachHang kh " +
             "WHERE kh.trangThai = 1 " +
             "AND (LOWER(kh.hoTen) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
@@ -58,16 +58,16 @@ public interface KhachHangBHRepository extends JpaRepository<KhachHang, Integer>
             "ORDER BY kh.ngayTao DESC")
     Page<KhachHang> searchByKeywordSimple(@Param("keyword") String keyword, Pageable pageable);
 
-    // âœ… Sá»¬A: Kiá»ƒm tra email tá»“n táº¡i qua TaiKhoan
+    // ✅ SỬA: Kiểm tra email tồn tại qua TaiKhoan
     @Query("SELECT COUNT(kh) > 0 FROM KhachHang kh " +
             "JOIN kh.taiKhoan tk " +
             "WHERE tk.email = :email")
     boolean existsByTaiKhoanEmail(@Param("email") String email);
 
-    // CÃ¡c method khÃ¡c giá»¯ nguyÃªn
+    // Các method khác giữ nguyên
     boolean existsBySdt(String sdt);
 
-    // Method tÃ¬m kiáº¿m Ä‘Æ¡n giáº£n theo SÄT vÃ  tÃªn (khÃ´ng JOIN)
+    // Method tìm kiếm đơn giản theo SĐT và tên (không JOIN)
     @Query("SELECT kh FROM KhachHang kh " +
             "WHERE kh.trangThai = :trangThai " +
             "AND (LOWER(kh.hoTen) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
@@ -76,7 +76,7 @@ public interface KhachHangBHRepository extends JpaRepository<KhachHang, Integer>
     Page<KhachHang> findByKeywordAndTrangThai(@Param("keyword") String keyword,
                                               @Param("trangThai") Integer trangThai,
                                               Pageable pageable);
-    // âœ… THÃŠM: Method fallback Ä‘Æ¡n giáº£n
+    // ✅ THÊM: Method fallback đơn giản
     Page<KhachHang> findByTrangThai(Integer trangThai, Pageable pageable);
 
     Optional<KhachHang> findByIdAndTrangThai(Integer id, Integer trangThai);

@@ -39,7 +39,7 @@ public class KhachHangRestController {
     // ===== CRUD OPERATIONS =====
 
     /**
-     * Láº¥y danh sÃ¡ch khÃ¡ch hÃ ng vá»›i phÃ¢n trang vÃ  tÃ¬m kiáº¿m
+     * Lấy danh sách khách hàng với phân trang và tìm kiếm
      */
     @GetMapping
     @Transactional(readOnly = true)
@@ -54,14 +54,14 @@ public class KhachHangRestController {
             // Validate pagination parameters
             if (page < 0 || size <= 0 || size > 100) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Tham sá»‘ phÃ¢n trang khÃ´ng há»£p lá»‡", "INVALID_PAGINATION"));
+                        .body(createErrorResponse("Tham số phân trang không hợp lệ", "INVALID_PAGINATION"));
             }
 
             List<KhachHang> allCustomers;
             if (search != null && !search.trim().isEmpty()) {
                 allCustomers = khachHangService.searchByKeyword(search.trim());
             } else {
-                allCustomers = khachHangService.getAllWithCompleteInfo();
+                allCustomers = khachHangService.getAllKhachHang();
             }
 
             // Apply status filter
@@ -82,12 +82,12 @@ public class KhachHangRestController {
         } catch (Exception e) {
             System.err.println("Error getting customers: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi táº£i danh sÃ¡ch khÃ¡ch hÃ ng", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi tải danh sách khách hàng", "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * API riÃªng cho láº¥y táº¥t cáº£ (khÃ´ng phÃ¢n trang) - cho export
+     * API riêng cho lấy tất cả (không phân trang) - cho export
      */
     @GetMapping("/all")
     public ResponseEntity<List<KhachHangDto>> getAllKhachHangForExport() {
@@ -104,7 +104,7 @@ public class KhachHangRestController {
     }
 
     /**
-     * Láº¥y khÃ¡ch hÃ ng theo ID
+     * Lấy khách hàng theo ID
      */
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
@@ -112,26 +112,26 @@ public class KhachHangRestController {
         try {
             if (id == null || id <= 0) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("ID khÃ´ng há»£p lá»‡", "INVALID_ID"));
+                        .body(createErrorResponse("ID không hợp lệ", "INVALID_ID"));
             }
 
             Optional<KhachHang> customer = khachHangService.findByIdWithEagerLoading(id);
             if (customer.isPresent()) {
                 KhachHangDto dto = convertToDto(customer.get());
-                return ResponseEntity.ok(createSuccessResponse("Láº¥y thÃ´ng tin khÃ¡ch hÃ ng thÃ nh cÃ´ng", dto));
+                return ResponseEntity.ok(createSuccessResponse("Lấy thông tin khách hàng thành công", dto));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(createErrorResponse("KhÃ´ng tÃ¬m tháº¥y khÃ¡ch hÃ ng vá»›i ID: " + id, "NOT_FOUND"));
+                        .body(createErrorResponse("Không tìm thấy khách hàng với ID: " + id, "NOT_FOUND"));
             }
         } catch (Exception e) {
             System.err.println("Error getting customer by ID: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi táº£i thÃ´ng tin khÃ¡ch hÃ ng", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi tải thông tin khách hàng", "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * Láº¥y khÃ¡ch hÃ ng theo ID tÃ i khoáº£n
+     * Lấy khách hàng theo ID tài khoản
      */
     @GetMapping("/tai-khoan/{taiKhoanId}")
     @Transactional(readOnly = true)
@@ -139,103 +139,103 @@ public class KhachHangRestController {
         try {
             if (taiKhoanId == null || taiKhoanId <= 0) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("ID tÃ i khoáº£n khÃ´ng há»£p lá»‡", "INVALID_ACCOUNT_ID"));
+                        .body(createErrorResponse("ID tài khoản không hợp lệ", "INVALID_ACCOUNT_ID"));
             }
 
             Optional<KhachHang> customer = khachHangService.findByTaiKhoanIdOptional(taiKhoanId);
             if (customer.isPresent()) {
                 KhachHangDto dto = convertToDto(customer.get());
-                return ResponseEntity.ok(createSuccessResponse("Láº¥y thÃ´ng tin khÃ¡ch hÃ ng thÃ nh cÃ´ng", dto));
+                return ResponseEntity.ok(createSuccessResponse("Lấy thông tin khách hàng thành công", dto));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(createErrorResponse("KhÃ´ng tÃ¬m tháº¥y khÃ¡ch hÃ ng vá»›i ID tÃ i khoáº£n: " + taiKhoanId, "NOT_FOUND"));
+                        .body(createErrorResponse("Không tìm thấy khách hàng với ID tài khoản: " + taiKhoanId, "NOT_FOUND"));
             }
         } catch (Exception e) {
             System.err.println("Error getting customer by account ID: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi táº£i thÃ´ng tin khÃ¡ch hÃ ng", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi tải thông tin khách hàng", "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * Láº¥y thÃ´ng tin khÃ¡ch hÃ ng hiá»‡n táº¡i tá»« JWT token
+     * Lấy thông tin khách hàng hiện tại từ JWT token
      */
     @GetMapping("/current")
     public ResponseEntity<?> getCurrentCustomer(HttpServletRequest request) {
         try {
-            // 1. Láº¥y JWT token tá»« header
+            // 1. Lấy JWT token từ header
             String token = extractTokenFromRequest(request);
             if (token == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(createErrorResponse("Token khÃ´ng tá»“n táº¡i", "TOKEN_MISSING"));
+                        .body(createErrorResponse("Token không tồn tại", "TOKEN_MISSING"));
             }
 
-            // 2. Decode JWT Ä‘á»ƒ láº¥y email tá»« token
+            // 2. Decode JWT để lấy email từ token
             String email = jwtUtils.extractEmail(token);
             if (email == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(createErrorResponse("Token khÃ´ng há»£p lá»‡", "INVALID_TOKEN"));
+                        .body(createErrorResponse("Token không hợp lệ", "INVALID_TOKEN"));
             }
 
-            // 3. TÃ¬m tÃ i khoáº£n theo email
+            // 3. Tìm tài khoản theo email
             Optional<TaiKhoan> taiKhoanOpt = taiKhoanService.findByEmail(email);
             if (taiKhoanOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(createErrorResponse("KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n", "ACCOUNT_NOT_FOUND"));
+                        .body(createErrorResponse("Không tìm thấy tài khoản", "ACCOUNT_NOT_FOUND"));
             }
 
-            // 4. TÃ¬m khÃ¡ch hÃ ng theo tÃ i khoáº£n
+            // 4. Tìm khách hàng theo tài khoản
             Optional<KhachHang> khachHangOpt = khachHangService.findByTaiKhoanIdOptional(taiKhoanOpt.get().getId());
 
             if (khachHangOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(createErrorResponse("KhÃ´ng tÃ¬m tháº¥y thÃ´ng tin khÃ¡ch hÃ ng", "CUSTOMER_NOT_FOUND"));
+                        .body(createErrorResponse("Không tìm thấy thông tin khách hàng", "CUSTOMER_NOT_FOUND"));
             }
 
-            // 5. Convert sang DTO vÃ  tráº£ vá»
+            // 5. Convert sang DTO và trả về
             KhachHangDto customerDto = convertToDto(khachHangOpt.get());
 
-            return ResponseEntity.ok(createSuccessResponse("Láº¥y thÃ´ng tin khÃ¡ch hÃ ng thÃ nh cÃ´ng", customerDto));
+            return ResponseEntity.ok(createSuccessResponse("Lấy thông tin khách hàng thành công", customerDto));
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i server: " + e.getMessage(), "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi server: " + e.getMessage(), "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * ThÃªm khÃ¡ch hÃ ng má»›i (chá»‰ tá»« admin)
+     * Thêm khách hàng mới (chỉ từ admin)
      */
     @PostMapping
     public ResponseEntity<?> createKhachHang(@RequestBody @Validated KhachHangDto dto) {
         try {
-            // Validate dá»¯ liá»‡u
+            // Validate dữ liệu
             Map<String, String> errors = validateKhachHangDto(dto);
             if (!errors.isEmpty()) {
-                return ResponseEntity.badRequest().body(createErrorResponse("Dá»¯ liá»‡u khÃ´ng há»£p lá»‡", "VALIDATION_ERROR", errors));
+                return ResponseEntity.badRequest().body(createErrorResponse("Dữ liệu không hợp lệ", "VALIDATION_ERROR", errors));
             }
 
-            // Kiá»ƒm tra tÃ i khoáº£n tá»“n táº¡i
+            // Kiểm tra tài khoản tồn tại
             if (dto.getIdTaiKhoan() != null) {
                 Optional<TaiKhoan> taiKhoan = taiKhoanService.findById(dto.getIdTaiKhoan());
                 if (taiKhoan.isEmpty()) {
                     return ResponseEntity.badRequest()
-                            .body(createErrorResponse("KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n vá»›i ID: " + dto.getIdTaiKhoan(), "ACCOUNT_NOT_FOUND"));
+                            .body(createErrorResponse("Không tìm thấy tài khoản với ID: " + dto.getIdTaiKhoan(), "ACCOUNT_NOT_FOUND"));
                 }
 
-                // Kiá»ƒm tra tÃ i khoáº£n Ä‘Ã£ cÃ³ khÃ¡ch hÃ ng chÆ°a
+                // Kiểm tra tài khoản đã có khách hàng chưa
                 Optional<KhachHang> existingKH = khachHangService.findByTaiKhoanIdOptional(dto.getIdTaiKhoan());
                 if (existingKH.isPresent()) {
                     return ResponseEntity.badRequest()
-                            .body(createErrorResponse("TÃ i khoáº£n nÃ y Ä‘Ã£ Ä‘Æ°á»£c liÃªn káº¿t vá»›i khÃ¡ch hÃ ng khÃ¡c", "ACCOUNT_LINKED"));
+                            .body(createErrorResponse("Tài khoản này đã được liên kết với khách hàng khác", "ACCOUNT_LINKED"));
                 }
             }
 
-            // Kiá»ƒm tra sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ tá»“n táº¡i
+            // Kiểm tra số điện thoại đã tồn tại
             if (khachHangService.existsBySdt(dto.getSdt())) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng", "PHONE_EXISTS"));
+                        .body(createErrorResponse("Số điện thoại đã được sử dụng", "PHONE_EXISTS"));
             }
 
             KhachHang entity = convertToEntity(dto);
@@ -244,20 +244,20 @@ public class KhachHangRestController {
 
             khachHangService.addKhachHang(entity);
 
-            // Láº¥y láº¡i entity vá»«a táº¡o Ä‘á»ƒ tráº£ vá»
+            // Lấy lại entity vừa tạo để trả về
             Optional<KhachHang> savedOpt = khachHangService.getKhachHangById(entity.getId());
             KhachHangDto savedDto = savedOpt.map(this::convertToDto).orElse(convertToDto(entity));
 
-            return ResponseEntity.ok(createSuccessResponse("ThÃªm khÃ¡ch hÃ ng thÃ nh cÃ´ng!", savedDto));
+            return ResponseEntity.ok(createSuccessResponse("Thêm khách hàng thành công!", savedDto));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi thÃªm khÃ¡ch hÃ ng: " + e.getMessage(), "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi thêm khách hàng: " + e.getMessage(), "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * Cáº­p nháº­t thÃ´ng tin khÃ¡ch hÃ ng
+     * Cập nhật thông tin khách hàng
      */
     @PutMapping("/{id}")
     @Transactional
@@ -266,21 +266,21 @@ public class KhachHangRestController {
             // Validate ID
             if (id == null || id <= 0) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("ID khÃ´ng há»£p lá»‡", "INVALID_ID"));
+                        .body(createErrorResponse("ID không hợp lệ", "INVALID_ID"));
             }
 
             // Check if customer exists
             Optional<KhachHang> existingOpt = khachHangService.getKhachHangById(id);
             if (existingOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(createErrorResponse("KhÃ´ng tÃ¬m tháº¥y khÃ¡ch hÃ ng vá»›i ID: " + id, "NOT_FOUND"));
+                        .body(createErrorResponse("Không tìm thấy khách hàng với ID: " + id, "NOT_FOUND"));
             }
 
             // Validate DTO
             Map<String, String> validationErrors = validateCustomerDto(dto, id);
             if (!validationErrors.isEmpty()) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Dá»¯ liá»‡u khÃ´ng há»£p lá»‡", "VALIDATION_ERROR", validationErrors));
+                        .body(createErrorResponse("Dữ liệu không hợp lệ", "VALIDATION_ERROR", validationErrors));
             }
 
             KhachHang existing = existingOpt.get();
@@ -289,7 +289,7 @@ public class KhachHangRestController {
             if (dto.getSdt() != null && !dto.getSdt().equals(existing.getSdt())) {
                 if (khachHangService.isPhoneNumberUsed(dto.getSdt(), id)) {
                     return ResponseEntity.status(HttpStatus.CONFLICT)
-                            .body(createErrorResponse("Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng", "PHONE_EXISTS"));
+                            .body(createErrorResponse("Số điện thoại đã được sử dụng", "PHONE_EXISTS"));
                 }
             }
 
@@ -313,17 +313,17 @@ public class KhachHangRestController {
             Optional<KhachHang> updatedOpt = khachHangService.findByIdWithEagerLoading(id);
             KhachHangDto updatedDto = updatedOpt.map(this::convertToDto).orElse(null);
 
-            return ResponseEntity.ok(createSuccessResponse("Cáº­p nháº­t khÃ¡ch hÃ ng thÃ nh cÃ´ng", updatedDto));
+            return ResponseEntity.ok(createSuccessResponse("Cập nhật khách hàng thành công", updatedDto));
 
         } catch (Exception e) {
             System.err.println("Error updating customer: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi cáº­p nháº­t khÃ¡ch hÃ ng", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi cập nhật khách hàng", "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * HoÃ n thiá»‡n profile khÃ¡ch hÃ ng
+     * Hoàn thiện profile khách hàng
      */
     @PatchMapping("/{id}/complete-profile")
     @Transactional
@@ -331,21 +331,21 @@ public class KhachHangRestController {
         try {
             if (id == null || id <= 0) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("ID khÃ´ng há»£p lá»‡", "INVALID_ID"));
+                        .body(createErrorResponse("ID không hợp lệ", "INVALID_ID"));
             }
 
             // Validate profile completion data
             List<String> validationErrors = profileData.getProfileCompletionErrors();
             if (!validationErrors.isEmpty()) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Dá»¯ liá»‡u profile khÃ´ng há»£p lá»‡", "VALIDATION_ERROR",
+                        .body(createErrorResponse("Dữ liệu profile không hợp lệ", "VALIDATION_ERROR",
                                 Map.of("errors", validationErrors)));
             }
 
             KhachHang completedCustomer = khachHangService.completeProfile(id, profileData);
             KhachHangDto dto = convertToDto(completedCustomer);
 
-            return ResponseEntity.ok(createSuccessResponse("HoÃ n thiá»‡n profile thÃ nh cÃ´ng", dto));
+            return ResponseEntity.ok(createSuccessResponse("Hoàn thiện profile thành công", dto));
 
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
@@ -353,12 +353,12 @@ public class KhachHangRestController {
         } catch (Exception e) {
             System.err.println("Error completing profile: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi hoÃ n thiá»‡n profile", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi hoàn thiện profile", "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * XÃ³a khÃ¡ch hÃ ng (soft delete)
+     * Xóa khách hàng (soft delete)
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteKhachHang(@PathVariable Integer id) {
@@ -366,33 +366,33 @@ public class KhachHangRestController {
             Optional<KhachHang> optional = khachHangService.getKhachHangById(id);
             if (optional.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(createErrorResponse("KhÃ´ng tÃ¬m tháº¥y khÃ¡ch hÃ ng vá»›i ID: " + id, "NOT_FOUND"));
+                        .body(createErrorResponse("Không tìm thấy khách hàng với ID: " + id, "NOT_FOUND"));
             }
 
-            // Kiá»ƒm tra xem cÃ³ thá»ƒ xÃ³a khÃ´ng
+            // Kiểm tra xem có thể xóa không
             if (!khachHangService.canDeleteKhachHang(id)) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("KhÃ´ng thá»ƒ xÃ³a khÃ¡ch hÃ ng nÃ y do cÃ²n dá»¯ liá»‡u liÃªn quan", "CANNOT_DELETE"));
+                        .body(createErrorResponse("Không thể xóa khách hàng này do còn dữ liệu liên quan", "CANNOT_DELETE"));
             }
 
             khachHangService.deleteKhachHang(id);
-            return ResponseEntity.ok(createSuccessResponse("ÄÃ£ xÃ³a khÃ¡ch hÃ ng vá»›i id: " + id, null));
+            return ResponseEntity.ok(createSuccessResponse("Đã xóa khách hàng với id: " + id, null));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi xÃ³a khÃ¡ch hÃ ng: " + e.getMessage(), "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi xóa khách hàng: " + e.getMessage(), "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * XÃ³a nhiá»u khÃ¡ch hÃ ng
+     * Xóa nhiều khách hàng
      */
     @DeleteMapping("/batch")
     public ResponseEntity<?> deleteMultipleKhachHang(@RequestBody List<Integer> ids) {
         try {
             if (ids == null || ids.isEmpty()) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Danh sÃ¡ch ID khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng", "EMPTY_ID_LIST"));
+                        .body(createErrorResponse("Danh sách ID không được để trống", "EMPTY_ID_LIST"));
             }
 
             List<Integer> deletedIds = new ArrayList<>();
@@ -406,13 +406,13 @@ public class KhachHangRestController {
                             khachHangService.deleteKhachHang(id);
                             deletedIds.add(id);
                         } else {
-                            errors.add("KhÃ´ng thá»ƒ xÃ³a khÃ¡ch hÃ ng ID " + id + " do cÃ²n dá»¯ liá»‡u liÃªn quan");
+                            errors.add("Không thể xóa khách hàng ID " + id + " do còn dữ liệu liên quan");
                         }
                     } else {
-                        errors.add("KhÃ´ng tÃ¬m tháº¥y khÃ¡ch hÃ ng vá»›i ID: " + id);
+                        errors.add("Không tìm thấy khách hàng với ID: " + id);
                     }
                 } catch (Exception e) {
-                    errors.add("Lá»—i khi xÃ³a khÃ¡ch hÃ ng ID " + id + ": " + e.getMessage());
+                    errors.add("Lỗi khi xóa khách hàng ID " + id + ": " + e.getMessage());
                 }
             }
 
@@ -423,63 +423,75 @@ public class KhachHangRestController {
                 response.put("errors", errors);
             }
 
-            return ResponseEntity.ok(createSuccessResponse("XÃ³a khÃ¡ch hÃ ng hoÃ n táº¥t", response));
+            return ResponseEntity.ok(createSuccessResponse("Xóa khách hàng hoàn tất", response));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi xÃ³a khÃ¡ch hÃ ng: " + e.getMessage(), "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi xóa khách hàng: " + e.getMessage(), "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * Thay Ä‘á»•i tráº¡ng thÃ¡i khÃ¡ch hÃ ng
+     * Thay đổi trạng thái khách hàng
      */
     @PatchMapping("/{id}/status")
+    @Transactional
     public ResponseEntity<?> changeStatus(@PathVariable Integer id, @RequestBody Map<String, Integer> request) {
         try {
             if (id == null || id <= 0) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("ID khÃ´ng há»£p lá»‡", "INVALID_ID"));
+                        .body(createErrorResponse("ID không hợp lệ", "INVALID_ID"));
             }
 
             Integer newStatus = request.get("trangThai");
             if (newStatus == null || (newStatus != 0 && newStatus != 1)) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Tráº¡ng thÃ¡i khÃ´ng há»£p lá»‡ (0 hoáº·c 1)", "INVALID_STATUS"));
+                        .body(createErrorResponse("Trạng thái không hợp lệ (0 hoặc 1)", "INVALID_STATUS"));
             }
 
             Optional<KhachHang> customerOpt = khachHangService.getKhachHangById(id);
             if (customerOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(createErrorResponse("KhÃ´ng tÃ¬m tháº¥y khÃ¡ch hÃ ng", "NOT_FOUND"));
+                        .body(createErrorResponse("Không tìm thấy khách hàng", "NOT_FOUND"));
             }
 
             KhachHang customer = customerOpt.get();
-            if (customer.getTrangThai().equals(newStatus)) {
-                return ResponseEntity.badRequest()
-                        .body(createErrorResponse("KhÃ¡ch hÃ ng Ä‘Ã£ á»Ÿ tráº¡ng thÃ¡i nÃ y", "SAME_STATUS"));
+            if (Objects.equals(customer.getTrangThai(), newStatus)) {
+                syncLinkedAccountStatus(customer, newStatus);
+                KhachHangDto sameStatusDto = customerOpt.map(this::convertToDto).orElse(null);
+                return ResponseEntity.ok(createSuccessResponse("Trạng thái khách hàng đã được đồng bộ", sameStatusDto));
             }
 
             khachHangService.updateStatus(id, newStatus);
+            syncLinkedAccountStatus(customer, newStatus);
 
-            // Get updated data
-            Optional<KhachHang> updatedOpt = khachHangService.findByIdWithEagerLoading(id);
+            Optional<KhachHang> updatedOpt = khachHangService.getKhachHangById(id);
             KhachHangDto updatedDto = updatedOpt.map(this::convertToDto).orElse(null);
 
-            String statusText = newStatus == 1 ? "kÃ­ch hoáº¡t" : "vÃ´ hiá»‡u hÃ³a";
-            return ResponseEntity.ok(createSuccessResponse("ÄÃ£ " + statusText + " khÃ¡ch hÃ ng thÃ nh cÃ´ng", updatedDto));
+            String statusText = newStatus == 1 ? "kích hoạt" : "vô hiệu hóa";
+            return ResponseEntity.ok(createSuccessResponse("Đã " + statusText + " khách hàng thành công", updatedDto));
 
         } catch (Exception e) {
             System.err.println("Error changing status: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi thay Ä‘á»•i tráº¡ng thÃ¡i", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi thay đổi trạng thái", "INTERNAL_ERROR"));
         }
     }
 
-    // ===== SEARCH OPERATIONS =====
+    private void syncLinkedAccountStatus(KhachHang customer, Integer newStatus) {
+        if (customer == null || customer.getTaiKhoan() == null || newStatus == null) {
+            return;
+        }
+
+        TaiKhoan linkedAccount = customer.getTaiKhoan();
+        if (!Objects.equals(linkedAccount.getTrangThai(), newStatus)) {
+            linkedAccount.setTrangThai(newStatus);
+            taiKhoanService.save(linkedAccount);
+        }
+    }    // ===== SEARCH OPERATIONS =====
 
     /**
-     * TÃ¬m kiáº¿m nÃ¢ng cao khÃ¡ch hÃ ng
+     * Tìm kiếm nâng cao khách hàng
      */
     @GetMapping("/search")
     @Transactional(readOnly = true)
@@ -500,7 +512,7 @@ public class KhachHangRestController {
             // Validate search parameters
             if (!khachHangService.isValidKhachHangSearchParams(hoTen, email, sdt)) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Tham sá»‘ tÃ¬m kiáº¿m khÃ´ng há»£p lá»‡", "INVALID_SEARCH_PARAMS"));
+                        .body(createErrorResponse("Tham số tìm kiếm không hợp lệ", "INVALID_SEARCH_PARAMS"));
             }
 
             List<KhachHang> results;
@@ -525,29 +537,29 @@ public class KhachHangRestController {
         } catch (Exception e) {
             System.err.println("Error searching customers: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi tÃ¬m kiáº¿m khÃ¡ch hÃ ng", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi tìm kiếm khách hàng", "INTERNAL_ERROR"));
         }
     }
 
     // ===== STATISTICS =====
 
     /**
-     * Láº¥y thá»‘ng kÃª khÃ¡ch hÃ ng
+     * Lấy thống kê khách hàng
      */
     @GetMapping("/statistics")
     public ResponseEntity<?> getStatistics() {
         try {
             Map<String, Object> stats = khachHangService.getStatistics();
-            return ResponseEntity.ok(createSuccessResponse("Láº¥y thá»‘ng kÃª thÃ nh cÃ´ng", stats));
+            return ResponseEntity.ok(createSuccessResponse("Lấy thống kê thành công", stats));
         } catch (Exception e) {
             System.err.println("Error getting statistics: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi láº¥y thá»‘ng kÃª", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi lấy thống kê", "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * Láº¥y khÃ¡ch hÃ ng active
+     * Lấy khách hàng active
      */
     @GetMapping("/active")
     public ResponseEntity<?> getActiveCustomers() {
@@ -557,23 +569,23 @@ public class KhachHangRestController {
                     .map(this::convertToDto)
                     .collect(Collectors.toList());
 
-            return ResponseEntity.ok(createSuccessResponse("Láº¥y khÃ¡ch hÃ ng hoáº¡t Ä‘á»™ng thÃ nh cÃ´ng", dtoList));
+            return ResponseEntity.ok(createSuccessResponse("Lấy khách hàng hoạt động thành công", dtoList));
         } catch (Exception e) {
             System.err.println("Error getting active customers: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi láº¥y khÃ¡ch hÃ ng hoáº¡t Ä‘á»™ng", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi lấy khách hàng hoạt động", "INTERNAL_ERROR"));
         }
     }
 
     /**
-     * Láº¥y khÃ¡ch hÃ ng má»›i gáº§n Ä‘Ã¢y
+     * Lấy khách hàng mới gần đây
      */
     @GetMapping("/recent")
     public ResponseEntity<?> getRecentCustomers(@RequestParam(defaultValue = "7") int days) {
         try {
             if (days <= 0 || days > 365) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Sá»‘ ngÃ y pháº£i trong khoáº£ng 1-365", "INVALID_DAYS"));
+                        .body(createErrorResponse("Số ngày phải trong khoảng 1-365", "INVALID_DAYS"));
             }
 
             Date startDate = new Date(System.currentTimeMillis() - (days * 24 * 60 * 60 * 1000L));
@@ -584,11 +596,11 @@ public class KhachHangRestController {
                     .map(this::convertToDto)
                     .collect(Collectors.toList());
 
-            return ResponseEntity.ok(createSuccessResponse("Láº¥y khÃ¡ch hÃ ng má»›i thÃ nh cÃ´ng", dtoList));
+            return ResponseEntity.ok(createSuccessResponse("Lấy khách hàng mới thành công", dtoList));
         } catch (Exception e) {
             System.err.println("Error getting recent customers: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Lá»—i khi láº¥y khÃ¡ch hÃ ng má»›i", "INTERNAL_ERROR"));
+                    .body(createErrorResponse("Lỗi khi lấy khách hàng mới", "INTERNAL_ERROR"));
         }
     }
 
@@ -606,17 +618,17 @@ public class KhachHangRestController {
         Map<String, String> errors = new HashMap<>();
 
         if (dto.getHoTen() == null || dto.getHoTen().trim().isEmpty()) {
-            errors.put("hoTen", "Há» tÃªn khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            errors.put("hoTen", "Họ tên không được để trống");
         }
 
         if (dto.getSdt() == null || dto.getSdt().trim().isEmpty()) {
-            errors.put("sdt", "Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+            errors.put("sdt", "Số điện thoại không được để trống");
         } else if (!dto.getSdt().matches("^[0-9]{10}$")) {
-            errors.put("sdt", "Sá»‘ Ä‘iá»‡n thoáº¡i pháº£i cÃ³ 10 chá»¯ sá»‘");
+            errors.put("sdt", "Số điện thoại phải có 10 chữ số");
         }
 
         if (dto.getTrangThai() == null || (dto.getTrangThai() != 0 && dto.getTrangThai() != 1)) {
-            errors.put("trangThai", "Tráº¡ng thÃ¡i khÃ´ng há»£p lá»‡");
+            errors.put("trangThai", "Trạng thái không hợp lệ");
         }
 
         return errors;
@@ -627,27 +639,27 @@ public class KhachHangRestController {
 
         if (dto.getHoTen() != null && !dto.getHoTen().trim().isEmpty()) {
             if (dto.getHoTen().length() > 225) {
-                errors.put("hoTen", "Há» tÃªn khÃ´ng Ä‘Æ°á»£c quÃ¡ 225 kÃ½ tá»±");
+                errors.put("hoTen", "Họ tên không được quá 225 ký tự");
             } else if (!isValidName(dto.getHoTen())) {
-                errors.put("hoTen", "Há» tÃªn chá»‰ chá»©a chá»¯ cÃ¡i vÃ  khoáº£ng tráº¯ng");
+                errors.put("hoTen", "Họ tên chỉ chứa chữ cái và khoảng trắng");
             }
         }
 
         if (dto.getSdt() != null && !dto.getSdt().trim().isEmpty()) {
             if (!isValidPhoneNumber(dto.getSdt())) {
-                errors.put("sdt", "Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng Ä‘Ãºng Ä‘á»‹nh dáº¡ng (10-11 sá»‘, báº¯t Ä‘áº§u báº±ng 0)");
+                errors.put("sdt", "Số điện thoại không đúng định dạng (10-11 số, bắt đầu bằng 0)");
             }
         }
 
         if (dto.getTrangThai() != null && dto.getTrangThai() != 0 && dto.getTrangThai() != 1) {
-            errors.put("trangThai", "Tráº¡ng thÃ¡i pháº£i lÃ  0 hoáº·c 1");
+            errors.put("trangThai", "Trạng thái phải là 0 hoặc 1");
         }
 
         return errors;
     }
 
     private boolean isValidName(String name) {
-        return name != null && name.matches("^[a-zA-ZÃ€ÃÃ‚ÃƒÃˆÃ‰ÃŠÃŒÃÃ’Ã“Ã”Ã•Ã™ÃšÄ‚ÄÄ¨Å¨Æ Ã Ã¡Ã¢Ã£Ã¨Ã©ÃªÃ¬Ã­Ã²Ã³Ã´ÃµÃ¹ÃºÄƒÄ‘Ä©Å©Æ¡Æ¯Ä‚áº áº¢áº¤áº¦áº¨áºªáº¬áº®áº°áº²áº´áº¶áº¸áººáº¼á»€á»€á»‚Æ°Äƒáº¡áº£áº¥áº§áº©áº«áº­áº¯áº±áº³áºµáº·áº¹áº»áº½á»áº¿á»ƒá»„á»†á»ˆá»Šá»Œá»Žá»á»’á»”á»–á»˜á»šá»œá»žá» á»¢á»¤á»¦á»¨á»ªá»…á»‡á»‰á»‹á»á»á»‘á»“á»•á»—á»™á»›á»á»Ÿá»¡á»£á»¥á»§á»©á»«á»¬á»®á»°á»²á»´Ãá»¶á»¸á»­á»¯á»±á»³á»µÃ½á»·á»¹\\s]+$");
+        return name != null && name.matches("^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềếểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵýỷỹ\\s]+$");
     }
 
     private boolean isValidPhoneNumber(String phone) {
@@ -655,7 +667,7 @@ public class KhachHangRestController {
     }
 
     private void updateRelationships(KhachHang existing, KhachHangDto dto) {
-        // Cáº­p nháº­t tÃ i khoáº£n
+        // Cập nhật tài khoản
         if (dto.getIdTaiKhoan() != null) {
             if (existing.getTaiKhoan() == null || !dto.getIdTaiKhoan().equals(existing.getTaiKhoan().getId())) {
                 Optional<TaiKhoan> taiKhoanOpt = taiKhoanService.findById(dto.getIdTaiKhoan());
@@ -663,7 +675,7 @@ public class KhachHangRestController {
             }
         }
 
-        // Cáº­p nháº­t vÃ­ Ä‘iá»ƒm
+        // Cập nhật ví điểm
         if (dto.getIdViDiem() != null) {
             if (existing.getViDiem() == null || !dto.getIdViDiem().equals(existing.getViDiem().getId())) {
                 ViDiem viDiem = new ViDiem();
@@ -763,17 +775,17 @@ public class KhachHangRestController {
             dto.setNgayTao(entity.getNgayTao());
             dto.setNgayCapNhat(entity.getNgayCapNhat());
 
-            // Láº¥y email tá»« tÃ i khoáº£n
+            // Lấy email từ tài khoản
             if (entity.getTaiKhoan() != null) {
                 dto.setEmail(entity.getTaiKhoan().getEmail());
                 dto.setIdTaiKhoan(entity.getTaiKhoan().getId());
 
                 try {
-                    // Láº¥y danh sÃ¡ch Ä‘á»‹a chá»‰ tá»« tÃ i khoáº£n
+                    // Lấy danh sách địa chỉ từ tài khoản
                     List<DiaChi> diaChiList = diaChiService.findByTaiKhoanId(entity.getTaiKhoan().getId());
 
                     if (diaChiList != null && !diaChiList.isEmpty()) {
-                        // Convert Ä‘á»‹a chá»‰ sang DTO
+                        // Convert địa chỉ sang DTO
                         List<KhachHangDto.DiaChiInfo> diaChiInfoList = diaChiList.stream()
                                 .filter(Objects::nonNull)
                                 .map(this::convertDiaChiToInfo)
@@ -781,7 +793,7 @@ public class KhachHangRestController {
                                 .collect(Collectors.toList());
                         dto.setDanhSachDiaChi(diaChiInfoList);
 
-                        // TÃ¬m Ä‘á»‹a chá»‰ máº·c Ä‘á»‹nh
+                        // Tìm địa chỉ mặc định
                         KhachHangDto.DiaChiInfo defaultAddress = diaChiInfoList.stream()
                                 .filter(dc -> dc.getIsDefault() != null && dc.getIsDefault())
                                 .findFirst()
@@ -831,7 +843,7 @@ public class KhachHangRestController {
             info.setIsDefault(diaChi.getIsDefault());
             info.setTrangThai(diaChi.getTrangThai());
 
-            // GhÃ©p Ä‘á»‹a chá»‰ Ä‘áº§y Ä‘á»§ (2-level addressing - bá» quáº­n/huyá»‡n)
+            // Ghép địa chỉ đầy đủ (2-level addressing - bỏ quận/huyện)
             List<String> parts = new ArrayList<>();
             if (diaChi.getDiaChiChiTiet() != null && !diaChi.getDiaChiChiTiet().trim().isEmpty()) {
                 parts.add(diaChi.getDiaChiChiTiet().trim());
@@ -843,7 +855,7 @@ public class KhachHangRestController {
                 parts.add(diaChi.getTenTinh().trim());
             }
 
-            String diaChiDayDu = parts.isEmpty() ? "ChÆ°a cÃ³ Ä‘á»‹a chá»‰" : String.join(", ", parts);
+            String diaChiDayDu = parts.isEmpty() ? "Chưa có địa chỉ" : String.join(", ", parts);
             info.setDiaChiDayDu(diaChiDayDu);
 
             return info;
@@ -881,7 +893,7 @@ public class KhachHangRestController {
             return entity;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("Lá»—i khi convert DTO to entity: " + e.getMessage());
+            throw new RuntimeException("Lỗi khi convert DTO to entity: " + e.getMessage());
         }
     }
 

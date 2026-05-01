@@ -20,9 +20,17 @@ const fetchData = async () => {
       // Chuẩn hóa trạng thái về tiếng Việt
       let normalizedStatus;
       const status = item.status.toLowerCase().trim();
+      const statusKey = status
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\u0111/g, "d")
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "");
       
-      switch (status) {
+      switch (statusKey) {
         case "completed":
+        case "da_thanh_toan":
+        case "hoan_thanh":
         case "hoàn thành":
         case "hoan thanh":
         case "complete":
@@ -30,6 +38,8 @@ const fetchData = async () => {
           break;
           
         case "shipping":
+        case "dang_giao":
+        case "dang_giao_hang":
         case "đang giao":
         case "dang giao":
         case "đang giao hàng":
@@ -38,6 +48,8 @@ const fetchData = async () => {
           break;
           
         case "confirmed":
+        case "da_xac_nhan":
+        case "xac_nhan":
         case "đã xác nhận":
         case "da xac nhan":
         case "xác nhận":
@@ -47,6 +59,8 @@ const fetchData = async () => {
           
         case "cancelled":
         case "canceled":
+        case "da_huy":
+        case "huy":
         case "đã hủy":
         case "da huy":
         case "hủy":
@@ -55,6 +69,9 @@ const fetchData = async () => {
           break;
           
         case "pending":
+        case "cho_xu_ly":
+        case "cho_xac_nhan":
+        case "dang_cho":
         case "chờ xử lý":
         case "cho xu ly":
         case "đang chờ":
@@ -62,6 +79,7 @@ const fetchData = async () => {
           break;
           
         case "processing":
+        case "dang_xu_ly":
         case "đang xử lý":
         case "dang xu ly":
           normalizedStatus = "Đang xử lý";

@@ -25,7 +25,7 @@ public class HoaDonResponse {
     private Date ngayHoanThanh;
     private String ghiChu;
 
-    // ThÃ´ng tin liÃªn quan
+    // Thông tin liên quan
     private NhanVienResponse nhanVien;
     private KhachHangResponse khachHang;
     private List<HoaDonChiTietResponse> chiTiets;

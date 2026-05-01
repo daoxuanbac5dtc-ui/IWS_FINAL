@@ -13,11 +13,11 @@ import lombok.Setter;
 @Setter
 public class MauSacDto {
     private Integer id;
-    @NotBlank(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng mÃ£ mÃ u sáº¯c ")
+    @NotBlank(message = "Không được để trống mã màu sắc ")
     private String maMauSac;
-    @NotBlank(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng tÃªn mÃ u sáº¯c ")
+    @NotBlank(message = "Không được để trống tên màu sắc ")
     private String tenMauSac;
-    @NotNull(message = "KhÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng tráº¡ng thÃ¡i mÃ u sáº¯c ")
+    @NotNull(message = "Không được để trống trạng thái màu sắc ")
     private Integer trangThai;
 }
 

@@ -7,7 +7,7 @@ import java.util.Map;
 
 public interface ChiTietTraHangService {
 
-    // CÃ¡c method cÆ¡ báº£n
+    // Các method cơ bản
     List<ChiTietTraHangDTO> getChiTietTraHangByChiTietSanPham(Integer chiTietSanPhamId);
 
     ChiTietTraHangDTO getById(Integer id);
@@ -22,7 +22,7 @@ public interface ChiTietTraHangService {
 
     void deleteChiTietTraHang(Integer id);
 
-    // CÃ¡c method thá»‘ng kÃª vÃ  kiá»ƒm tra
+    // Các method thống kê và kiểm tra
     Integer getTotalReturnedQuantity(Integer chiTietSanPhamId);
 
     Map<String, Object> getReturnStatistics(Integer hoaDonId);
@@ -33,7 +33,7 @@ public interface ChiTietTraHangService {
 
     ChiTietTraHangDTO rejectReturn(Integer id, String lyDo);
 
-    // CÃ¡c method há»— trá»£ hÃ³a Ä‘Æ¡n
+    // Các method hỗ trợ hóa đơn
     List<ChiTietTraHangDTO> getChiTietTraHangByHoaDonAndStatus(Integer hoaDonId, String trangThai);
 
     Integer getTotalReturnedQuantityByInvoice(Integer hoaDonId);
@@ -42,76 +42,76 @@ public interface ChiTietTraHangService {
 
     Boolean hasReturnsForInvoice(Integer hoaDonId);
 
-    // âœ… THÃŠM: CÃ¡c method má»›i cho tÃ¬m kiáº¿m vÃ  lÃ½ do
+    // ✅ THÊM: Các method mới cho tìm kiếm và lý do
 
     /**
-     * TÃ¬m kiáº¿m chi tiáº¿t tráº£ hÃ ng theo nhiá»u tiÃªu chÃ­
+     * Tìm kiếm chi tiết trả hàng theo nhiều tiêu chí
      *
-     * @param lyDo      LÃ½ do tráº£ hÃ ng (cÃ³ thá»ƒ null)
-     * @param trangThai Tráº¡ng thÃ¡i (cÃ³ thá»ƒ null)
-     * @param hoaDonId  ID hÃ³a Ä‘Æ¡n (cÃ³ thá»ƒ null)
-     * @return Danh sÃ¡ch chi tiáº¿t tráº£ hÃ ng
+     * @param lyDo      Lý do trả hàng (có thể null)
+     * @param trangThai Trạng thái (có thể null)
+     * @param hoaDonId  ID hóa đơn (có thể null)
+     * @return Danh sách chi tiết trả hàng
      */
     List<ChiTietTraHangDTO> searchChiTietTraHang(String lyDo, String trangThai, Integer hoaDonId);
 
     /**
-     * Láº¥y danh sÃ¡ch chi tiáº¿t tráº£ hÃ ng theo lÃ½ do
+     * Lấy danh sách chi tiết trả hàng theo lý do
      *
-     * @param lyDo LÃ½ do tráº£ hÃ ng
-     * @return Danh sÃ¡ch chi tiáº¿t tráº£ hÃ ng
+     * @param lyDo Lý do trả hàng
+     * @return Danh sách chi tiết trả hàng
      */
     List<ChiTietTraHangDTO> getChiTietTraHangByLyDo(String lyDo);
 
     /**
-     * Láº¥y danh sÃ¡ch chi tiáº¿t tráº£ hÃ ng cÃ³ áº£nh minh chá»©ng
+     * Lấy danh sách chi tiết trả hàng có ảnh minh chứng
      *
-     * @return Danh sÃ¡ch chi tiáº¿t tráº£ hÃ ng cÃ³ áº£nh
+     * @return Danh sách chi tiết trả hàng có ảnh
      */
     List<ChiTietTraHangDTO> getChiTietTraHangWithImages();
 
     /**
-     * Láº¥y danh sÃ¡ch chi tiáº¿t tráº£ hÃ ng khÃ´ng cÃ³ áº£nh minh chá»©ng
+     * Lấy danh sách chi tiết trả hàng không có ảnh minh chứng
      *
-     * @return Danh sÃ¡ch chi tiáº¿t tráº£ hÃ ng khÃ´ng cÃ³ áº£nh
+     * @return Danh sách chi tiết trả hàng không có ảnh
      */
     List<ChiTietTraHangDTO> getChiTietTraHangWithoutImages();
 
     /**
-     * Láº¥y thá»‘ng kÃª theo lÃ½ do tráº£ hÃ ng
+     * Lấy thống kê theo lý do trả hàng
      *
-     * @return Map chá»©a thá»‘ng kÃª: {lyDo: soLuong}
+     * @return Map chứa thống kê: {lyDo: soLuong}
      */
     Map<String, Long> getReturnReasonStatistics();
 
     /**
-     * Äáº¿m sá»‘ lÆ°á»£ng tráº£ hÃ ng cÃ³ áº£nh minh chá»©ng
+     * Đếm số lượng trả hàng có ảnh minh chứng
      *
-     * @return Sá»‘ lÆ°á»£ng
+     * @return Số lượng
      */
     Long countReturnsWithImages();
 
     /**
-     * Äáº¿m sá»‘ lÆ°á»£ng tráº£ hÃ ng theo lÃ½ do cá»¥ thá»ƒ
+     * Đếm số lượng trả hàng theo lý do cụ thể
      *
-     * @param lyDo LÃ½ do tráº£ hÃ ng
-     * @return Sá»‘ lÆ°á»£ng
+     * @param lyDo Lý do trả hàng
+     * @return Số lượng
      */
     Long countByLyDo(String lyDo);
 
     /**
-     * Cáº­p nháº­t áº£nh minh chá»©ng cho chi tiáº¿t tráº£ hÃ ng
+     * Cập nhật ảnh minh chứng cho chi tiết trả hàng
      *
-     * @param id          ID chi tiáº¿t tráº£ hÃ ng
-     * @param duongDanAnh ÄÆ°á»ng dáº«n áº£nh má»›i
-     * @return Chi tiáº¿t tráº£ hÃ ng Ä‘Ã£ cáº­p nháº­t
+     * @param id          ID chi tiết trả hàng
+     * @param duongDanAnh Đường dẫn ảnh mới
+     * @return Chi tiết trả hàng đã cập nhật
      */
     ChiTietTraHangDTO updateImage(Integer id, String duongDanAnh);
 
     /**
-     * XÃ³a áº£nh minh chá»©ng cá»§a chi tiáº¿t tráº£ hÃ ng
+     * Xóa ảnh minh chứng của chi tiết trả hàng
      *
-     * @param id ID chi tiáº¿t tráº£ hÃ ng
-     * @return Chi tiáº¿t tráº£ hÃ ng Ä‘Ã£ cáº­p nháº­t
+     * @param id ID chi tiết trả hàng
+     * @return Chi tiết trả hàng đã cập nhật
      */
     ChiTietTraHangDTO removeImage(Integer id);
 

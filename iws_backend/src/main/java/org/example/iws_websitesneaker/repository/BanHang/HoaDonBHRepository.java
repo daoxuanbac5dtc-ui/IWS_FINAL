@@ -12,28 +12,28 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-// ===== HÃ“A ÄÆ N REPOSITORY =====
+// ===== HÓA ĐƠN REPOSITORY =====
 
 @Repository
 public interface HoaDonBHRepository extends JpaRepository<HoaDon, Integer> {
 
     /**
-     * TÃ¬m hÃ³a Ä‘Æ¡n theo tráº¡ng thÃ¡i
+     * Tìm hóa đơn theo trạng thái
      */
     List<HoaDon> findByTrangThaiHoaDon(String trangThai);
 
     /**
-     * TÃ¬m hÃ³a Ä‘Æ¡n theo nhÃ¢n viÃªn
+     * Tìm hóa đơn theo nhân viên
      */
     Page<HoaDon> findByNhanVienId(Integer nhanVienId, Pageable pageable);
 
     /**
-     * TÃ¬m hÃ³a Ä‘Æ¡n theo loáº¡i
+     * Tìm hóa đơn theo loại
      */
     Page<HoaDon> findByLoaiHoaDon(String loaiHoaDon, Pageable pageable);
 
     /**
-     * TÃ¬m hÃ³a Ä‘Æ¡n theo loáº¡i vÃ  khoáº£ng thá»i gian
+     * Tìm hóa đơn theo loại và khoảng thời gian
      */
     @Query("SELECT h FROM HoaDon h WHERE h.loaiHoaDon = :loaiHoaDon " +
             "AND DATE(h.ngayTao) BETWEEN :fromDate AND :toDate")
@@ -44,32 +44,32 @@ public interface HoaDonBHRepository extends JpaRepository<HoaDon, Integer> {
             Pageable pageable);
 
     /**
-     * Äáº¿m hÃ³a Ä‘Æ¡n theo ngÃ y táº¡o
+     * Đếm hóa đơn theo ngày tạo
      */
     Long countByNgayTaoBetween(Date startDate, Date endDate);
 
     /**
-     * TÃ­nh tá»•ng doanh thu theo ngÃ y
+     * Tính tổng doanh thu theo ngày
      */
     @Query("SELECT COALESCE(SUM(h.tongThanhToan), 0) FROM HoaDon h " +
             "WHERE h.ngayTao BETWEEN :startDate AND :endDate " +
-            "AND h.trangThaiHoaDon = 'DA_THANH_TOAN'")
+            "AND h.trangThaiHoaDon IN ('COMPLETED', 'DA_THANH_TOAN', 'HOAN_THANH')")
     Double getTongDoanhThuByNgayTao(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
     /**
-     * TÃ­nh tá»•ng chi tiÃªu cá»§a khÃ¡ch hÃ ng
+     * Tính tổng chi tiêu của khách hàng
      */
     @Query("SELECT COALESCE(SUM(h.tongThanhToan), 0) FROM HoaDon h " +
-            "WHERE h.khachHang.id = :khachHangId AND h.trangThaiHoaDon = 'DA_THANH_TOAN'")
+            "WHERE h.khachHang.id = :khachHangId AND h.trangThaiHoaDon IN ('COMPLETED', 'DA_THANH_TOAN', 'HOAN_THANH')")
     Double getTongChiTieuByKhachHangId(@Param("khachHangId") Integer khachHangId);
 
     /**
-     * Äáº¿m sá»‘ Ä‘Æ¡n hÃ ng cá»§a khÃ¡ch hÃ ng
+     * Đếm số đơn hàng của khách hàng
      */
     Long countByKhachHangId(Integer khachHangId);
 
     /**
-     * TÃ¬m hÃ³a Ä‘Æ¡n theo mÃ£
+     * Tìm hóa đơn theo mã
      */
     Optional<HoaDon> findByMaHoaDon(String maHoaDon);
 

@@ -22,7 +22,7 @@ public class DiaChiResponse {
     private Date ngayTao;
     private Date ngayCapNhat;
 
-    // ThÃ´ng tin bá»• sung
+    // Thông tin bổ sung
     private String diaChiDayDu;
 }
 

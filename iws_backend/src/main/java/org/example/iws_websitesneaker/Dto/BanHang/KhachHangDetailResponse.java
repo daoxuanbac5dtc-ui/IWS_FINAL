@@ -18,14 +18,14 @@ public class KhachHangDetailResponse {
     private Date ngayTao;
     private Date ngayCapNhat;
 
-    // ThÃ´ng tin vÃ­ Ä‘iá»ƒm
+    // Thông tin ví điểm
     private ViDiemResponse viDiem;
     private Double diemTichLuy;
 
-    // ThÃ´ng tin Ä‘á»‹a chá»‰
+    // Thông tin địa chỉ
     private DiaChiResponse diaChi;
 
-    // Thá»‘ng kÃª khÃ¡ch hÃ ng
+    // Thống kê khách hàng
     private Double soLuongDonHang;
     private Double tongChiTieu;
     private String capBacKhachHang;

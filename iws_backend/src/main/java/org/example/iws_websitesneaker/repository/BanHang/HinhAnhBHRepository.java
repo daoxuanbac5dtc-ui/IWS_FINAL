@@ -14,38 +14,38 @@ import java.util.Optional;
 public interface HinhAnhBHRepository extends JpaRepository<HinhAnh, Integer> {
 
     /**
-     * TÃ¬m hÃ¬nh áº£nh theo ID vÃ  tráº¡ng thÃ¡i
+     * Tìm hình ảnh theo ID và trạng thái
      */
     Optional<HinhAnh> findByIdAndTrangThai(Integer id, Integer trangThai);
 
     /**
-     * TÃ¬m táº¥t cáº£ hÃ¬nh áº£nh theo tráº¡ng thÃ¡i
+     * Tìm tất cả hình ảnh theo trạng thái
      */
     List<HinhAnh> findByTrangThai(Integer trangThai);
 
     /**
-     * TÃ¬m hÃ¬nh áº£nh theo mÃ£ hÃ¬nh áº£nh
+     * Tìm hình ảnh theo mã hình ảnh
      */
     Optional<HinhAnh> findByMaHinhAnh(String maHinhAnh);
 
     /**
-     * TÃ¬m hÃ¬nh áº£nh theo mÃ£ hÃ¬nh áº£nh vÃ  tráº¡ng thÃ¡i
+     * Tìm hình ảnh theo mã hình ảnh và trạng thái
      */
     Optional<HinhAnh> findByMaHinhAnhAndTrangThai(String maHinhAnh, Integer trangThai);
 
     /**
-     * TÃ¬m hÃ¬nh áº£nh theo tÃªn hÃ¬nh áº£nh
+     * Tìm hình ảnh theo tên hình ảnh
      */
     List<HinhAnh> findByTenHinhAnhContainingIgnoreCase(String tenHinhAnh);
 
     /**
-     * TÃ¬m hÃ¬nh áº£nh theo Ä‘Æ°á»ng dáº«n
+     * Tìm hình ảnh theo đường dẫn
      */
     Optional<HinhAnh> findByDuongDan(String duongDan);
 
     /**
-     * Láº¥y hÃ¬nh áº£nh cá»§a chi tiáº¿t sáº£n pháº©m thÃ´ng qua quan há»‡ ngÆ°á»£c
-     * (Tá»« ChiTietSanPham tÃ¬m HinhAnh)
+     * Lấy hình ảnh của chi tiết sản phẩm thông qua quan hệ ngược
+     * (Từ ChiTietSanPham tìm HinhAnh)
      */
     @Query("SELECT ha FROM HinhAnh ha " +
             "WHERE ha.id IN (SELECT ctsp.hinhAnh.id FROM ChiTietSanPham ctsp WHERE ctsp.id = :chiTietSanPhamId) " +
@@ -54,7 +54,7 @@ public interface HinhAnhBHRepository extends JpaRepository<HinhAnh, Integer> {
                                                          @Param("trangThai") Integer trangThai);
 
     /**
-     * Láº¥y hÃ¬nh áº£nh cá»§a chi tiáº¿t sáº£n pháº©m (active)
+     * Lấy hình ảnh của chi tiết sản phẩm (active)
      */
     @Query("SELECT ha FROM HinhAnh ha " +
             "WHERE ha.id IN (SELECT ctsp.hinhAnh.id FROM ChiTietSanPham ctsp WHERE ctsp.id = :chiTietSanPhamId) " +
@@ -62,7 +62,7 @@ public interface HinhAnhBHRepository extends JpaRepository<HinhAnh, Integer> {
     Optional<HinhAnh> findActiveImageByChiTietSanPhamId(@Param("chiTietSanPhamId") Integer chiTietSanPhamId);
 
     /**
-     * Láº¥y danh sÃ¡ch hÃ¬nh áº£nh theo danh sÃ¡ch ID chi tiáº¿t sáº£n pháº©m
+     * Lấy danh sách hình ảnh theo danh sách ID chi tiết sản phẩm
      */
     @Query("SELECT ha FROM HinhAnh ha " +
             "WHERE ha.id IN (SELECT ctsp.hinhAnh.id FROM ChiTietSanPham ctsp WHERE ctsp.id IN :chiTietSanPhamIds) " +
@@ -70,7 +70,7 @@ public interface HinhAnhBHRepository extends JpaRepository<HinhAnh, Integer> {
     List<HinhAnh> findActiveImagesByChiTietSanPhamIds(@Param("chiTietSanPhamIds") List<Integer> chiTietSanPhamIds);
 
     /**
-     * Láº¥y hÃ¬nh áº£nh theo sáº£n pháº©m (qua chi tiáº¿t sáº£n pháº©m)
+     * Lấy hình ảnh theo sản phẩm (qua chi tiết sản phẩm)
      */
     @Query("SELECT DISTINCT ha FROM HinhAnh ha " +
             "WHERE ha.id IN (SELECT ctsp.hinhAnh.id FROM ChiTietSanPham ctsp WHERE ctsp.sanPham.id = :sanPhamId) " +
@@ -78,7 +78,7 @@ public interface HinhAnhBHRepository extends JpaRepository<HinhAnh, Integer> {
     List<HinhAnh> findActiveImagesBySanPhamId(@Param("sanPhamId") Integer sanPhamId);
 
     /**
-     * Láº¥y hÃ¬nh áº£nh Ä‘áº§u tiÃªn cá»§a sáº£n pháº©m
+     * Lấy hình ảnh đầu tiên của sản phẩm
      */
     @Query("SELECT ha FROM HinhAnh ha " +
             "WHERE ha.id IN (SELECT ctsp.hinhAnh.id FROM ChiTietSanPham ctsp WHERE ctsp.sanPham.id = :sanPhamId) " +
@@ -88,19 +88,19 @@ public interface HinhAnhBHRepository extends JpaRepository<HinhAnh, Integer> {
     Optional<HinhAnh> findFirstActiveImageBySanPhamId(@Param("sanPhamId") Integer sanPhamId);
 
     /**
-     * Äáº¿m sá»‘ lÆ°á»£ng hÃ¬nh áº£nh theo tráº¡ng thÃ¡i
+     * Đếm số lượng hình ảnh theo trạng thái
      */
     @Query("SELECT COUNT(ha) FROM HinhAnh ha WHERE ha.trangThai = :trangThai")
     Long countByTrangThai(@Param("trangThai") Integer trangThai);
 
     /**
-     * Kiá»ƒm tra xem cÃ³ chi tiáº¿t sáº£n pháº©m nÃ o Ä‘ang sá»­ dá»¥ng hÃ¬nh áº£nh nÃ y khÃ´ng
+     * Kiểm tra xem có chi tiết sản phẩm nào đang sử dụng hình ảnh này không
      */
     @Query("SELECT COUNT(ctsp) FROM ChiTietSanPham ctsp WHERE ctsp.hinhAnh.id = :hinhAnhId")
     Long countChiTietSanPhamUsingImage(@Param("hinhAnhId") Integer hinhAnhId);
 
     /**
-     * Láº¥y danh sÃ¡ch hÃ¬nh áº£nh chÆ°a Ä‘Æ°á»£c sá»­ dá»¥ng
+     * Lấy danh sách hình ảnh chưa được sử dụng
      */
     @Query("SELECT ha FROM HinhAnh ha " +
             "WHERE ha.id NOT IN (SELECT DISTINCT ctsp.hinhAnh.id FROM ChiTietSanPham ctsp WHERE ctsp.hinhAnh.id IS NOT NULL) " +
@@ -108,7 +108,7 @@ public interface HinhAnhBHRepository extends JpaRepository<HinhAnh, Integer> {
     List<HinhAnh> findUnusedActiveImages();
 
     /**
-     * TÃ¬m hÃ¬nh áº£nh theo khoáº£ng thá»i gian táº¡o
+     * Tìm hình ảnh theo khoảng thời gian tạo
      */
     @Query("SELECT ha FROM HinhAnh ha " +
             "WHERE ha.ngayTao >= :startDate AND ha.ngayTao <= :endDate " +
@@ -118,21 +118,21 @@ public interface HinhAnhBHRepository extends JpaRepository<HinhAnh, Integer> {
                                         @Param("endDate") java.time.LocalDateTime endDate);
 
     /**
-     * Cáº­p nháº­t tráº¡ng thÃ¡i hÃ¬nh áº£nh
+     * Cập nhật trạng thái hình ảnh
      */
     @Query("UPDATE HinhAnh ha SET ha.trangThai = :trangThai, ha.ngayCapNhat = CURRENT_TIMESTAMP " +
             "WHERE ha.id = :id")
     int updateTrangThaiById(@Param("id") Integer id, @Param("trangThai") Integer trangThai);
 
     /**
-     * Cáº­p nháº­t Ä‘Æ°á»ng dáº«n hÃ¬nh áº£nh
+     * Cập nhật đường dẫn hình ảnh
      */
     @Query("UPDATE HinhAnh ha SET ha.duongDan = :duongDan, ha.ngayCapNhat = CURRENT_TIMESTAMP " +
             "WHERE ha.id = :id")
     int updateDuongDanById(@Param("id") Integer id, @Param("duongDan") String duongDan);
 
     /**
-     * TÃ¬m hÃ¬nh áº£nh cÃ³ tÃªn tÆ°Æ¡ng tá»±
+     * Tìm hình ảnh có tên tương tự
      */
     @Query("SELECT ha FROM HinhAnh ha " +
             "WHERE LOWER(ha.tenHinhAnh) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
@@ -140,7 +140,7 @@ public interface HinhAnhBHRepository extends JpaRepository<HinhAnh, Integer> {
     List<HinhAnh> searchByTenHinhAnh(@Param("keyword") String keyword);
 
     /**
-     * Láº¥y hÃ¬nh áº£nh má»›i nháº¥t
+     * Lấy hình ảnh mới nhất
      */
     @Query("SELECT ha FROM HinhAnh ha " +
             "WHERE ha.trangThai = 1 " +
@@ -149,7 +149,7 @@ public interface HinhAnhBHRepository extends JpaRepository<HinhAnh, Integer> {
     List<HinhAnh> findLatestImages(@Param("limit") int limit);
 
     /**
-     * Láº¥y thá»‘ng kÃª hÃ¬nh áº£nh theo tráº¡ng thÃ¡i
+     * Lấy thống kê hình ảnh theo trạng thái
      */
     @Query("SELECT ha.trangThai, COUNT(ha) FROM HinhAnh ha GROUP BY ha.trangThai")
     List<Object[]> getImageStatisticsByStatus();

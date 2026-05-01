@@ -16,46 +16,46 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // ÄÆ°á»ng dáº«n uploads vá»›i absolute path
+        // Đường dẫn uploads với absolute path
         String uploadPath = Paths.get(uploadDir).toAbsolutePath().toUri().toString();
 
-        // Cáº¥u hÃ¬nh serve static files tá»« thÆ° má»¥c uploads (Ä‘Ã£ cÃ³)
+        // Cấu hình serve static files từ thư mục uploads (đã có)
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:uploads/", uploadPath)
-                .setCachePeriod(3600); // Cache 1 giá»
+                .setCachePeriod(3600); // Cache 1 giờ
 
-        // âœ… THÃŠM: Cáº¥u hÃ¬nh riÃªng cho return images
+        // ✅ THÊM: Cấu hình riêng cho return images
         registry.addResourceHandler("/api/return-images/**")
                 .addResourceLocations("file:uploads/return-images/", uploadPath + "return-images/")
                 .setCachePeriod(3600);
 
-        // âœ… THÃŠM: Cáº¥u hÃ¬nh alternative path cho return images
+        // ✅ THÊM: Cấu hình alternative path cho return images
         registry.addResourceHandler("/images/returns/**")
                 .addResourceLocations("file:uploads/return-images/", uploadPath + "return-images/")
                 .setCachePeriod(3600);
 
-        // Backup configuration cho voucher images (Ä‘Ã£ cÃ³)
+        // Backup configuration cho voucher images (đã có)
         registry.addResourceHandler("/voucher/uploads/**")
                 .addResourceLocations("file:uploads/")
                 .setCachePeriod(3600);
 
-        // Legacy support cho áº£nh cÅ© (Ä‘Ã£ cÃ³)
+        // Legacy support cho ảnh cũ (đã có)
         registry.addResourceHandler("/images/**")
-                .addResourceLocations("classpath:/static/images/")
+                .addResourceLocations("file:uploads/", uploadPath, "classpath:/static/images/")
                 .setCachePeriod(3600);
 
-        // âœ… THÃŠM: Cáº¥u hÃ¬nh cho cÃ¡c loáº¡i áº£nh khÃ¡c (náº¿u cáº§n)
+        // ✅ THÊM: Cấu hình cho các loại ảnh khác (nếu cần)
         registry.addResourceHandler("/product-images/**")
                 .addResourceLocations("file:uploads/products/", uploadPath + "products/")
                 .setCachePeriod(3600);
 
-        // âœ… THÃŠM: Cáº¥u hÃ¬nh serve táº¥t cáº£ static content
+        // ✅ THÊM: Cấu hình serve tất cả static content
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("classpath:/static/")
                 .setCachePeriod(3600);
     }
 
-    // âœ… THÃŠM: Cáº¥u hÃ¬nh CORS náº¿u cáº§n (cÃ³ thá»ƒ bá» náº¿u Ä‘Ã£ cÃ³ á»Ÿ chá»— khÃ¡c)
+    // ✅ THÊM: Cấu hình CORS nếu cần (có thể bỏ nếu đã có ở chỗ khác)
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/uploads/**")
@@ -66,6 +66,13 @@ public class WebConfig implements WebMvcConfigurer {
                 .maxAge(3600);
 
         registry.addMapping("/api/return-images/**")
+                .allowedOrigins("http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000")
+                .allowedMethods("GET")
+                .allowedHeaders("*")
+                .allowCredentials(false)
+                .maxAge(3600);
+
+        registry.addMapping("/images/**")
                 .allowedOrigins("http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000")
                 .allowedMethods("GET")
                 .allowedHeaders("*")

@@ -7,7 +7,7 @@ public interface LoginService {
 
     TaiKhoan findByEmail(String email);
 
-    // Náº¿u anh dÃ¹ng `lastLoginAt` thÃ¬ bá» comment á»Ÿ Ä‘Ã¢y
+    // Nếu anh dùng `lastLoginAt` thì bỏ comment ở đây
     // void updateLastLogin(Integer userId);
 
     boolean hasPermission(TaiKhoan user, String permission);

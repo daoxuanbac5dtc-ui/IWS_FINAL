@@ -9,6 +9,7 @@ import 'swiper/css';
 import { Keyboard } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 // State variables
 const shoesCards = ref([]);
@@ -16,6 +17,8 @@ const bigImageUrl = ref('');
 const currentProduct = ref(null);
 const loading = ref(true);
 const heroPlaceholderImage = createSvgPlaceholder({ width: 400, height: 300, label: 'Nike Shoe' });
+const route = useRoute();
+const router = useRouter();
 
 // Change main hero image
 const changeHeroImg = (imgUrl) => {
@@ -26,6 +29,19 @@ const changeHeroImg = (imgUrl) => {
     const product = shoesCards.value.find((shoe) => shoe.imgUrl === imgUrl);
     if (product) {
         currentProduct.value = product;
+    }
+};
+
+// Scroll to products section
+const scrollToProducts = () => {
+    const productsSection = document.getElementById('products');
+    if (productsSection) {
+        productsSection.scrollIntoView({ behavior: 'smooth' });
+        return;
+    }
+
+    if (route.path !== '/products') {
+        router.push('/products');
     }
 };
 
@@ -47,7 +63,11 @@ onMounted(async () => {
         console.log('🦸 Loading hero products...');
 
         // Fetch all necessary data
-        const [productsResponse, detailsResponse, imagesResponse] = await Promise.all([axios.get('http://localhost:8080/api/san-pham'), axios.get('http://localhost:8080/api/san-pham-chi-tiet'), axios.get('http://localhost:8080/hinh-anh')]);
+        const [productsResponse, detailsResponse, imagesResponse] = await Promise.all([
+            axios.get('http://localhost:8080/api/san-pham'),
+            axios.get('http://localhost:8080/api/san-pham-chi-tiet'),
+            axios.get('http://localhost:8080/hinh-anh')
+        ]);
 
         console.log('🦸 Hero - Products:', productsResponse.data.length);
         console.log('🦸 Hero - Details:', detailsResponse.data.length);
@@ -83,22 +103,14 @@ onMounted(async () => {
 
                 // XỬ LÝ HÌNH ẢNH THEO ENTITY MỚI
                 if (detail.hinhAnh) {
-                    console.log(`🦸 Processing image for product ${productId}:`, detail.hinhAnh);
-
                     if (typeof detail.hinhAnh === 'object' && detail.hinhAnh !== null) {
-                        // Trường hợp API trả về object với id
                         if (detail.hinhAnh.id) {
                             finalImageUrl = imageMap.get(detail.hinhAnh.id);
-                            console.log(`✅ Found image by ID ${detail.hinhAnh.id}:`, finalImageUrl);
-                        }
-                        // Trường hợp API trả về object đầy đủ
-                        else {
+                        } else {
                             finalImageUrl = resolveProductImageUrl(detail.hinhAnh);
                         }
                     } else if (typeof detail.hinhAnh === 'number') {
-                        // Trường hợp API trả về ID number trực tiếp
                         finalImageUrl = imageMap.get(detail.hinhAnh);
-                        console.log(`✅ Found image by number ID ${detail.hinhAnh}:`, finalImageUrl);
                     }
                 }
 
@@ -111,12 +123,9 @@ onMounted(async () => {
                         brand: product.thuongHieu?.tenThuongHieu || 'Nike',
                         price: detail.giaBan || 0
                     });
-                    console.log(`✅ Added hero card for product ${productId}`);
                 }
             }
         });
-
-        console.log(`🦸 Processed ${processedCards.length} hero cards`);
 
         shoesCards.value = processedCards;
 
@@ -124,15 +133,11 @@ onMounted(async () => {
         if (processedCards.length > 0) {
             bigImageUrl.value = processedCards[0].imgUrl;
             currentProduct.value = processedCards[0];
-            console.log('🦸 Set initial hero image:', processedCards[0].imgUrl);
         } else {
-            // Fallback
             bigImageUrl.value = heroPlaceholderImage;
-            console.log('🦸 No products found, using fallback');
         }
     } catch (err) {
         console.error('🦸 Error loading hero products:', err);
-        // Set fallback
         bigImageUrl.value = heroPlaceholderImage;
     } finally {
         loading.value = false;
@@ -154,7 +159,7 @@ onMounted(async () => {
                 thoải mái và sự đổi mới cho cuộc sống năng động của bạn.
             </p>
 
-            <UserButton :iconUrl="arrowRight">Mua ngay</UserButton>
+            <UserButton :iconUrl="arrowRight" @click="scrollToProducts">Mua ngay</UserButton>
 
             <div class="mt-10 flex w-full flex-wrap items-start justify-start gap-6 md:gap-16">
                 <div v-for="stat in statistics" :key="stat.label">
@@ -164,7 +169,7 @@ onMounted(async () => {
             </div>
         </div>
 
-        <div class="relative mt-10 flex min-h-screen flex-1 flex-col items-center justify-center bg-primary bg-hero bg-cover bg-center p-8 sm:p-0 lg:overflow-x-hidden lg:overflow-y-hidden xl:mt-0">
+        <div class="relative mt-10 flex min-h-screen flex-1 flex-col items-center justify-center overflow-hidden bg-primary bg-hero bg-cover bg-center p-4 sm:p-0 xl:mt-0">
             <!-- Loading State -->
             <div v-if="loading" class="z-40 flex items-center justify-center">
                 <div class="hero-skeleton">
@@ -186,7 +191,7 @@ onMounted(async () => {
             </transition>
 
             <!-- Product Cards Swiper -->
-            <div v-if="shoesCards.length > 0" class="absolute bottom-3 w-full">
+            <div v-if="shoesCards.length > 0" class="hero-card-carousel absolute bottom-4 w-full">
                 <Swiper
                     :slides-per-view="2"
                     :space-between="10"
@@ -209,7 +214,7 @@ onMounted(async () => {
                     :modules="[Keyboard]"
                 >
                     <SwiperSlide v-for="shoe in shoesCards" :key="shoe.id">
-                        <Card :key="shoe.id" :imgUrl="shoe.imgUrl" :width="'140'" :isActive="bigImageUrl === shoe.imgUrl" @change-hero-img="changeHeroImg" />
+                        <Card :key="shoe.id" :imgUrl="shoe.imgUrl" :isActive="bigImageUrl === shoe.imgUrl" @change-hero-img="changeHeroImg" />
                     </SwiperSlide>
                 </Swiper>
             </div>
@@ -244,14 +249,22 @@ onMounted(async () => {
 .swiper {
     width: 90%;
     height: 100%;
+    padding: 12px 0 18px;
 }
 
 .swiper-slide {
+    display: flex;
+    justify-content: center;
     background-position: center;
     background-size: cover;
 }
 
+.hero-card-carousel {
+    z-index: 50;
+}
+
 .hero-main-image {
+    width: min(600px, 100%);
     max-width: 600px;
     max-height: 500px;
 }
@@ -261,7 +274,7 @@ onMounted(async () => {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 600px;
+    width: min(600px, 100%);
     height: 500px;
 }
 
@@ -280,6 +293,7 @@ onMounted(async () => {
     align-items: center;
 
     img {
+        width: min(600px, 100%);
         max-width: 600px;
         max-height: 500px;
     }
@@ -296,9 +310,19 @@ onMounted(async () => {
 
 // Responsive
 @media (max-width: 768px) {
+    .swiper {
+        width: 100%;
+        overflow: hidden;
+    }
+
     .hero-main-image {
-        max-width: 400px;
-        max-height: 300px;
+        max-width: min(320px, 100%);
+        max-height: 280px;
+    }
+
+    .hero-skeleton {
+        width: min(320px, 100%);
+        height: 220px;
     }
 
     .skeleton-shoe {
@@ -307,9 +331,8 @@ onMounted(async () => {
     }
 
     .fallback-hero img {
-        max-width: 400px;
-        max-height: 300px;
+        max-width: min(320px, 100%);
+        max-height: 280px;
     }
 }
 </style>
-
