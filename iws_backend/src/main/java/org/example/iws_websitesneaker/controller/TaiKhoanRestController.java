@@ -54,6 +54,7 @@ public class TaiKhoanRestController {
         try {
             System.out.println("=== GET /api/tai-khoan ===");
 
+            repoTaiKhoan.lockAccountsForLockedCustomers(new Date());
             List<TaiKhoan> allAccounts = taiKhoanService.findAll();
 
             // Apply filters
@@ -312,7 +313,7 @@ public class TaiKhoanRestController {
             case USER:
                 Optional<KhachHang> customerOpt = khachHangService.findByTaiKhoanIdOptional(taiKhoan.getId());
                 if (customerOpt.isPresent() && !Objects.equals(customerOpt.get().getTrangThai(), targetStatus)) {
-                    khachHangService.toggleTrangThai(customerOpt.get().getId());
+                    khachHangService.updateStatus(customerOpt.get().getId(), targetStatus);
                 }
                 break;
             case NHANVIEN:

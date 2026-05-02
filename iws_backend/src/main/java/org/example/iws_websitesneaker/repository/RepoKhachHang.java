@@ -4,6 +4,7 @@ import org.example.iws_websitesneaker.entity.KhachHang;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -49,8 +50,14 @@ public interface RepoKhachHang extends JpaRepository<KhachHang, Integer> {
      */
     @Query("SELECT kh FROM KhachHang kh " +
             "LEFT JOIN FETCH kh.taiKhoan tk " +
-            "WHERE kh.id = :id AND kh.trangThai != 0")
+            "WHERE kh.id = :id")
     Optional<KhachHang> findByIdWithTaiKhoan(@Param("id") Integer id);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE KhachHang kh SET kh.trangThai = :trangThai, kh.ngayCapNhat = :ngayCapNhat WHERE kh.id = :id")
+    int updateTrangThaiById(@Param("id") Integer id,
+                            @Param("trangThai") Integer trangThai,
+                            @Param("ngayCapNhat") Date ngayCapNhat);
 
     /**
      * Query phân trang với JOIN FETCH

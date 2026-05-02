@@ -6,13 +6,28 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const router = createRouter({
     history: createWebHistory(),
-    scrollBehavior(to) {
-        if (to.hash) {
-            return {
-                el: to.hash,
-                behavior: 'smooth'
-            };
+    scrollBehavior(to, from, savedPosition) {
+        if (to.meta?.scrollToTop) {
+            return { top: 0, left: 0, behavior: 'auto' };
         }
+
+        if (savedPosition) {
+            return savedPosition;
+        }
+
+        if (to.hash) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve({
+                        el: to.hash,
+                        top: 96,
+                        behavior: 'smooth'
+                    });
+                }, 100);
+            });
+        }
+
+        return { top: 0, left: 0, behavior: 'smooth' };
     },
     routes: [
         // ROUTE USER - Trang chủ người dùng (KHÔNG CẦN ĐĂNG NHẬP)
@@ -38,7 +53,7 @@ const router = createRouter({
             path: '/checkout',
             name: 'checkout',
             component: () => import('@/views/user/card/ThanhToan.vue'),
-            meta: { requiresAuth: false }
+            meta: { requiresAuth: false, scrollToTop: true }
         },
         {
             path: '/order-success/:orderId',

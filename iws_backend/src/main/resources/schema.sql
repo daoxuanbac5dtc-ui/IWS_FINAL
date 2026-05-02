@@ -343,3 +343,60 @@ WHERE sp.ma_san_pham = 'SP008'
   AND NOT EXISTS (
       SELECT 1 FROM chi_tiet_san_pham ctsp WHERE ctsp.ma_chi_tiet = 'CTSP018'
   );
+
+-- Seed sản phẩm cho các danh mục trước đó chưa có dữ liệu trên trang user.
+INSERT INTO hinh_anh (ma_hinh_anh, ten_hinh_anh, duong_dan, trang_thai, ngay_tao, ngay_cap_nhat)
+SELECT seed.ma_hinh_anh, seed.ten_hinh_anh, seed.duong_dan, 1, NOW(), NOW()
+FROM (
+    SELECT 'HA009' ma_hinh_anh, 'Nike Phantom Strike TF' ten_hinh_anh, '/images/football-nike-phantom-strike.jpg' duong_dan
+    UNION ALL SELECT 'HA010', 'Adidas Predator Club FG', '/images/football-adidas-predator-club.png'
+    UNION ALL SELECT 'HA011', 'Puma Elegance Stiletto', '/images/heel-puma-elegance-stiletto.jpg'
+    UNION ALL SELECT 'HA012', 'Nike Coast Sandal', '/images/sandal-nike-coast-nikko.jpg'
+    UNION ALL SELECT 'HA013', 'Adidas Breeze Sandal', '/images/sandal-adidas-breeze.jpg'
+    UNION ALL SELECT 'HA014', 'Puma Chelsea Boot', '/images/boot-puma-chelsea.jpg'
+    UNION ALL SELECT 'HA015', 'New Balance Trail Boot', '/images/boot-newbalance-trail.jpg'
+    UNION ALL SELECT 'HA016', 'Reebok Classic Derby', '/images/dress-reebok-classic-derby.jpg'
+) seed
+WHERE NOT EXISTS (
+    SELECT 1 FROM hinh_anh ha WHERE ha.ma_hinh_anh = seed.ma_hinh_anh
+);
+
+INSERT INTO san_pham (ma_san_pham, ten_san_pham, so_luong, trang_thai, ngay_tao, ngay_cap_nhat, id_chat_lieu, id_de_giay, id_danh_muc, id_thuong_hieu)
+SELECT seed.ma_san_pham, seed.ten_san_pham, seed.so_luong, 1, NOW(), NOW(), cl.id, dg.id, dm.id, th.id
+FROM (
+    SELECT 'SP009' ma_san_pham, 'Nike Phantom Strike TF' ten_san_pham, 36 so_luong, 'CL002' ma_chat_lieu, 'DG006' ma_de_giay, 'DM003' ma_danh_muc, 'TH001' ma_thuong_hieu
+    UNION ALL SELECT 'SP010', 'Adidas Predator Club FG', 32, 'CL002', 'DG006', 'DM003', 'TH002'
+    UNION ALL SELECT 'SP011', 'Puma Elegance Stiletto', 24, 'CL001', 'DG007', 'DM004', 'TH005'
+    UNION ALL SELECT 'SP012', 'Nike Coast Sandal', 42, 'CL002', 'DG002', 'DM005', 'TH001'
+    UNION ALL SELECT 'SP013', 'Adidas Breeze Sandal', 38, 'CL002', 'DG002', 'DM005', 'TH002'
+    UNION ALL SELECT 'SP014', 'Puma Chelsea Boot', 28, 'CL001', 'DG007', 'DM006', 'TH005'
+    UNION ALL SELECT 'SP015', 'New Balance Trail Boot', 30, 'CL005', 'DG008', 'DM006', 'TH006'
+    UNION ALL SELECT 'SP016', 'Reebok Classic Derby', 22, 'CL001', 'DG007', 'DM007', 'TH007'
+) seed
+JOIN chat_lieu cl ON cl.ma_chat_lieu = seed.ma_chat_lieu
+JOIN de_giay dg ON dg.ma_de_giay = seed.ma_de_giay
+JOIN danh_muc dm ON dm.ma_danh_muc = seed.ma_danh_muc
+JOIN thuong_hieu th ON th.ma_thuong_hieu = seed.ma_thuong_hieu
+WHERE NOT EXISTS (
+    SELECT 1 FROM san_pham sp WHERE sp.ma_san_pham = seed.ma_san_pham
+);
+
+INSERT INTO chi_tiet_san_pham (ma_chi_tiet, ma_QR, so_luong, gia_ban, gia_goc, trang_thai, ngay_tao, ngay_cap_nhat, id_mau_sac, id_kich_co, id_san_pham, id_hinh_anh)
+SELECT seed.ma_chi_tiet, seed.ma_qr, seed.so_luong, seed.gia_ban, seed.gia_goc, 1, NOW(), NOW(), ms.id, kc.id, sp.id, ha.id
+FROM (
+    SELECT 'CTSP019' ma_chi_tiet, 'QR019' ma_qr, 36 so_luong, 1890000.00 gia_ban, 2190000.00 gia_goc, 'MS001' ma_mau_sac, 'KC007' ma_kich_co, 'SP009' ma_san_pham, 'HA009' ma_hinh_anh
+    UNION ALL SELECT 'CTSP020', 'QR020', 32, 1990000.00, 2290000.00, 'MS003', 'KC008', 'SP010', 'HA010'
+    UNION ALL SELECT 'CTSP021', 'QR021', 24, 1190000.00, 1490000.00, 'MS001', 'KC003', 'SP011', 'HA011'
+    UNION ALL SELECT 'CTSP022', 'QR022', 42, 690000.00, 890000.00, 'MS008', 'KC006', 'SP012', 'HA012'
+    UNION ALL SELECT 'CTSP023', 'QR023', 38, 590000.00, 790000.00, 'MS009', 'KC007', 'SP013', 'HA013'
+    UNION ALL SELECT 'CTSP024', 'QR024', 28, 2190000.00, 2490000.00, 'MS008', 'KC008', 'SP014', 'HA014'
+    UNION ALL SELECT 'CTSP025', 'QR025', 30, 2390000.00, 2790000.00, 'MS009', 'KC009', 'SP015', 'HA015'
+    UNION ALL SELECT 'CTSP026', 'QR026', 22, 1890000.00, 2190000.00, 'MS001', 'KC007', 'SP016', 'HA016'
+) seed
+JOIN mau_sac ms ON ms.ma_mau_sac = seed.ma_mau_sac
+JOIN kich_co kc ON kc.ma_kich_co = seed.ma_kich_co
+JOIN san_pham sp ON sp.ma_san_pham = seed.ma_san_pham
+JOIN hinh_anh ha ON ha.ma_hinh_anh = seed.ma_hinh_anh
+WHERE NOT EXISTS (
+    SELECT 1 FROM chi_tiet_san_pham ctsp WHERE ctsp.ma_chi_tiet = seed.ma_chi_tiet
+);

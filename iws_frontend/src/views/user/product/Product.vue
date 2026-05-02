@@ -7,7 +7,7 @@
     <HeroSection />
 
     <!-- Main Product Content -->
-    <div class="product-main">
+    <div id="product-info" class="product-main">
       <div class="container" v-if="product && !loading">
         <div class="product-nav-actions">
           <button class="back-to-products-btn" @click="goBack" type="button">
@@ -419,7 +419,7 @@
         <div class="similar-products-section">
           <div class="section-header">
             <h2 class="section-title">Sản phẩm tương tự</h2>
-            <a href="/products" class="view-all-link">
+            <a href="/products#products" class="view-all-link">
               Xem tất cả
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
@@ -600,6 +600,24 @@ export default {
       console.log('New review submitted:', review);
     },
 
+    resolveDetailImage(detail, imageMap) {
+      const image = detail?.hinhAnh;
+      if (!image) return null;
+
+      if (typeof image === 'object') {
+        const imageById = image.id !== undefined && image.id !== null
+          ? imageMap.get(String(image.id)) || imageMap.get(image.id)
+          : null;
+        return imageById || resolveProductImageUrl(image);
+      }
+
+      if (typeof image === 'number' || typeof image === 'string') {
+        return imageMap.get(String(image)) || imageMap.get(image) || resolveProductImageUrl(image);
+      }
+
+      return null;
+    },
+
     handleReviewSubmitted(review) {
       console.log('New review submitted:', review);
       this.$toast?.success('Cảm ơn bạn đã đánh giá sản phẩm!') ||
@@ -771,7 +789,7 @@ export default {
         imagesResponse.data.forEach(image => {
           const imageUrl = resolveProductImageUrl(image);
           if (imageUrl) {
-            imageMap.set(image.id, imageUrl);
+            imageMap.set(String(image.id), imageUrl);
           }
         });
 
@@ -783,20 +801,7 @@ export default {
 
         colorVariants.forEach(detail => {
           if (detail.hinhAnh) {
-            let imageUrl = '';
-
-            if (typeof detail.hinhAnh === 'object' && detail.hinhAnh !== null) {
-              if (detail.hinhAnh.id) {
-                imageUrl = imageMap.get(detail.hinhAnh.id);
-                console.log(`Found image by ID ${detail.hinhAnh.id}:`, imageUrl);
-              }
-              else {
-                imageUrl = resolveProductImageUrl(detail.hinhAnh);
-              }
-            } else if (typeof detail.hinhAnh === 'number') {
-              imageUrl = imageMap.get(detail.hinhAnh);
-              console.log(`Found image by number ID ${detail.hinhAnh}:`, imageUrl);
-            }
+            const imageUrl = this.resolveDetailImage(detail, imageMap);
 
             if (imageUrl && imageUrl.trim() !== '') {
               newImages.push(imageUrl);
@@ -808,11 +813,11 @@ export default {
           this.productImages = [...new Set(newImages)];
           this.selectedImageIndex = 0;
         } else {
-          this.productImages = ['/placeholder-shoe.png'];
+          this.productImages = [productPlaceholderImage];
         }
       } catch (error) {
         console.error('Error updating images:', error);
-        this.productImages = ['/placeholder-shoe.png'];
+        this.productImages = [productPlaceholderImage];
       }
     },
 
@@ -845,7 +850,7 @@ export default {
         imagesResponse.data.forEach(image => {
           const imageUrl = resolveProductImageUrl(image);
           if (imageUrl) {
-            imageMap.set(image.id, imageUrl);
+            imageMap.set(String(image.id), imageUrl);
           }
         });
 
@@ -923,20 +928,7 @@ export default {
         const currentImages = [];
         enrichedDetails.forEach(detail => {
           if (detail.hinhAnh) {
-            let imageUrl = '';
-
-            if (typeof detail.hinhAnh === 'object' && detail.hinhAnh !== null) {
-              if (detail.hinhAnh.id) {
-                imageUrl = imageMap.get(detail.hinhAnh.id);
-                console.log(`Found image by ID ${detail.hinhAnh.id}:`, imageUrl);
-              }
-              else {
-                imageUrl = resolveProductImageUrl(detail.hinhAnh);
-              }
-            } else if (typeof detail.hinhAnh === 'number') {
-              imageUrl = imageMap.get(detail.hinhAnh);
-              console.log(`Found image by number ID ${detail.hinhAnh}:`, imageUrl);
-            }
+            const imageUrl = this.resolveDetailImage(detail, imageMap);
 
             if (imageUrl && imageUrl.trim() !== '') {
               currentImages.push(imageUrl);
@@ -948,7 +940,7 @@ export default {
           this.productImages = [...new Set(currentImages)];
           console.log('🖼️ Product images loaded:', this.productImages);
         } else {
-          this.productImages = ['/placeholder-shoe.png'];
+          this.productImages = [productPlaceholderImage];
           console.log('🖼️ No images found, using placeholder');
         }
 
@@ -985,7 +977,7 @@ export default {
         imagesResponse.data.forEach(image => {
           const imageUrl = resolveProductImageUrl(image);
           if (imageUrl) {
-            imageMap.set(image.id, imageUrl);
+            imageMap.set(String(image.id), imageUrl);
           }
         });
 
@@ -1006,20 +998,7 @@ export default {
 
             // XỬ LÝ HÌNH ẢNH SIMILAR PRODUCTS - SỬA MỚI
             if (!productImageMap.has(productId) && detail.hinhAnh) {
-              let imageUrl = '';
-
-              if (typeof detail.hinhAnh === 'object' && detail.hinhAnh !== null) {
-                // Trường hợp API trả về object với id
-                if (detail.hinhAnh.id) {
-                  imageUrl = imageMap.get(detail.hinhAnh.id);
-                }
-                // Trường hợp API trả về object đầy đủ
-                else {
-                  imageUrl = resolveProductImageUrl(detail.hinhAnh);
-                }
-              } else if (typeof detail.hinhAnh === 'number') {
-                imageUrl = imageMap.get(detail.hinhAnh);
-              }
+              const imageUrl = this.resolveDetailImage(detail, imageMap);
 
               if (imageUrl && imageUrl.trim() !== '') {
                 productImageMap.set(productId, imageUrl);
@@ -1104,7 +1083,9 @@ export default {
     },
 
     // Cart methods với backend integration - FIXED TOAST VERSION
-    async addToCart() {
+    async addToCart(options = {}) {
+      const actionOptions = options && options.silent !== undefined ? options : {};
+      const { silent = false, resetQuantity = true } = actionOptions;
       console.log('=== ADD TO CART DEBUG START ===');
 
       // Check if user is authenticated
@@ -1117,28 +1098,28 @@ export default {
         console.log('Selected color:', this.selectedColor);
         console.log('Selected size:', this.selectedSize);
         alert('Vui lòng chọn màu sắc và kích cỡ!');
-        return;
+        return false;
       }
       console.log('✅ Color and size selected');
 
       if (!this.currentProduct) {
         console.log('❌ No current product');
         alert('Vui lòng chọn sản phẩm!');
-        return;
+        return false;
       }
       console.log('✅ Current product exists:', this.currentProduct);
 
       if (this.currentStock === 0) {
         console.log('❌ Out of stock');
         alert('Sản phẩm đã hết hàng!');
-        return;
+        return false;
       }
       console.log('✅ Stock available:', this.currentStock);
 
       if (this.quantity > this.currentStock) {
         console.log('❌ Quantity exceeds stock');
         alert(`Chỉ còn ${this.currentStock} sản phẩm trong kho!`);
-        return;
+        return false;
       }
       console.log('✅ Quantity valid:', this.quantity);
 
@@ -1221,26 +1202,31 @@ export default {
         // Dispatch event để update cart counter ở Nav
         window.dispatchEvent(new CustomEvent('cartUpdated'));
 
-        // FIXED: Hiển thị thông báo thành công với fallback
-        const successMessage = `Đã thêm ${this.quantity} sản phẩm vào giỏ hàng!`;
+        if (!silent) {
+          // FIXED: Hiển thị thông báo thành công với fallback
+          const successMessage = `Đã thêm ${this.quantity} sản phẩm vào giỏ hàng!`;
 
-        try {
-          // Thử dùng toast trước
-          if (this.$toast && typeof this.$toast.success === 'function') {
-            this.$toast.success(successMessage);
-          } else {
-            // Fallback về alert nếu toast không có
+          try {
+            // Thử dùng toast trước
+            if (this.$toast && typeof this.$toast.success === 'function') {
+              this.$toast.success(successMessage);
+            } else {
+              // Fallback về alert nếu toast không có
+              alert(successMessage);
+            }
+          } catch (toastError) {
+            // Nếu toast bị lỗi, dùng alert
+            console.warn('Toast error, using alert:', toastError);
             alert(successMessage);
           }
-        } catch (toastError) {
-          // Nếu toast bị lỗi, dùng alert
-          console.warn('Toast error, using alert:', toastError);
-          alert(successMessage);
         }
 
         // Reset số lượng về 1
-        this.quantity = 1;
+        if (resetQuantity) {
+          this.quantity = 1;
+        }
         console.log('=== ADD TO CART DEBUG END - SUCCESS ===');
+        return true;
 
       } catch (error) {
         console.error('❌ ERROR in addToCart:', error);
@@ -1275,6 +1261,7 @@ export default {
         }
 
         console.log('=== ADD TO CART DEBUG END - FAILED ===');
+        return false;
       }
     },
 
@@ -1400,14 +1387,14 @@ export default {
     },
 
     async buyNow() {
-      // Check if user is authenticated
-      const isAuthenticated = !!(getAuthToken() && getUserId());
-
       try {
-        await this.addToCart();
-        // Chỉ chuyển đến checkout nếu thêm thành công
-        // Both guest and logged in users go to the same checkout page
-        this.$router.push('/checkout');
+        const addedToCart = await this.addToCart({ silent: true, resetQuantity: false });
+        if (!addedToCart) {
+          return;
+        }
+
+        this.quantity = 1;
+        await this.$router.push('/checkout');
       } catch (error) {
         // addToCart đã handle lỗi
         console.error('Buy now failed:', error);
@@ -1416,15 +1403,17 @@ export default {
 
     // Navigation methods
     goToProduct(productDetailId) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
       this.selectedImageIndex = 0;
       this.quantity = 1;
       this.progressWidth = 0;
-      this.$router.push(`/product/${productDetailId}`);
+      this.$router.push({
+        path: `/product/${productDetailId}`,
+        hash: '#product-info'
+      });
     },
 
     goBack() {
-      this.$router.push('/products');
+      this.$router.push('/products#products');
     },
 
     // XỬ LÝ LỖI HÌNH ẢNH ĐÃ SỬA
@@ -1432,9 +1421,9 @@ export default {
       console.log('Product image load failed for:', event.target.src);
 
       // Chỉ set placeholder nếu chưa phải placeholder
-      if (!event.target.src.includes('placeholder-shoe.png')) {
+      if (!event.target.src.startsWith('data:image/svg+xml')) {
         console.log('Setting placeholder');
-        event.target.src = '/placeholder-shoe.png';
+        event.target.src = productPlaceholderImage;
       }
     },
 
@@ -1501,6 +1490,10 @@ export default {
 .product-detail-container {
 min-height: 100vh;
 background-color: #f8f9fa;
+}
+
+#product-info {
+scroll-margin-top: 96px;
 }
 
 /* Breadcrumb */

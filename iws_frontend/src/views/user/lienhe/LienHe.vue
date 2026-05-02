@@ -4,7 +4,7 @@
     <Hero />
     
     <!-- Header Section với gradient và animation -->
-    <section class="relative overflow-hidden">
+    <section id="contact-us" class="relative overflow-hidden scroll-mt-24">
       <!-- Animated background -->
       <div class="absolute inset-0 bg-gradient-to-br from-emerald-400 via-green-500 to-teal-600">
         <div class="absolute inset-0 bg-black opacity-20"></div>
@@ -52,8 +52,8 @@
                 <i class="fas fa-map-marker-alt text-white text-2xl"></i>
               </div>
               <h3 class="text-2xl font-bold text-gray-900 mb-4">Địa chỉ văn phòng</h3>
-              <p class="text-gray-600 leading-relaxed">126 Đường Nguyễn Trãi Quận Hà Đông, TP HÀ Nội</p>
-              <a href="#" class="inline-flex items-center text-green-600 hover:text-green-700 mt-4 font-semibold">
+              <p class="text-gray-600 leading-relaxed">{{ shopContact.address }}</p>
+              <a href="#stores" class="inline-flex items-center text-green-600 hover:text-green-700 mt-4 font-semibold">
                 Xem bản đồ <i class="fas fa-arrow-right ml-2"></i>
               </a>
             </div>
@@ -69,19 +69,19 @@
               <h3 class="text-2xl font-bold text-gray-900 mb-4">Hotline – Zalo</h3>
               <p class="text-gray-600 mb-2">
                 <strong>Điện thoại:</strong> 
-                <a href="tel:0368971050" class="text-blue-600 hover:text-blue-700">036.897.1050</a>
+                <a href="tel:0357471462" class="text-blue-600 hover:text-blue-700">0357471462</a>
               </p>
               <p class="text-gray-600">
                 <strong>Email:</strong> 
                 <a href="mailto:info@thietkewebchuyen.com" class="text-blue-600 hover:text-blue-700">info@thietkewebchuyen.com</a>
               </p>
               <div class="flex gap-3 mt-4">
-                <a href="#" class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300">
+                <button type="button" @click="showContactInfo('messenger')" aria-label="Xem thông tin Messenger" class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300">
                   <i class="fab fa-facebook-f"></i>
-                </a>
-                <a href="#" class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 hover:bg-green-600 hover:text-white transition-all duration-300">
+                </button>
+                <button type="button" @click="showContactInfo('zalo')" aria-label="Xem thông tin Zalo" class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 hover:bg-green-600 hover:text-white transition-all duration-300">
                   <i class="fas fa-comment-dots"></i>
-                </a>
+                </button>
               </div>
             </div>
           </div>
@@ -134,7 +134,7 @@
           <!-- Left side - Features -->
           <div class="space-y-8">
             <div class="relative">
-              <img src="" alt="Contact illustration" class="w-full max-w-md mx-auto rounded-2xl shadow-xl" />
+              <img :src="contactImage" alt="Hỗ trợ khách hàng Bee Shoes" class="w-full max-w-md mx-auto rounded-2xl shadow-xl object-cover aspect-[4/3]" />
               <div class="absolute -bottom-6 -right-6 bg-gradient-to-r from-green-500 to-teal-600 text-white p-6 rounded-2xl shadow-lg max-w-xs">
                 <h4 class="font-bold text-lg mb-2">Cam kết của chúng tôi</h4>
                 <ul class="space-y-2 text-sm">
@@ -156,16 +156,16 @@
             
             <!-- Contact methods -->
             <div class="grid grid-cols-2 gap-4 mt-12">
-              <div class="bg-gray-50 p-6 rounded-xl text-center hover:bg-green-50 transition-colors duration-300">
+              <button type="button" @click="showContactInfo('hotline')" class="bg-gray-50 p-6 rounded-xl text-center hover:bg-green-50 transition-colors duration-300">
                 <i class="fas fa-headset text-3xl text-green-600 mb-3"></i>
                 <h5 class="font-semibold text-gray-900">Tư vấn trực tiếp</h5>
                 <p class="text-sm text-gray-600 mt-2">Gọi ngay hotline</p>
-              </div>
-              <div class="bg-gray-50 p-6 rounded-xl text-center hover:bg-blue-50 transition-colors duration-300">
+              </button>
+              <button type="button" @click="showContactInfo('messenger')" class="bg-gray-50 p-6 rounded-xl text-center hover:bg-blue-50 transition-colors duration-300">
                 <i class="fas fa-comments text-3xl text-blue-600 mb-3"></i>
                 <h5 class="font-semibold text-gray-900">Chat online</h5>
                 <p class="text-sm text-gray-600 mt-2">Messenger & Zalo</p>
-              </div>
+              </button>
             </div>
           </div>
 
@@ -248,7 +248,7 @@
     <section id="stores" class="relative h-96 bg-gray-200">
       <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/20"></div>
       <iframe 
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.0824710975044!2d106.63657131480079!3d10.805183992303403!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752935e97b0445%3A0x7edabc7f961f6b79!2zMTM0IEh14buzbmggVsSDbiBOZ2jhu4csIFBoxrDhu51uZyAxNSwgVMOibiBCw6xuaCwgVGjDoG5oIHBo4buRIEjhu5MgQ2jDrSBNaW5oLCBWaeG7h3QgTmFt!5e0!3m2!1svi!2s!4v1635841420185!5m2!1svi!2s"
+        :src="mapEmbedUrl"
         width="100%" 
         height="100%" 
         style="border:0;" 
@@ -258,20 +258,20 @@
       </iframe>
       <div class="absolute bottom-8 left-8 bg-white p-6 rounded-xl shadow-lg max-w-xs">
         <h4 class="font-bold text-gray-900 mb-2">Ghé thăm chúng tôi</h4>
-        <p class="text-sm text-gray-600">Chúng tôi luôn chào đón bạn đến văn phòng để trao đổi trực tiếp</p>
-        <a href="#" class="inline-flex items-center text-green-600 hover:text-green-700 mt-3 font-semibold text-sm">
+        <p class="text-sm text-gray-600">{{ shopContact.address }}</p>
+        <a :href="mapDirectionsUrl" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-green-600 hover:text-green-700 mt-3 font-semibold text-sm">
           Chỉ đường <i class="fas fa-directions ml-2"></i>
         </a>
       </div>
     </section>
 
-    <section id="footer-section" class="padding-x padding-t bg-black pb-8">
+    <section id="footer-section" class="bg-black px-8 pb-8 pt-12 sm:px-16 sm:pt-24">
       <Footer />
     </section>
 
     <!-- Modern Floating Buttons -->
     <div class="fixed bottom-6 left-6 z-50">
-      <button class="group bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-bold py-4 px-6 rounded-full shadow-lg flex items-center space-x-3 transition-all duration-300 transform hover:scale-105">
+      <button type="button" @click="showContactInfo('hotline')" class="group bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-bold py-4 px-6 rounded-full shadow-lg flex items-center space-x-3 transition-all duration-300 transform hover:scale-105">
         <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors duration-300">
           <i class="fas fa-headset text-xl"></i>
         </div>
@@ -281,7 +281,7 @@
 
     <div class="contact-floating-actions fixed right-6 z-50 flex flex-col space-y-4">
       <!-- Messenger -->
-      <button class="group relative w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110">
+      <button type="button" @click="showContactInfo('messenger')" aria-label="Xem thông tin Messenger" class="group relative w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110">
         <i class="fab fa-facebook-messenger text-2xl"></i>
         <span class="absolute right-full mr-3 bg-gray-900 text-white text-sm px-3 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
           Chat Messenger
@@ -289,7 +289,7 @@
       </button>
       
       <!-- Zalo -->
-      <button class="group relative w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110">
+      <button type="button" @click="showContactInfo('zalo')" aria-label="Xem thông tin Zalo" class="group relative w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110">
         <span class="font-bold text-xl">Z</span>
         <span class="absolute right-full mr-3 bg-gray-900 text-white text-sm px-3 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
           Chat Zalo
@@ -304,6 +304,62 @@
         </span>
       </button>
     </div>
+
+    <div v-if="contactInfoVisible" class="contact-info-overlay fixed inset-0 flex items-end justify-center bg-black/40 px-4 py-6 sm:items-center" @click.self="closeContactInfo">
+      <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+        <div class="mb-5 flex items-start justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-wide text-green-600">{{ activeContactLabel }}</p>
+            <h3 class="mt-1 text-2xl font-bold text-gray-900">Thông tin liên hệ shop</h3>
+          </div>
+          <button type="button" @click="closeContactInfo" aria-label="Đóng thông tin liên hệ" class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="space-y-3 text-gray-700">
+          <a :href="`tel:${shopContact.phone}`" class="flex items-center gap-3 rounded-xl border border-gray-200 p-4 hover:border-green-500 hover:bg-green-50">
+            <span class="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-green-700">
+              <i class="fas fa-phone-alt"></i>
+            </span>
+            <span>
+              <span class="block text-sm text-gray-500">Hotline / Zalo</span>
+              <strong class="text-gray-900">{{ shopContact.phone }}</strong>
+            </span>
+          </a>
+
+          <a :href="`mailto:${shopContact.email}`" class="flex items-center gap-3 rounded-xl border border-gray-200 p-4 hover:border-blue-500 hover:bg-blue-50">
+            <span class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+              <i class="fas fa-envelope"></i>
+            </span>
+            <span>
+              <span class="block text-sm text-gray-500">Email</span>
+              <strong class="break-all text-gray-900">{{ shopContact.email }}</strong>
+            </span>
+          </a>
+
+          <div class="flex items-center gap-3 rounded-xl border border-gray-200 p-4">
+            <span class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-700">
+              <i class="fab fa-facebook-messenger"></i>
+            </span>
+            <span>
+              <span class="block text-sm text-gray-500">Messenger</span>
+              <strong class="text-gray-900">{{ shopContact.messenger }}</strong>
+            </span>
+          </div>
+
+          <div class="flex items-start gap-3 rounded-xl border border-gray-200 p-4">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+              <i class="fas fa-map-marker-alt"></i>
+            </span>
+            <span>
+              <span class="block text-sm text-gray-500">Địa chỉ</span>
+              <strong class="text-gray-900">{{ shopContact.address }}</strong>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- ===== ĐÃ THÊM CHATBOT COMPONENT ===== -->
     <ChatBot />
   </main>
@@ -314,6 +370,7 @@ import Nav from '@/components/user/Nav.vue';
 import Footer from '@/views/user/Footer.vue';
 import Hero from '../Hero.vue';
 import ChatBot from '@/components/ChatBotAndReview/ChatBot.vue';
+import contactImage from '@/assets/images/customer1.jpeg';
 
 export default {
   name: 'Lienhe',
@@ -323,7 +380,44 @@ export default {
     Hero,
     ChatBot
   },
+  data() {
+    return {
+      contactImage,
+      contactInfoVisible: false,
+      activeContactChannel: 'hotline',
+      shopContact: {
+        phone: '0357471462',
+        email: 'info@thietkewebchuyen.com',
+        messenger: 'Fanpage BEE SHOES',
+        address: 'Km 9, đường Nguyễn Trãi, quận Nam Từ Liêm, thành phố Hà Nội'
+      }
+    };
+  },
+  computed: {
+    activeContactLabel() {
+      const labels = {
+        hotline: 'Hỗ trợ 24/7',
+        messenger: 'Messenger',
+        zalo: 'Zalo'
+      };
+
+      return labels[this.activeContactChannel] || labels.hotline;
+    },
+    mapEmbedUrl() {
+      return `https://www.google.com/maps?q=${encodeURIComponent(this.shopContact.address)}&output=embed`;
+    },
+    mapDirectionsUrl() {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(this.shopContact.address)}`;
+    }
+  },
   methods: {
+    showContactInfo(channel = 'hotline') {
+      this.activeContactChannel = channel;
+      this.contactInfoVisible = true;
+    },
+    closeContactInfo() {
+      this.contactInfoVisible = false;
+    },
     scrollToTop() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -340,6 +434,10 @@ export default {
   font-family: 'Inter', sans-serif;
   background-color: #ffffff;
   min-height: 100vh;
+}
+
+.contact-info-overlay {
+  z-index: 1200;
 }
 
 .contact-floating-actions {

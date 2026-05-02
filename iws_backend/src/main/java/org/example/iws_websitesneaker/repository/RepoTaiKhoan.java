@@ -95,6 +95,25 @@ public interface RepoTaiKhoan extends JpaRepository<TaiKhoan, Integer> {
 
     List<TaiKhoan> findByTrangThaiOrderByNgayTaoDesc(Integer trangThai);
 
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Transactional
+    @Query("UPDATE TaiKhoan tk SET tk.trangThai = :trangThai, tk.ngayCapNhat = :ngayCapNhat WHERE tk.id = :id")
+    int updateTrangThaiById(@Param("id") Integer id,
+                            @Param("trangThai") Integer trangThai,
+                            @Param("ngayCapNhat") Date ngayCapNhat);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Transactional
+    @Query(value = """
+    UPDATE tai_khoan tk
+    JOIN khach_hang kh ON kh.id_tai_khoan = tk.id
+    SET tk.trang_thai = 0, tk.ngay_cap_nhat = :ngayCapNhat
+    WHERE tk.vai_tro = 0
+      AND kh.trang_thai = 0
+      AND tk.trang_thai <> 0
+    """, nativeQuery = true)
+    int lockAccountsForLockedCustomers(@Param("ngayCapNhat") Date ngayCapNhat);
+
     // ================== EXISTENCE CHECKS ==================
 
     boolean existsByEmail(String email);

@@ -2,7 +2,7 @@
   <main class="gioithieu">
     <Nav />
     <HeroSection />
-    <section id="about-us-content" class="relative overflow-hidden">
+    <section id="about-us-content" class="relative overflow-hidden scroll-mt-24">
       <!-- Background decoration -->
       <div class="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50"></div>
       <div class="absolute top-0 left-0 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
@@ -365,7 +365,7 @@
         </div>
       </div>
     </section>
-    <section id="footer-section" class="padding-x padding-t bg-black pb-8">
+    <section id="footer-section" class="bg-black px-8 pb-8 pt-12 sm:px-16 sm:pt-24">
       <Footer />
     </section>
     <ScrollToggler />

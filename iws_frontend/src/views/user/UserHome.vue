@@ -2,7 +2,7 @@
     <main class="relative">
         <Nav />
         <HeroSection />
-        <section id="products" class="padding">
+        <section id="products" class="padding scroll-mt-24">
             <PopularProducts />
         </section>
         <section id="about-us" class="padding">
@@ -18,7 +18,7 @@
         <!-- <section id="contact-us" class="padding-x sm:py-32 py-16">
             <Subscribe />
         </section> -->
-        <section id="#" class="padding-x padding-t bg-black pb-8">
+        <section id="footer-section" class="bg-black px-8 pb-8 pt-12 sm:px-16 sm:pt-24">
             <Footer />
         </section>
         <ScrollToggler />

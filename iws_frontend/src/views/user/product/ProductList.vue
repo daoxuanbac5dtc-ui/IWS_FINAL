@@ -52,7 +52,7 @@ export default {
     computed: {
         filteredProducts() {
             let result = this.selectedCategory
-                ? this.products.filter((product) => product.categoryId === this.selectedCategory)
+                ? this.products.filter((product) => String(product.categoryId) === String(this.selectedCategory))
                 : [...this.products];
 
             const priceRange = this.priceRanges.find((range) => range.value === this.selectedPriceRange);
@@ -83,12 +83,22 @@ export default {
             if (!this.selectedCategory) {
                 return 'Phổ Biến';
             }
-            const category = this.categories.find((cat) => cat.id === this.selectedCategory);
+            const category = this.categories.find((cat) => String(cat.id) === String(this.selectedCategory));
             return category ? category.tenDanhMuc : 'Phổ Biến';
         },
 
         totalProducts() {
             return this.products.length;
+        },
+
+        productCountByCategory() {
+            return this.products.reduce((counts, product) => {
+                if (product.categoryId !== undefined && product.categoryId !== null) {
+                    const categoryKey = String(product.categoryId);
+                    counts.set(categoryKey, (counts.get(categoryKey) || 0) + 1);
+                }
+                return counts;
+            }, new Map());
         },
 
         activeFilterCount() {
@@ -103,7 +113,6 @@ export default {
         selectCategory(categoryId) {
             this.selectedCategory = categoryId;
             this.isMobileMenuOpen = false;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         },
 
         scrollToProducts() {
@@ -132,7 +141,10 @@ export default {
         goToProductDetail(product) {
             console.log('Navigating to product detail:', product);
             if (product.firstDetailId) {
-                this.$router.push(`/product/${product.firstDetailId}`);
+                this.$router.push({
+                    path: `/product/${product.firstDetailId}`,
+                    hash: '#product-info'
+                });
             } else {
                 console.warn('No firstDetailId found for product:', product);
                 if (this.$toast) {
@@ -149,6 +161,26 @@ export default {
                 return imageUrl;
             }
             return productPlaceholderImage;
+        },
+
+        getCategoryProductCount(categoryId) {
+            return this.productCountByCategory.get(String(categoryId)) || 0;
+        },
+
+        resolveDetailImage(detail, imageLookup) {
+            const image = detail?.hinhAnh;
+            if (!image) return null;
+
+            if (typeof image === 'object') {
+                const imageById = image.id ? imageLookup.findById(image.id) : null;
+                return imageById || resolveProductImageUrl(image);
+            }
+
+            if (typeof image === 'number' || typeof image === 'string') {
+                return imageLookup.findById(image) || resolveProductImageUrl(image);
+            }
+
+            return null;
         },
 
         handleImageLoad(event) {
@@ -224,16 +256,7 @@ export default {
                         }
 
                         if (!productImageMap.has(productId) && detail.hinhAnh) {
-                            let finalImageUrl = null;
-                            if (typeof detail.hinhAnh === 'object' && detail.hinhAnh !== null) {
-                                if (detail.hinhAnh.id) {
-                                    finalImageUrl = imageLookup.findById(detail.hinhAnh.id);
-                                } else {
-                                    finalImageUrl = resolveProductImageUrl(detail.hinhAnh);
-                                }
-                            } else if (typeof detail.hinhAnh === 'number' || typeof detail.hinhAnh === 'string') {
-                                finalImageUrl = imageLookup.findById(detail.hinhAnh);
-                            }
+                            const finalImageUrl = this.resolveDetailImage(detail, imageLookup);
 
                             if (finalImageUrl) {
                                 productImageMap.set(productId, finalImageUrl);
@@ -242,32 +265,35 @@ export default {
                     }
                 });
 
-                this.products = productsResponse.data.map((p) => {
-                    const normalizedId = String(p.id);
-                    const priceInfo = priceMap.get(normalizedId) || { giaBan: 0, giaGoc: 0 };
-                    
-                    let imageUrl = productImageMap.get(normalizedId) || imageLookup.findForProduct(p);
-                    if (!imageUrl && p.hinhAnh) {
-                        imageUrl = resolveProductImageUrl(p.hinhAnh);
-                    }
-                    
-                    return {
-                        id: p.id,
-                        firstDetailId: firstDetailMap.get(normalizedId),
-                        imgUrl: imageUrl,
-                        label: p.tenSanPham || 'Sản phẩm không tên',
-                        price: priceInfo.giaBan,
-                        originalPrice: priceInfo.giaGoc,
-                        rating: (4.5 + Math.random() * 0.5).toFixed(1),
-                        brandId: p.thuongHieu?.id,
-                        brandName: p.thuongHieu?.tenThuongHieu || '',
-                        categoryId: p.danhMuc?.id,
-                        categoryName: p.danhMuc?.tenDanhMuc || '',
-                        maSanPham: p.maSanPham,
-                        soLuong: p.soLuong || 0,
-                        trangThai: p.trangThai
-                    };
-                });
+                this.products = productsResponse.data
+                    .filter((p) => p.trangThai === 1)
+                    .map((p) => {
+                        const normalizedId = String(p.id);
+                        const priceInfo = priceMap.get(normalizedId) || { giaBan: 0, giaGoc: 0 };
+
+                        let imageUrl = productImageMap.get(normalizedId) || imageLookup.findForProduct(p);
+                        if (!imageUrl && p.hinhAnh) {
+                            imageUrl = resolveProductImageUrl(p.hinhAnh);
+                        }
+
+                        return {
+                            id: p.id,
+                            firstDetailId: firstDetailMap.get(normalizedId),
+                            imgUrl: imageUrl,
+                            label: p.tenSanPham || 'Sản phẩm không tên',
+                            price: priceInfo.giaBan,
+                            originalPrice: priceInfo.giaGoc,
+                            rating: (4.5 + Math.random() * 0.5).toFixed(1),
+                            brandId: p.thuongHieu?.id,
+                            brandName: p.thuongHieu?.tenThuongHieu || '',
+                            categoryId: p.danhMuc?.id,
+                            categoryName: p.danhMuc?.tenDanhMuc || '',
+                            maSanPham: p.maSanPham,
+                            soLuong: p.soLuong || 0,
+                            trangThai: p.trangThai
+                        };
+                    })
+                    .filter((product) => product.firstDetailId && product.price > 0);
 
             } catch (error) {
                 console.error('Error fetching products:', error);
@@ -334,8 +360,18 @@ export default {
                                 <span class="category-count">{{ totalProducts }}</span>
                             </div>
 
-                            <div v-for="category in categories" :key="category.id" class="category-item" :class="{ active: selectedCategory === category.id }" @click="selectCategory(category.id)">
+                            <div
+                                v-for="category in categories"
+                                :key="category.id"
+                                class="category-item"
+                                :class="{
+                                    active: selectedCategory === category.id,
+                                    empty: getCategoryProductCount(category.id) === 0
+                                }"
+                                @click="selectCategory(category.id)"
+                            >
                                 <span class="category-name">{{ category.tenDanhMuc }}</span>
+                                <span class="category-count">{{ getCategoryProductCount(category.id) }}</span>
                                 <span class="category-arrow">
                                     <svg viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
@@ -484,12 +520,14 @@ export default {
                         <svg viewBox="0 0 24 24" class="empty-icon">
                             <path fill="currentColor" d="M19,2H5A3,3 0 0,0 2,5V19A3,3 0 0,0 5,22H19A3,3 0 0,0 22,19V5A3,3 0 0,0 19,2M19,19H5V5H19V19M13.96,12.29L11.21,15.83L9.25,13.47L6.5,17H17.5L13.96,12.29Z" />
                         </svg>
-                        <p class="empty-text">Không có sản phẩm nào trong danh mục này</p>
+                        <p class="empty-text">
+                            {{ selectedCategory ? `Chưa có sản phẩm trong danh mục ${selectedCategoryName}` : 'Chưa có sản phẩm phù hợp với bộ lọc hiện tại' }}
+                        </p>
                     </div>
                 </div>
             </div>
         </main>
-        <section id="#" class="padding-x padding-t bg-black pb-8">
+        <section id="footer-section" class="bg-black px-8 pb-8 pt-12 sm:px-16 sm:pt-24">
             <Footer />
         </section>
         <ScrollToggler />
@@ -502,6 +540,10 @@ export default {
     font-family: 'Helvetica Neue', Arial, sans-serif;
     background-color: #f5f5f5;
     min-height: 100vh;
+}
+
+#products {
+    scroll-margin-top: 96px;
 }
 
 .main-container {
@@ -579,6 +621,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 0.75rem;
     padding: 1rem 1.25rem;
     margin-bottom: 0.5rem;
     border-radius: 12px;
@@ -599,6 +642,8 @@ export default {
 
 .category-name {
     font-weight: 600;
+    min-width: 0;
+    flex: 1;
 }
 
 .category-count {
@@ -607,6 +652,7 @@ export default {
     border-radius: 20px;
     font-size: 0.875rem;
     color: #64748b;
+    flex: 0 0 auto;
 }
 
 .active .category-count {
@@ -614,11 +660,21 @@ export default {
     color: white;
 }
 
+.category-item.empty:not(.active) {
+    color: #94a3b8;
+}
+
+.category-item.empty:not(.active) .category-count {
+    background: #f8fafc;
+    color: #94a3b8;
+}
+
 .category-arrow {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     color: #94a3b8;
+    flex: 0 0 auto;
 }
 
 .category-arrow svg {
@@ -636,6 +692,7 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    position: relative;
 }
 
 .filter-title {
@@ -693,11 +750,19 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(100% + 0.75rem);
+    z-index: 30;
+    max-height: min(30rem, calc(100vh - 10rem));
+    overflow-y: auto;
     padding: 1rem;
     border: 1px solid #e5e7eb;
     border-radius: 16px;
     background: #ffffff;
     box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+    transform-origin: bottom center;
 }
 
 .filter-group {
@@ -797,7 +862,17 @@ export default {
     justify-content: center;
 }
 
+.product-image-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .product-image {
+    width: 100%;
+    height: 100%;
     max-width: 80%;
     max-height: 80%;
     object-fit: contain;
@@ -866,9 +941,23 @@ export default {
     }
 }
 
+.btn-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    text-align: center;
+    line-height: 1.2;
+}
+
 .view-icon {
     width: 18px;
     height: 18px;
+    display: block;
+    margin: 0 auto;
+    flex: 0 0 auto;
 }
 
 .section-header {
@@ -965,6 +1054,12 @@ export default {
     .mobile-menu-toggle svg {
         width: 20px;
         height: 20px;
+    }
+
+    .advanced-filter-panel {
+        position: static;
+        max-height: none;
+        overflow-y: visible;
     }
 }
 

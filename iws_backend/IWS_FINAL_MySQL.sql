@@ -693,4 +693,137 @@ INSERT INTO tai_khoan_voucher (id_tai_khoan, id_voucher, trang_thai, ngay_tao, n
 (7, 5, 1, NOW(), NOW()),
 (8, 5, 1, NOW(), NOW())
 ;
+
+-- =============================================
+-- THÊM SẢN PHẨM CHO CÁC DANH MỤC ĐANG TRỐNG
+-- Giày bóng đá: 2, Giày cao gót: 1, Giày sandal: 2, Giày boot: 2, Giày tây: 1
+-- =============================================
+
+INSERT INTO hinh_anh (ma_hinh_anh, ten_hinh_anh, duong_dan, trang_thai, ngay_tao, ngay_cap_nhat)
+SELECT 'HA009', 'Nike Phantom Strike TF', '/images/football-nike-phantom-strike.jpg', 1, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM hinh_anh WHERE ma_hinh_anh = 'HA009');
+
+INSERT INTO hinh_anh (ma_hinh_anh, ten_hinh_anh, duong_dan, trang_thai, ngay_tao, ngay_cap_nhat)
+SELECT 'HA010', 'Adidas Predator Club FG', '/images/football-adidas-predator-club.png', 1, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM hinh_anh WHERE ma_hinh_anh = 'HA010');
+
+INSERT INTO hinh_anh (ma_hinh_anh, ten_hinh_anh, duong_dan, trang_thai, ngay_tao, ngay_cap_nhat)
+SELECT 'HA011', 'Puma Elegance Stiletto', '/images/heel-puma-elegance-stiletto.jpg', 1, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM hinh_anh WHERE ma_hinh_anh = 'HA011');
+
+INSERT INTO hinh_anh (ma_hinh_anh, ten_hinh_anh, duong_dan, trang_thai, ngay_tao, ngay_cap_nhat)
+SELECT 'HA012', 'Nike Coast Sandal', '/images/sandal-nike-coast-nikko.jpg', 1, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM hinh_anh WHERE ma_hinh_anh = 'HA012');
+
+INSERT INTO hinh_anh (ma_hinh_anh, ten_hinh_anh, duong_dan, trang_thai, ngay_tao, ngay_cap_nhat)
+SELECT 'HA013', 'Adidas Breeze Sandal', '/images/sandal-adidas-breeze.jpg', 1, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM hinh_anh WHERE ma_hinh_anh = 'HA013');
+
+INSERT INTO hinh_anh (ma_hinh_anh, ten_hinh_anh, duong_dan, trang_thai, ngay_tao, ngay_cap_nhat)
+SELECT 'HA014', 'Puma Chelsea Boot', '/images/boot-puma-chelsea.jpg', 1, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM hinh_anh WHERE ma_hinh_anh = 'HA014');
+
+INSERT INTO hinh_anh (ma_hinh_anh, ten_hinh_anh, duong_dan, trang_thai, ngay_tao, ngay_cap_nhat)
+SELECT 'HA015', 'New Balance Trail Boot', '/images/boot-newbalance-trail.jpg', 1, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM hinh_anh WHERE ma_hinh_anh = 'HA015');
+
+INSERT INTO hinh_anh (ma_hinh_anh, ten_hinh_anh, duong_dan, trang_thai, ngay_tao, ngay_cap_nhat)
+SELECT 'HA016', 'Reebok Classic Derby', '/images/dress-reebok-classic-derby.jpg', 1, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM hinh_anh WHERE ma_hinh_anh = 'HA016');
+
+INSERT INTO san_pham (ma_san_pham, ten_san_pham, so_luong, trang_thai, ngay_tao, ngay_cap_nhat, id_chat_lieu, id_de_giay, id_danh_muc, id_thuong_hieu)
+SELECT 'SP009', 'Nike Phantom Strike TF', 36, 1, NOW(), NOW(), cl.id, dg.id, dm.id, th.id
+FROM chat_lieu cl, de_giay dg, danh_muc dm, thuong_hieu th
+WHERE cl.ma_chat_lieu = 'CL002' AND dg.ma_de_giay = 'DG006' AND dm.ma_danh_muc = 'DM003' AND th.ma_thuong_hieu = 'TH001'
+  AND NOT EXISTS (SELECT 1 FROM san_pham WHERE ma_san_pham = 'SP009');
+
+INSERT INTO san_pham (ma_san_pham, ten_san_pham, so_luong, trang_thai, ngay_tao, ngay_cap_nhat, id_chat_lieu, id_de_giay, id_danh_muc, id_thuong_hieu)
+SELECT 'SP010', 'Adidas Predator Club FG', 32, 1, NOW(), NOW(), cl.id, dg.id, dm.id, th.id
+FROM chat_lieu cl, de_giay dg, danh_muc dm, thuong_hieu th
+WHERE cl.ma_chat_lieu = 'CL002' AND dg.ma_de_giay = 'DG006' AND dm.ma_danh_muc = 'DM003' AND th.ma_thuong_hieu = 'TH002'
+  AND NOT EXISTS (SELECT 1 FROM san_pham WHERE ma_san_pham = 'SP010');
+
+INSERT INTO san_pham (ma_san_pham, ten_san_pham, so_luong, trang_thai, ngay_tao, ngay_cap_nhat, id_chat_lieu, id_de_giay, id_danh_muc, id_thuong_hieu)
+SELECT 'SP011', 'Puma Elegance Stiletto', 24, 1, NOW(), NOW(), cl.id, dg.id, dm.id, th.id
+FROM chat_lieu cl, de_giay dg, danh_muc dm, thuong_hieu th
+WHERE cl.ma_chat_lieu = 'CL001' AND dg.ma_de_giay = 'DG007' AND dm.ma_danh_muc = 'DM004' AND th.ma_thuong_hieu = 'TH005'
+  AND NOT EXISTS (SELECT 1 FROM san_pham WHERE ma_san_pham = 'SP011');
+
+INSERT INTO san_pham (ma_san_pham, ten_san_pham, so_luong, trang_thai, ngay_tao, ngay_cap_nhat, id_chat_lieu, id_de_giay, id_danh_muc, id_thuong_hieu)
+SELECT 'SP012', 'Nike Coast Sandal', 42, 1, NOW(), NOW(), cl.id, dg.id, dm.id, th.id
+FROM chat_lieu cl, de_giay dg, danh_muc dm, thuong_hieu th
+WHERE cl.ma_chat_lieu = 'CL002' AND dg.ma_de_giay = 'DG002' AND dm.ma_danh_muc = 'DM005' AND th.ma_thuong_hieu = 'TH001'
+  AND NOT EXISTS (SELECT 1 FROM san_pham WHERE ma_san_pham = 'SP012');
+
+INSERT INTO san_pham (ma_san_pham, ten_san_pham, so_luong, trang_thai, ngay_tao, ngay_cap_nhat, id_chat_lieu, id_de_giay, id_danh_muc, id_thuong_hieu)
+SELECT 'SP013', 'Adidas Breeze Sandal', 38, 1, NOW(), NOW(), cl.id, dg.id, dm.id, th.id
+FROM chat_lieu cl, de_giay dg, danh_muc dm, thuong_hieu th
+WHERE cl.ma_chat_lieu = 'CL002' AND dg.ma_de_giay = 'DG002' AND dm.ma_danh_muc = 'DM005' AND th.ma_thuong_hieu = 'TH002'
+  AND NOT EXISTS (SELECT 1 FROM san_pham WHERE ma_san_pham = 'SP013');
+
+INSERT INTO san_pham (ma_san_pham, ten_san_pham, so_luong, trang_thai, ngay_tao, ngay_cap_nhat, id_chat_lieu, id_de_giay, id_danh_muc, id_thuong_hieu)
+SELECT 'SP014', 'Puma Chelsea Boot', 28, 1, NOW(), NOW(), cl.id, dg.id, dm.id, th.id
+FROM chat_lieu cl, de_giay dg, danh_muc dm, thuong_hieu th
+WHERE cl.ma_chat_lieu = 'CL001' AND dg.ma_de_giay = 'DG007' AND dm.ma_danh_muc = 'DM006' AND th.ma_thuong_hieu = 'TH005'
+  AND NOT EXISTS (SELECT 1 FROM san_pham WHERE ma_san_pham = 'SP014');
+
+INSERT INTO san_pham (ma_san_pham, ten_san_pham, so_luong, trang_thai, ngay_tao, ngay_cap_nhat, id_chat_lieu, id_de_giay, id_danh_muc, id_thuong_hieu)
+SELECT 'SP015', 'New Balance Trail Boot', 30, 1, NOW(), NOW(), cl.id, dg.id, dm.id, th.id
+FROM chat_lieu cl, de_giay dg, danh_muc dm, thuong_hieu th
+WHERE cl.ma_chat_lieu = 'CL005' AND dg.ma_de_giay = 'DG008' AND dm.ma_danh_muc = 'DM006' AND th.ma_thuong_hieu = 'TH006'
+  AND NOT EXISTS (SELECT 1 FROM san_pham WHERE ma_san_pham = 'SP015');
+
+INSERT INTO san_pham (ma_san_pham, ten_san_pham, so_luong, trang_thai, ngay_tao, ngay_cap_nhat, id_chat_lieu, id_de_giay, id_danh_muc, id_thuong_hieu)
+SELECT 'SP016', 'Reebok Classic Derby', 22, 1, NOW(), NOW(), cl.id, dg.id, dm.id, th.id
+FROM chat_lieu cl, de_giay dg, danh_muc dm, thuong_hieu th
+WHERE cl.ma_chat_lieu = 'CL001' AND dg.ma_de_giay = 'DG007' AND dm.ma_danh_muc = 'DM007' AND th.ma_thuong_hieu = 'TH007'
+  AND NOT EXISTS (SELECT 1 FROM san_pham WHERE ma_san_pham = 'SP016');
+
+INSERT INTO chi_tiet_san_pham (ma_chi_tiet, ma_QR, so_luong, gia_ban, gia_goc, trang_thai, ngay_tao, ngay_cap_nhat, id_mau_sac, id_kich_co, id_san_pham, id_hinh_anh)
+SELECT 'CTSP019', 'QR019', 36, 1890000.00, 2190000.00, 1, NOW(), NOW(), ms.id, kc.id, sp.id, ha.id
+FROM mau_sac ms, kich_co kc, san_pham sp, hinh_anh ha
+WHERE ms.ma_mau_sac = 'MS001' AND kc.ma_kich_co = 'KC007' AND sp.ma_san_pham = 'SP009' AND ha.ma_hinh_anh = 'HA009'
+  AND NOT EXISTS (SELECT 1 FROM chi_tiet_san_pham WHERE ma_chi_tiet = 'CTSP019');
+
+INSERT INTO chi_tiet_san_pham (ma_chi_tiet, ma_QR, so_luong, gia_ban, gia_goc, trang_thai, ngay_tao, ngay_cap_nhat, id_mau_sac, id_kich_co, id_san_pham, id_hinh_anh)
+SELECT 'CTSP020', 'QR020', 32, 1990000.00, 2290000.00, 1, NOW(), NOW(), ms.id, kc.id, sp.id, ha.id
+FROM mau_sac ms, kich_co kc, san_pham sp, hinh_anh ha
+WHERE ms.ma_mau_sac = 'MS003' AND kc.ma_kich_co = 'KC008' AND sp.ma_san_pham = 'SP010' AND ha.ma_hinh_anh = 'HA010'
+  AND NOT EXISTS (SELECT 1 FROM chi_tiet_san_pham WHERE ma_chi_tiet = 'CTSP020');
+
+INSERT INTO chi_tiet_san_pham (ma_chi_tiet, ma_QR, so_luong, gia_ban, gia_goc, trang_thai, ngay_tao, ngay_cap_nhat, id_mau_sac, id_kich_co, id_san_pham, id_hinh_anh)
+SELECT 'CTSP021', 'QR021', 24, 1190000.00, 1490000.00, 1, NOW(), NOW(), ms.id, kc.id, sp.id, ha.id
+FROM mau_sac ms, kich_co kc, san_pham sp, hinh_anh ha
+WHERE ms.ma_mau_sac = 'MS001' AND kc.ma_kich_co = 'KC003' AND sp.ma_san_pham = 'SP011' AND ha.ma_hinh_anh = 'HA011'
+  AND NOT EXISTS (SELECT 1 FROM chi_tiet_san_pham WHERE ma_chi_tiet = 'CTSP021');
+
+INSERT INTO chi_tiet_san_pham (ma_chi_tiet, ma_QR, so_luong, gia_ban, gia_goc, trang_thai, ngay_tao, ngay_cap_nhat, id_mau_sac, id_kich_co, id_san_pham, id_hinh_anh)
+SELECT 'CTSP022', 'QR022', 42, 690000.00, 890000.00, 1, NOW(), NOW(), ms.id, kc.id, sp.id, ha.id
+FROM mau_sac ms, kich_co kc, san_pham sp, hinh_anh ha
+WHERE ms.ma_mau_sac = 'MS008' AND kc.ma_kich_co = 'KC006' AND sp.ma_san_pham = 'SP012' AND ha.ma_hinh_anh = 'HA012'
+  AND NOT EXISTS (SELECT 1 FROM chi_tiet_san_pham WHERE ma_chi_tiet = 'CTSP022');
+
+INSERT INTO chi_tiet_san_pham (ma_chi_tiet, ma_QR, so_luong, gia_ban, gia_goc, trang_thai, ngay_tao, ngay_cap_nhat, id_mau_sac, id_kich_co, id_san_pham, id_hinh_anh)
+SELECT 'CTSP023', 'QR023', 38, 590000.00, 790000.00, 1, NOW(), NOW(), ms.id, kc.id, sp.id, ha.id
+FROM mau_sac ms, kich_co kc, san_pham sp, hinh_anh ha
+WHERE ms.ma_mau_sac = 'MS009' AND kc.ma_kich_co = 'KC007' AND sp.ma_san_pham = 'SP013' AND ha.ma_hinh_anh = 'HA013'
+  AND NOT EXISTS (SELECT 1 FROM chi_tiet_san_pham WHERE ma_chi_tiet = 'CTSP023');
+
+INSERT INTO chi_tiet_san_pham (ma_chi_tiet, ma_QR, so_luong, gia_ban, gia_goc, trang_thai, ngay_tao, ngay_cap_nhat, id_mau_sac, id_kich_co, id_san_pham, id_hinh_anh)
+SELECT 'CTSP024', 'QR024', 28, 2190000.00, 2490000.00, 1, NOW(), NOW(), ms.id, kc.id, sp.id, ha.id
+FROM mau_sac ms, kich_co kc, san_pham sp, hinh_anh ha
+WHERE ms.ma_mau_sac = 'MS008' AND kc.ma_kich_co = 'KC008' AND sp.ma_san_pham = 'SP014' AND ha.ma_hinh_anh = 'HA014'
+  AND NOT EXISTS (SELECT 1 FROM chi_tiet_san_pham WHERE ma_chi_tiet = 'CTSP024');
+
+INSERT INTO chi_tiet_san_pham (ma_chi_tiet, ma_QR, so_luong, gia_ban, gia_goc, trang_thai, ngay_tao, ngay_cap_nhat, id_mau_sac, id_kich_co, id_san_pham, id_hinh_anh)
+SELECT 'CTSP025', 'QR025', 30, 2390000.00, 2790000.00, 1, NOW(), NOW(), ms.id, kc.id, sp.id, ha.id
+FROM mau_sac ms, kich_co kc, san_pham sp, hinh_anh ha
+WHERE ms.ma_mau_sac = 'MS009' AND kc.ma_kich_co = 'KC009' AND sp.ma_san_pham = 'SP015' AND ha.ma_hinh_anh = 'HA015'
+  AND NOT EXISTS (SELECT 1 FROM chi_tiet_san_pham WHERE ma_chi_tiet = 'CTSP025');
+
+INSERT INTO chi_tiet_san_pham (ma_chi_tiet, ma_QR, so_luong, gia_ban, gia_goc, trang_thai, ngay_tao, ngay_cap_nhat, id_mau_sac, id_kich_co, id_san_pham, id_hinh_anh)
+SELECT 'CTSP026', 'QR026', 22, 1890000.00, 2190000.00, 1, NOW(), NOW(), ms.id, kc.id, sp.id, ha.id
+FROM mau_sac ms, kich_co kc, san_pham sp, hinh_anh ha
+WHERE ms.ma_mau_sac = 'MS001' AND kc.ma_kich_co = 'KC007' AND sp.ma_san_pham = 'SP016' AND ha.ma_hinh_anh = 'HA016'
+  AND NOT EXISTS (SELECT 1 FROM chi_tiet_san_pham WHERE ma_chi_tiet = 'CTSP026');
 SET FOREIGN_KEY_CHECKS = 1;
