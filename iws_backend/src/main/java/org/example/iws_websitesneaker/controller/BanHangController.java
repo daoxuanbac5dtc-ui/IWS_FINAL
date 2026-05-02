@@ -47,7 +47,7 @@
          * Lấy danh sách hóa đơn chờ
          */
 
-        @Transactional(readOnly = true)
+
         @GetMapping("/hoa-don-cho")
         public ResponseEntity<Map<String, Object>> layDanhSachHoaDonCho() {
             try {
@@ -101,7 +101,7 @@
         /**
          * Xóa hóa đơn chờ
          */
-        @Transactional
+
         @DeleteMapping("/hoa-don-cho/{id}")
         public ResponseEntity<Map<String, Object>> xoaHoaDonCho(@PathVariable Integer id) {
             try {
@@ -127,7 +127,7 @@
         /**
          * Lấy chi tiết hóa đơn chờ
          */
-        @Transactional
+
         @GetMapping("/hoa-don-cho/{id}")
         public ResponseEntity<Map<String, Object>> layChiTietHoaDonCho(@PathVariable Integer id) {
             try {
@@ -154,7 +154,7 @@
         /**
          * Lấy tổng quan hóa đơn chờ
          */
-        @Transactional
+
         @GetMapping("/hoa-don-cho/{id}/tong-quan")
         public ResponseEntity<Map<String, Object>> layTongQuanHoaDonCho(@PathVariable Integer id) {
             try {
@@ -183,7 +183,7 @@
         /**
          * Tìm kiếm sản phẩm cho bán hàng
          */
-        @Transactional(readOnly = true)
+
         @GetMapping("/san-pham")
         public ResponseEntity<Map<String, Object>> timKiemSanPham(
                 @RequestParam(defaultValue = "") String keyword,
@@ -245,7 +245,7 @@
         /**
          * Lấy chi tiết sản phẩm
          */
-        @Transactional
+
         @GetMapping("/san-pham/{id}")
         public ResponseEntity<Map<String, Object>> layChiTietSanPham(@PathVariable Integer id) {
             try {
@@ -272,7 +272,7 @@
         /**
          * Scan QR code sản phẩm
          */
-        @Transactional
+
         @PostMapping("/san-pham/scan-qr")
         public ResponseEntity<Map<String, Object>> scanQRSanPham(@RequestBody @Valid ScanQRRequest request) {
             try {
@@ -299,7 +299,7 @@
         /**
          * Lấy sản phẩm tương tự
          */
-        @Transactional
+
         @GetMapping("/san-pham/{id}/tuong-tu")
         public ResponseEntity<Map<String, Object>> laySanPhamTuongTu(@PathVariable Integer id) {
             try {
@@ -329,7 +329,7 @@
         /**
          * Thêm sản phẩm vào hóa đơn chờ
          */
-        @Transactional
+
         @PostMapping("/hoa-don-cho/{id}/them-san-pham")
         public ResponseEntity<Map<String, Object>> themSanPhamVaoHoaDon(
                 @PathVariable Integer id,
@@ -360,7 +360,7 @@
         /**
          * Cập nhật sản phẩm trong hóa đơn chờ
          */
-        @Transactional
+
         @PutMapping("/hoa-don-cho/{hoaDonId}/cap-nhat-san-pham/{chiTietId}")
         public ResponseEntity<Map<String, Object>> capNhatSanPhamTrongHoaDon(
                 @PathVariable Integer hoaDonId,
@@ -392,7 +392,7 @@
         /**
          * Xóa sản phẩm khỏi hóa đơn chờ
          */
-        @Transactional
+
         @DeleteMapping("/hoa-don-cho/{hoaDonId}/xoa-san-pham/{chiTietId}")
         public ResponseEntity<Map<String, Object>> xoaSanPhamKhoiHoaDon(
                 @PathVariable Integer hoaDonId,
@@ -423,7 +423,7 @@
         /**
          * Tính giá sản phẩm
          */
-        @Transactional
+
         @PostMapping("/san-pham/tinh-gia")
         public ResponseEntity<Map<String, Object>> tinhGiaSanPham(@RequestBody @Valid TinhGiaRequest request) {
             try {
@@ -492,7 +492,7 @@
         /**
          * Tạo khách hàng nhanh
          */
-        @Transactional
+
         @PostMapping("/khach-hang/tao-nhanh")
         public ResponseEntity<Map<String, Object>> taoKhachHangNhanh(@RequestBody @Valid TaoKhachHangNhanhRequest request) {
             try {
@@ -519,7 +519,7 @@
         /**
          * Lấy thông tin khách hàng
          */
-        @Transactional
+
         @GetMapping("/khach-hang/{id}")
         public ResponseEntity<Map<String, Object>> layThongTinKhachHang(@PathVariable Integer id) {
             try {
@@ -546,7 +546,7 @@
         /**
          * Áp dụng khách hàng cho hóa đơn
          */
-        @Transactional
+
         @PostMapping("/hoa-don-cho/{hoaDonId}/ap-dung-khach-hang/{khachHangId}")
         public ResponseEntity<Map<String, Object>> apDungKhachHang(
                 @PathVariable Integer hoaDonId,
@@ -576,7 +576,7 @@
         /**
          * Bỏ khách hàng khỏi hóa đơn
          */
-        @Transactional
+
         @DeleteMapping("/hoa-don-cho/{hoaDonId}/bo-khach-hang")
         public ResponseEntity<Map<String, Object>> boKhachHang(@PathVariable Integer hoaDonId) {
             try {
@@ -606,7 +606,7 @@
         /**
          * Lấy danh sách voucher khả dụng
          */
-        @Transactional
+
         @GetMapping("/voucher/kha-dung")
         public ResponseEntity<Map<String, Object>> layDanhSachVoucherKhaDung(
                 @RequestParam(required = false) Integer khachHangId,
@@ -636,7 +636,7 @@
         /**
          * Kiểm tra voucher
          */
-        @Transactional
+
         @PostMapping("/voucher/kiem-tra")
         public ResponseEntity<VoucherValidationResponse> kiemTraVoucher(@RequestBody @Valid ValidateVoucherRequest request) {
             try {
@@ -660,7 +660,7 @@
         /**
          * Áp dụng voucher vào hóa đơn
          */
-        @Transactional
+
         @PostMapping("/hoa-don-cho/{hoaDonId}/ap-dung-voucher/{voucherId}")
         public ResponseEntity<Map<String, Object>> apDungVoucher(
                 @PathVariable Integer hoaDonId,
@@ -690,7 +690,7 @@
         /**
          * Bỏ voucher khỏi hóa đơn
          */
-        @Transactional
+
         @DeleteMapping("/hoa-don-cho/{hoaDonId}/bo-voucher")
         public ResponseEntity<Map<String, Object>> boVoucher(@PathVariable Integer hoaDonId) {
             try {
@@ -720,7 +720,7 @@
         /**
          * Thanh toán hóa đơn chờ
          */
-        @Transactional
+
         @PostMapping("/hoa-don-cho/{id}/thanh-toan")
         public ResponseEntity<Map<String, Object>> thanhToanHoaDon(
                 @PathVariable Integer id,
@@ -819,7 +819,7 @@
         /**
          * Lấy thống kê bán hàng trong ngày
          */
-        @Transactional
+
         @GetMapping("/thong-ke/ban-hang-trong-ngay")
         public ResponseEntity<Map<String, Object>> layThongKeBanHangTrongNgay() {
             try {
@@ -846,7 +846,7 @@
         /**
          * Lấy sản phẩm bán chạy
          */
-        @Transactional
+
         @GetMapping("/thong-ke/san-pham-ban-chay")
         public ResponseEntity<Map<String, Object>> laySanPhamBanChay(
                 @RequestParam(defaultValue = "10") int limit) {
@@ -875,7 +875,7 @@
         /**
          * Lấy thống kê doanh thu
          */
-        @Transactional
+
         @GetMapping("/thong-ke/doanh-thu")
         public ResponseEntity<Map<String, Object>> layThongKeDoanhThu(
                 @RequestParam String tuNgay,
@@ -906,7 +906,7 @@
         /**
          * Health check endpoint
          */
-        @Transactional
+
         @GetMapping("/health")
         public ResponseEntity<Map<String, Object>> healthCheck() {
             Map<String, Object> response = new HashMap<>();
@@ -1022,7 +1022,7 @@
         /**
          * Kiểm tra URL hình ảnh có accessible không
          */
-        @Transactional
+
         @GetMapping("/san-pham/{id}/kiem-tra-hinh-anh")
         public ResponseEntity<Map<String, Object>> kiemTraHinhAnh(@PathVariable Integer id) {
             try {
@@ -1073,7 +1073,7 @@
         /**
          * Lấy danh sách danh mục
          */
-        @Transactional
+
         @GetMapping("/master-data/danh-muc")
         public ResponseEntity<Map<String, Object>> layDanhSachDanhMuc() {
             try {
@@ -1101,7 +1101,7 @@
         /**
          * Lấy danh sách thương hiệu
          */
-        @Transactional
+
         @GetMapping("/master-data/thuong-hieu")
         public ResponseEntity<Map<String, Object>> layDanhSachThuongHieu() {
             try {
@@ -1129,7 +1129,7 @@
         /**
          * Lấy danh sách màu sắc
          */
-        @Transactional
+
         @GetMapping("/master-data/mau-sac")
         public ResponseEntity<Map<String, Object>> layDanhSachMauSac() {
             try {
@@ -1157,7 +1157,7 @@
         /**
          * Lấy danh sách kích cỡ
          */
-        @Transactional
+
         @GetMapping("/master-data/kich-co")
         public ResponseEntity<Map<String, Object>> layDanhSachKichCo() {
             try {
@@ -1185,7 +1185,7 @@
         /**
          * Lấy danh sách chất liệu
          */
-        @Transactional
+
         @GetMapping("/master-data/chat-lieu")
         public ResponseEntity<Map<String, Object>> layDanhSachChatLieu() {
             try {
@@ -1213,7 +1213,7 @@
         /**
          * Lấy danh sách đế giày
          */
-        @Transactional
+
         @GetMapping("/master-data/de-giay")
         public ResponseEntity<Map<String, Object>> layDanhSachDeGiay() {
             try {
@@ -1241,7 +1241,7 @@
         /**
          * Lấy tất cả master data trong một lần gọi
          */
-        @Transactional
+
         @GetMapping("/master-data/all")
         public ResponseEntity<Map<String, Object>> layTatCaMasterData() {
             try {
@@ -1271,7 +1271,7 @@
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
             }
         }
-        @Transactional
+
         @PostMapping("/hoa-don-cho/tao-moi")
         public ResponseEntity<Map<String, Object>> taoHoaDonCho(@RequestParam("nhanVienId") String nhanVienIdStr) {
             try {
@@ -1338,7 +1338,7 @@
                 return ResponseEntity.badRequest().body(errorResponse);
             }
         }
-        @Transactional
+
         @GetMapping("/debug/chuyen-doi-ma/{ma}")
         public ResponseEntity<Map<String, Object>> debugChuyenDoiMa(@PathVariable String ma) {
             try {
@@ -1385,7 +1385,7 @@
         /**
          * Tạo hóa đơn chờ theo ID nhân viên
          */
-        @Transactional
+
         @PostMapping("/hoa-don-cho/tao-moi-by-id")
         public ResponseEntity<Map<String, Object>> taoHoaDonChoById(@RequestParam Integer nhanVienId) {
             try {
@@ -1412,7 +1412,7 @@
         /**
          * Tạo hóa đơn chờ theo mã nhân viên
          */
-        @Transactional
+
         @PostMapping("/hoa-don-cho/tao-moi-by-ma")
         public ResponseEntity<Map<String, Object>> taoHoaDonChoByMa(@RequestParam String maNhanVien) {
             try {
@@ -1444,7 +1444,7 @@
                 return ResponseEntity.badRequest().body(errorResponse);
             }
         }
-        @Transactional
+
         @GetMapping("/debug/nhan-vien")
         public ResponseEntity<Map<String, Object>> debugNhanVien() {
             try {
@@ -1488,7 +1488,7 @@
         }
 
         // ✅ THÊM: Endpoint test tìm kiếm cụ thể
-        @Transactional
+
         @GetMapping("/debug/nhan-vien/tim-kiem/{ma}")
         public ResponseEntity<Map<String, Object>> debugTimKiemNhanVien(@PathVariable String ma) {
             try {
@@ -1791,7 +1791,7 @@
 //            }
 //        }
 
-        @Transactional
+
         @PostMapping("/hoa-don-cho/{id}/thanh-toan-chi-tiet")
         public ResponseEntity<Map<String, Object>> thanhToanHoaDonChiTiet(
                 @PathVariable Integer id,

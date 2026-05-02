@@ -56,6 +56,7 @@ public class BanHangServiceImpl implements BanHangService {
     // ===== QUẢN LÝ HÓA ĐƠN CHỜ =====
 
     @Override
+    @Transactional
     public HoaDonChoResponse taoHoaDonCho(Integer nhanVienId) {
         try {
             log.info("Tạo hóa đơn chờ cho nhân viên ID: {}", nhanVienId);
@@ -305,6 +306,7 @@ public class BanHangServiceImpl implements BanHangService {
     // ===== QUẢN LÝ SẢN PHẨM TRONG HÓA ĐƠN =====
 
     @Override
+    @Transactional
     public HoaDonChoTongQuanResponse themSanPhamVaoHoaDon(Integer hoaDonId, ThemSanPhamRequest request) {
         try {
             log.info("Thêm sản phẩm vào hóa đơn ID: {}, Sản phẩm ID: {}", hoaDonId, request.getChiTietSanPhamId());
@@ -375,6 +377,7 @@ public class BanHangServiceImpl implements BanHangService {
     }
 
     @Override
+    @Transactional
     public HoaDonChoTongQuanResponse capNhatSanPhamTrongHoaDon(
             Integer hoaDonId, Integer hoaDonChiTietId, CapNhatSanPhamRequest request) {
         try {
@@ -426,6 +429,7 @@ public class BanHangServiceImpl implements BanHangService {
     }
 
     @Override
+    @Transactional
     public HoaDonChoTongQuanResponse xoaSanPhamKhoiHoaDon(Integer hoaDonId, Integer hoaDonChiTietId) {
         try {
             log.info("Xóa sản phẩm khỏi hóa đơn ID: {}, Chi tiết ID: {}", hoaDonId, hoaDonChiTietId);
@@ -951,6 +955,7 @@ public class BanHangServiceImpl implements BanHangService {
     }
 
     @Override
+    @Transactional
     public HoaDonChoTongQuanResponse apDungKhachHang(Integer hoaDonId, Integer khachHangId) {
         try {
             log.info("Áp dụng khách hàng ID: {} cho hóa đơn ID: {}", khachHangId, hoaDonId);
@@ -998,6 +1003,7 @@ public class BanHangServiceImpl implements BanHangService {
     }
 
     @Override
+    @Transactional
     public HoaDonChoTongQuanResponse boKhachHang(Integer hoaDonId) {
         try {
             HoaDon hoaDon = hoaDonRepository.findById(hoaDonId)
@@ -1234,6 +1240,7 @@ public class BanHangServiceImpl implements BanHangService {
     }
 
     @Override
+    @Transactional
     public HoaDonChoTongQuanResponse boVoucher(Integer hoaDonId) {
         try {
             HoaDon hoaDon = hoaDonRepository.findById(hoaDonId)

@@ -67,7 +67,8 @@ public class HoaDonRestController {
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("error", e.getMessage());
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("error", e.getMessage()); // Keep error for backward compatibility
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }

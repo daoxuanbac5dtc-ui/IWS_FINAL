@@ -62,11 +62,11 @@ public class HoaDon {
     @Column(name = "tong_thanh_toan", precision = 10, scale = 2)
     private BigDecimal tongThanhToan;
 
-    @Column(name = "ngay_hoan_thanh", nullable = false)
+    @Column(name = "ngay_hoan_thanh", nullable = true)
     @Temporal(TemporalType.TIMESTAMP)
     private Date ngayHoanThanh;
 
-    @Column(name = "ngay_xac_nhan", nullable = false)
+    @Column(name = "ngay_xac_nhan", nullable = true)
     @Temporal(TemporalType.TIMESTAMP)
     private Date ngayXacNhan;
 
@@ -78,15 +78,15 @@ public class HoaDon {
     @Temporal(TemporalType.TIMESTAMP)
     private Date ngayCapNhat;
 
-    @Column(name = "ngay_giao_hang", nullable = false)
+    @Column(name = "ngay_giao_hang", nullable = true)
     @Temporal(TemporalType.TIMESTAMP)
     private Date ngayGiaoHang;
 
-    @Column(name = "ngay_nhan_hang", nullable = false)
+    @Column(name = "ngay_nhan_hang", nullable = true)
     @Temporal(TemporalType.TIMESTAMP)
     private Date ngayNhanHang;
 
-    @Column(name = "thoi_gian_van_chuyen", nullable = false)
+    @Column(name = "thoi_gian_van_chuyen", nullable = true)
     @Temporal(TemporalType.TIMESTAMP)
     private Date thoiGianVanChuyen;
 

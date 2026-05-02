@@ -1,5 +1,6 @@
 package org.example.iws_websitesneaker.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,11 +16,18 @@ import javax.crypto.spec.SecretKeySpec;
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class VnPayController {
 
-    // Cấu hình VNPay
-    private final String vnp_TmnCode = "QOXX28F3";
-    private final String vnp_HashSecret = "3I6XUNL7P6LO55MCZUNRKDFO8F159T2M";
-    private final String vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    private final String vnp_ReturnUrl = "http://localhost:5173/payment-return";
+    // Cấu hình VNPay từ file môi trường
+    @Value("${VNP_TMN_CODE}")
+    private String vnp_TmnCode;
+
+    @Value("${VNP_HASH_SECRET}")
+    private String vnp_HashSecret;
+
+    @Value("${VNP_URL}")
+    private String vnp_Url;
+
+    @Value("${VNP_RETURN_URL}")
+    private String vnp_ReturnUrl;
 
     /**
      * API tạo URL thanh toán VNPay
@@ -60,7 +68,7 @@ public class VnPayController {
             vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
             vnp_Params.put("vnp_Amount", String.valueOf(amount * 100));
             vnp_Params.put("vnp_CurrCode", "VND");
-            vnp_Params.put("vnp_TxnRef", orderId);
+            vnp_Params.put("vnp_TxnRef", orderId + "_" + System.currentTimeMillis());
             vnp_Params.put("vnp_OrderInfo", orderInfo);
             vnp_Params.put("vnp_OrderType", "other");
             vnp_Params.put("vnp_Locale", "vn");
@@ -135,8 +143,7 @@ public class VnPayController {
             response.put("debug", Map.of(
                     "hashData", hashData.toString(),
                     "secureHash", vnp_SecureHash,
-                    "urlLength", paymentUrl.length()
-            ));
+                    "urlLength", paymentUrl.length()));
 
             return ResponseEntity.ok(response);
 
@@ -273,18 +280,30 @@ public class VnPayController {
 
     private String getErrorMessage(String responseCode) {
         switch (responseCode) {
-            case "24": return "Khách hàng hủy giao dịch";
-            case "51": return "Tài khoản không đủ số dư";
-            case "65": return "Tài khoản đã vượt quá hạn mức giao dịch";
-            case "75": return "Ngân hàng đang bảo trì";
-            case "07": return "Giao dịch bị nghi ngờ";
-            case "09": return "Thẻ chưa đăng ký Internet Banking";
-            case "10": return "Xác thực thông tin không đúng quá 3 lần";
-            case "11": return "Đã hết hạn chờ thanh toán";
-            case "12": return "Thẻ bị khóa";
-            case "13": return "Mật khẩu OTP không đúng";
-            case "99": return "Lỗi không xác định";
-            default: return "Giao dịch thất bại";
+            case "24":
+                return "Khách hàng hủy giao dịch";
+            case "51":
+                return "Tài khoản không đủ số dư";
+            case "65":
+                return "Tài khoản đã vượt quá hạn mức giao dịch";
+            case "75":
+                return "Ngân hàng đang bảo trì";
+            case "07":
+                return "Giao dịch bị nghi ngờ";
+            case "09":
+                return "Thẻ chưa đăng ký Internet Banking";
+            case "10":
+                return "Xác thực thông tin không đúng quá 3 lần";
+            case "11":
+                return "Đã hết hạn chờ thanh toán";
+            case "12":
+                return "Thẻ bị khóa";
+            case "13":
+                return "Mật khẩu OTP không đúng";
+            case "99":
+                return "Lỗi không xác định";
+            default:
+                return "Giao dịch thất bại";
         }
     }
 }

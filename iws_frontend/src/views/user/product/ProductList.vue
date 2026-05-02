@@ -537,7 +537,7 @@ export default {
 
 <style lang="scss" scoped>
 .nike-complete-layout {
-    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
     background-color: #f5f5f5;
     min-height: 100vh;
 }
