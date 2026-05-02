@@ -4,10 +4,10 @@ import { customer1, customer2 } from '../assets/images';
 // Navigation Links - Phù hợp với router
 export const navLinks = [
     { href: '/', label: 'Trang Chủ', route: 'user-home' },
-    { href: '/gioithieu', label: 'Giới Thiệu', route: 'gioi-thieu' },
-    { href: '/products', label: 'Sản Phẩm', route: 'products' },
-    { href: '/track-order', label: 'Tra cứu đơn hàng', route: 'track-order' },
-    { href: '/lienhe', label: 'Liên Hệ', route: 'lien-he' }
+    { href: '/gioithieu#about-us-content', label: 'Giới Thiệu', route: 'gioi-thieu' },
+    { href: '/products#products', label: 'Sản Phẩm', route: 'products' },
+    { href: '/track-order#track-order', label: 'Tra Cứu', route: 'track-order' },
+    { href: '/lienhe#contact-us', label: 'Liên Hệ', route: 'lien-he' }
 ];
 
 // Statistics cho Hero Section

@@ -1,5 +1,12 @@
 <script setup>
 import arrowRight from '@/assets/icons/arrow-right.svg';
+import bigShoe1 from '@/assets/images/big-shoe1.png';
+import bigShoe2 from '@/assets/images/big-shoe2.png';
+import bigShoe3 from '@/assets/images/big-shoe3.png';
+import product3 from '@/assets/images/product3.png';
+import product5 from '@/assets/images/product5.png';
+import product6 from '@/assets/images/product6.png';
+import product12 from '@/assets/images/product12.png';
 import Card from '@/components/user/Card.vue';
 import UserButton from '@/components/user/UserButton.vue';
 import { statistics } from '@/constants/index';
@@ -19,6 +26,45 @@ const loading = ref(true);
 const heroPlaceholderImage = createSvgPlaceholder({ width: 400, height: 300, label: 'Nike Shoe' });
 const route = useRoute();
 const router = useRouter();
+
+const heroImageOverrides = [
+    { keywords: ['nike air max', 'air max 270'], image: bigShoe1 },
+    { keywords: ['adidas ultraboost', 'ultraboost'], image: bigShoe2 },
+    { keywords: ['converse chuck', 'chuck taylor'], image: product3 },
+    { keywords: ['vans old skool', 'old skool'], image: product5 },
+    { keywords: ['puma suede', 'suede classic'], image: product12 },
+    { keywords: ['jordan 1', 'jordan'], image: bigShoe3 },
+    { keywords: ['under armour', 'hovr'], image: product6 },
+    { keywords: ['new balance', '574'], image: bigShoe2 }
+];
+
+const normalizeLookupText = (value = '') =>
+    String(value)
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'd')
+        .toLowerCase();
+
+const resolveHeroDisplayImage = (product, detail, backendImageUrl) => {
+    const lookupText = normalizeLookupText(
+        [
+            product?.tenSanPham,
+            product?.thuongHieu?.tenThuongHieu,
+            detail?.hinhAnh?.tenHinhAnh,
+            detail?.hinhAnh?.duongDan,
+            backendImageUrl
+        ]
+            .filter(Boolean)
+            .join(' ')
+    );
+
+    const matchedOverride = heroImageOverrides.find((entry) =>
+        entry.keywords.some((keyword) => lookupText.includes(keyword))
+    );
+
+    return matchedOverride?.image || backendImageUrl;
+};
 
 // Change main hero image
 const changeHeroImg = (imgUrl) => {
@@ -78,7 +124,7 @@ onMounted(async () => {
         imagesResponse.data.forEach((image) => {
             const imageUrl = resolveProductImageUrl(image);
             if (imageUrl) {
-                imageMap.set(image.id, imageUrl);
+                imageMap.set(String(image.id), imageUrl);
             }
         });
 
@@ -104,21 +150,19 @@ onMounted(async () => {
                 // XỬ LÝ HÌNH ẢNH THEO ENTITY MỚI
                 if (detail.hinhAnh) {
                     if (typeof detail.hinhAnh === 'object' && detail.hinhAnh !== null) {
-                        if (detail.hinhAnh.id) {
-                            finalImageUrl = imageMap.get(detail.hinhAnh.id);
-                        } else {
-                            finalImageUrl = resolveProductImageUrl(detail.hinhAnh);
-                        }
-                    } else if (typeof detail.hinhAnh === 'number') {
-                        finalImageUrl = imageMap.get(detail.hinhAnh);
+                        finalImageUrl = (detail.hinhAnh.id ? imageMap.get(String(detail.hinhAnh.id)) : null) || resolveProductImageUrl(detail.hinhAnh);
+                    } else if (typeof detail.hinhAnh === 'number' || typeof detail.hinhAnh === 'string') {
+                        finalImageUrl = imageMap.get(String(detail.hinhAnh)) || resolveProductImageUrl(detail.hinhAnh);
                     }
                 }
 
                 if (finalImageUrl) {
+                    const displayImageUrl = resolveHeroDisplayImage(product, detail, finalImageUrl);
                     processedCards.push({
                         id: detail.id,
                         productId: productId,
-                        imgUrl: finalImageUrl,
+                        imgUrl: displayImageUrl,
+                        sourceImgUrl: finalImageUrl,
                         name: product.tenSanPham || 'Nike Shoe',
                         brand: product.thuongHieu?.tenThuongHieu || 'Nike',
                         price: detail.giaBan || 0
@@ -146,8 +190,8 @@ onMounted(async () => {
 </script>
 
 <template>
-    <section class="max-container flex min-h-screen w-full flex-col xl:flex-row">
-        <div class="flex-start padding-l relative flex flex-col items-start justify-center gap-8 pt-28 lg:mb-28 xl:w-2/5">
+    <section class="max-container isolate flex min-h-screen w-full flex-col xl:flex-row">
+        <div class="flex-start padding-l relative flex flex-col items-start gap-7 pt-12 sm:pt-16 lg:pt-20 xl:pt-24 xl:w-2/5">
             <p class="font-montserrat text-xl text-coral-red">Bộ Sưu Tập Giày Của Chúng Tôi</p>
             <h1 class="z-10 font-palanquin text-8xl font-bold max-sm:text-4xl xl:whitespace-nowrap">
                 <span class="">Giày</span>
@@ -171,7 +215,7 @@ onMounted(async () => {
 
         <div class="relative mt-10 flex min-h-screen flex-1 flex-col items-center justify-center overflow-hidden bg-primary bg-hero bg-cover bg-center p-4 sm:p-0 xl:mt-0">
             <!-- Loading State -->
-            <div v-if="loading" class="z-40 flex items-center justify-center">
+            <div v-if="loading" class="z-10 flex items-center justify-center">
                 <div class="hero-skeleton">
                     <div class="skeleton-shoe"></div>
                 </div>
@@ -180,11 +224,13 @@ onMounted(async () => {
             <!-- Main Hero Image with Vue transition -->
             <transition v-else name="fade" mode="out-in">
                 <img
-                    class="hero-main-image z-40 rotate-12 object-contain mix-blend-multiply transition-all duration-1000"
+                    class="hero-main-image z-10 rotate-12 object-contain transition-all duration-1000"
                     :key="bigImageUrl"
                     :src="bigImageUrl"
                     :alt="currentProduct?.name || 'Shoes collection'"
                     width="600"
+                    decoding="async"
+                    fetchpriority="high"
                     @error="handleMainImageError"
                     @load="handleMainImageLoad"
                 />
@@ -220,7 +266,7 @@ onMounted(async () => {
             </div>
 
             <!-- Fallback khi không có sản phẩm -->
-            <div v-else-if="!loading" class="z-40 flex items-center justify-center">
+            <div v-else-if="!loading" class="z-10 flex items-center justify-center">
                 <div class="fallback-hero">
                     <img
                         :src="heroPlaceholderImage"
@@ -260,13 +306,17 @@ onMounted(async () => {
 }
 
 .hero-card-carousel {
-    z-index: 50;
+    z-index: 20;
 }
 
 .hero-main-image {
-    width: min(600px, 100%);
-    max-width: 600px;
-    max-height: 500px;
+    width: clamp(320px, 44vw, 560px);
+    max-width: 100%;
+    max-height: 460px;
+    image-rendering: -webkit-optimize-contrast;
+    filter: contrast(1.08) saturate(1.05) drop-shadow(0 24px 28px rgba(15, 23, 42, 0.2));
+    backface-visibility: hidden;
+    will-change: transform;
 }
 
 // Loading skeleton

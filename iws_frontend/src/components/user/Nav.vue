@@ -45,14 +45,20 @@ const userRole = computed(() => {
     return roles[user.value.vaiTro] || user.value.vaiTro;
 });
 
+const getPathFromHref = (href) => href.split('#')[0] || '/';
+const getHashFromHref = (href) => {
+    const hash = href.split('#')[1];
+    return hash ? `#${hash}` : '';
+};
+
 const isActiveRoute = (href) => {
-    return route.path === href;
+    return route.path === getPathFromHref(href);
 };
 
 // Methods
 const navToggler = () => {
     secondNavOpen.value = !secondNavOpen.value;
-    document.body.style.overflow = secondNavOpen.value ? 'hidden' : '';
+    document.body.style.overflow = '';
 };
 
 const handleResize = () => {
@@ -64,6 +70,34 @@ const handleResize = () => {
 
 const handleScroll = () => {
     isScrolled.value = window.scrollY > 20;
+};
+
+const scrollToNavigationTarget = (hash) => {
+    if (!hash) {
+        window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+        return;
+    }
+
+    window.setTimeout(() => {
+        const target = document.querySelector(hash);
+        if (!target) return;
+
+        const headerOffset = 96;
+        const targetTop = target.getBoundingClientRect().top + window.scrollY - headerOffset;
+        window.scrollTo({ top: Math.max(targetTop, 0), left: 0, behavior: 'smooth' });
+    }, 0);
+};
+
+const handleNavClick = (navLink) => {
+    secondNavOpen.value = false;
+    document.body.style.overflow = '';
+
+    const targetPath = getPathFromHref(navLink.href);
+    const targetHash = getHashFromHref(navLink.href);
+
+    if (route.path === targetPath) {
+        scrollToNavigationTarget(targetHash);
+    }
 };
 
 const loadUserData = () => {
@@ -557,9 +591,15 @@ const toggleUserDropdown = () => {
 const handleClickOutside = (event) => {
     const dropdown = document.querySelector('.user-dropdown');
     const userButton = document.querySelector('.user-button');
+    const mobileMenu = document.querySelector('.mobile-menu-panel');
+    const mobileMenuButton = document.querySelector('.mobile-menu-button');
 
     if (dropdown && !dropdown.contains(event.target) && !userButton.contains(event.target)) {
         isUserDropdownOpen.value = false;
+    }
+
+    if (secondNavOpen.value && mobileMenu && mobileMenuButton && !mobileMenu.contains(event.target) && !mobileMenuButton.contains(event.target)) {
+        secondNavOpen.value = false;
     }
 };
 
@@ -601,20 +641,25 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <header class="fixed top-0 z-50 w-full transition-all duration-300" :class="[isScrolled ? 'bg-white shadow-lg' : 'bg-white/90 backdrop-blur-md', 'border-b border-gray-100']">
+    <header class="site-header fixed top-0 z-[1200] w-full transition-all duration-300" :class="[isScrolled ? 'bg-white shadow-lg' : 'bg-white/90 backdrop-blur-md', 'border-b border-gray-100']">
         <nav class="container mx-auto px-4 lg:px-8">
             <div class="flex h-20 items-center justify-between">
                 <!-- Logo -->
                 <router-link to="/" class="relative z-50 flex items-center space-x-2 transition-transform duration-300 hover:scale-105">
                     <img :src="headerLogo" alt="Logo1" class="img-fluid" style="width: 50px" />
-                    <span>BEE SHOES</span>
+                    <span class="site-logo-text">BEE SHOES</span>
                 </router-link>
 
                 <!-- Desktop Navigation -->
                 <div class="hidden lg:flex lg:flex-1 lg:items-center lg:justify-center">
-                    <ul class="flex items-center space-x-8">
+                    <ul class="site-nav-list flex items-center gap-2 xl:gap-3">
                         <li v-for="navLink in navLinks" :key="navLink.label">
-                            <router-link :to="navLink.href" class="nav-link group relative py-2 text-base font-medium transition-colors" :class="[isActiveRoute(navLink.href) ? 'text-coral-red' : 'text-gray-700 hover:text-coral-red']">
+                            <router-link
+                                :to="navLink.href"
+                                class="nav-link group relative flex h-11 items-center justify-center px-3 text-center text-sm font-medium leading-tight transition-colors xl:text-base"
+                                :class="[isActiveRoute(navLink.href) ? 'text-coral-red' : 'text-gray-700 hover:text-coral-red']"
+                                @click="handleNavClick(navLink)"
+                            >
                                 {{ navLink.label }}
                                 <span class="absolute bottom-0 left-0 h-0.5 w-0 bg-coral-red transition-all duration-300 group-hover:w-full" :class="{ 'w-full': isActiveRoute(navLink.href) }"></span>
                             </router-link>
@@ -780,7 +825,7 @@ onUnmounted(() => {
                                 <div class="flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold text-white" :class="[user.vaiTro === 'ADMIN' ? 'bg-purple-500' : user.vaiTro === 'NHANVIEN' ? 'bg-blue-500' : 'bg-green-500']">
                                     {{ userInitial }}
                                 </div>
-                                <span class="hidden text-sm font-medium text-gray-700 sm:inline">
+                                <span class="nav-user-name hidden text-sm font-medium text-gray-700 sm:inline">
                                     {{ userName }}
                                 </span>
                                 <svg class="h-4 w-4 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': isUserDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -885,7 +930,7 @@ onUnmounted(() => {
                     </div>
 
                     <!-- Mobile Menu Button -->
-                    <button @click="navToggler" class="relative z-50 flex h-10 w-10 flex-col items-center justify-center rounded-lg transition-colors hover:bg-gray-100 lg:hidden">
+                    <button @click="navToggler" class="mobile-menu-button relative z-50 flex h-10 w-10 flex-col items-center justify-center rounded-lg transition-colors hover:bg-gray-100 lg:hidden">
                         <span class="absolute h-0.5 w-5 transform bg-gray-700 transition-all duration-300" :class="[secondNavOpen ? 'rotate-45' : '-translate-y-1.5']"></span>
                         <span class="absolute h-0.5 w-5 bg-gray-700 transition-all duration-300" :class="[secondNavOpen ? 'opacity-0' : 'opacity-100']"></span>
                         <span class="absolute h-0.5 w-5 transform bg-gray-700 transition-all duration-300" :class="[secondNavOpen ? '-rotate-45' : 'translate-y-1.5']"></span>
@@ -896,10 +941,10 @@ onUnmounted(() => {
 
         <!-- Mobile Navigation -->
         <Transition name="mobile-menu">
-            <div v-if="secondNavOpen" class="fixed inset-0 z-40 bg-white lg:hidden" style="top: 80px">
-                <div class="h-full overflow-y-auto px-4 pb-20 pt-8">
+            <div v-if="secondNavOpen" class="mobile-menu-panel lg:hidden">
+                <div class="mobile-menu-content">
                     <!-- Mobile Search -->
-                    <div class="mb-8">
+                    <div class="mb-4">
                         <div class="relative">
                             <input
                                 v-model="searchQuery"
@@ -1028,8 +1073,9 @@ onUnmounted(() => {
                             v-for="navLink in navLinks"
                             :key="navLink.label"
                             :to="navLink.href"
-                            class="mobile-nav-link block rounded-lg px-4 py-3 text-base font-medium transition-colors"
+                            class="mobile-nav-link flex min-h-12 items-center rounded-lg px-4 py-3 text-base font-medium transition-colors"
                             :class="[isActiveRoute(navLink.href) ? 'bg-coral-red text-white' : 'text-gray-700 hover:bg-gray-100']"
+                            @click="handleNavClick(navLink)"
                         >
                             {{ navLink.label }}
                         </router-link>
@@ -1071,31 +1117,89 @@ onUnmounted(() => {
 /* Transition for mobile menu */
 .mobile-menu-enter-active,
 .mobile-menu-leave-active {
-    transition: all 0.3s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .mobile-menu-enter-from,
 .mobile-menu-leave-to {
     opacity: 0;
-    transform: translateX(-100%);
+    transform: translateY(-0.75rem);
 }
 
 /* Smooth underline animation */
+.site-header {
+    font-family: 'Montserrat', Arial, sans-serif;
+}
+
+.mobile-menu-panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1201;
+    padding: 0 0.75rem 0.75rem;
+    background: transparent;
+}
+
+.mobile-menu-content {
+    max-height: min(28rem, calc(100vh - 5.75rem));
+    overflow-y: auto;
+    border: 1px solid #e5e7eb;
+    border-top: 0;
+    border-radius: 0 0 1rem 1rem;
+    background: #ffffff;
+    padding: 1rem;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+}
+
+.site-logo-text {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    letter-spacing: 0;
+    color: #1f2937;
+    white-space: nowrap;
+}
+
+.site-nav-list {
+    min-width: 0;
+}
+
+.nav-link {
+    width: clamp(7rem, 8.5vw, 9rem);
+    letter-spacing: 0;
+    white-space: normal;
+}
+
 .nav-link span {
     transform-origin: left;
 }
 
+.nav-user-name {
+    max-width: 7rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.25rem;
+}
+
+@media (min-width: 1280px) {
+    .nav-link {
+        width: 8.75rem;
+    }
+}
+
 /* Custom scrollbar for mobile menu */
 @media (max-width: 1023px) {
-    .mobile-menu ::-webkit-scrollbar {
+    .mobile-menu-content::-webkit-scrollbar {
         width: 4px;
     }
 
-    .mobile-menu ::-webkit-scrollbar-track {
+    .mobile-menu-content::-webkit-scrollbar-track {
         background: #f3f4f6;
     }
 
-    .mobile-menu ::-webkit-scrollbar-thumb {
+    .mobile-menu-content::-webkit-scrollbar-thumb {
         background: #d1d5db;
         border-radius: 2px;
     }

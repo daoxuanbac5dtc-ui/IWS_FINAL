@@ -15,7 +15,7 @@
     </div>
 
     <!-- Main Content -->
-    <main class="flex-1">
+    <main id="track-order" class="flex-1 scroll-mt-24">
       <div class="max-w-4xl mx-auto px-4 py-8">
         <!-- Order Tracking Component -->
         <OrderTracking />
@@ -23,7 +23,9 @@
     </main>
 
     <!-- Footer -->
-    <Footer />
+    <section id="footer-section" class="bg-black px-8 pb-8 pt-12 sm:px-16 sm:pt-24">
+      <Footer />
+    </section>
   </div>
 </template>
 

@@ -449,7 +449,7 @@ public class KhachHangRestController {
                         .body(createErrorResponse("Trạng thái không hợp lệ (0 hoặc 1)", "INVALID_STATUS"));
             }
 
-            Optional<KhachHang> customerOpt = khachHangService.getKhachHangById(id);
+            Optional<KhachHang> customerOpt = khachHangService.findByIdWithEagerLoading(id);
             if (customerOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(createErrorResponse("Không tìm thấy khách hàng", "NOT_FOUND"));
@@ -465,7 +465,7 @@ public class KhachHangRestController {
             khachHangService.updateStatus(id, newStatus);
             syncLinkedAccountStatus(customer, newStatus);
 
-            Optional<KhachHang> updatedOpt = khachHangService.getKhachHangById(id);
+            Optional<KhachHang> updatedOpt = khachHangService.findByIdWithEagerLoading(id);
             KhachHangDto updatedDto = updatedOpt.map(this::convertToDto).orElse(null);
 
             String statusText = newStatus == 1 ? "kích hoạt" : "vô hiệu hóa";

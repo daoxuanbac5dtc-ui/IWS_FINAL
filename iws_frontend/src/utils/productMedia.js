@@ -1,4 +1,6 @@
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
+const FRONTEND_PUBLIC_PREFIXES = ['/placeholder', '/favicon', '/assets/'];
+const BACKEND_DIRECT_PREFIXES = ['/uploads/', '/product-images/', '/static/', '/voucher/images/', '/return-images/'];
 
 const escapeSvgText = (value = '') =>
     String(value)
@@ -18,7 +20,7 @@ export const resolveProductImageUrl = (image) => {
     const rawValue =
         typeof image === 'string'
             ? image
-            : image?.fullUrl || image?.duongDan || image?.url || image?.path || image?.src || '';
+            : image?.fullUrl || image?.urlHinhAnh || image?.duongDan || image?.url || image?.path || image?.src || '';
 
     if (!rawValue || typeof rawValue !== 'string') {
         return null;
@@ -39,6 +41,18 @@ export const resolveProductImageUrl = (image) => {
             return `${API_BASE_URL}/hinh-anh/images/${cleanPath}`;
         }
         return trimmedValue;
+    }
+
+    if (FRONTEND_PUBLIC_PREFIXES.some((prefix) => trimmedValue.startsWith(prefix))) {
+        return trimmedValue;
+    }
+
+    if (BACKEND_DIRECT_PREFIXES.some((prefix) => trimmedValue.startsWith(prefix))) {
+        return `${API_BASE_URL}${trimmedValue}`;
+    }
+
+    if (BACKEND_DIRECT_PREFIXES.some((prefix) => trimmedValue.startsWith(prefix.replace(/^\//, '')))) {
+        return `${API_BASE_URL}/${trimmedValue}`;
     }
 
     const cleanPath = trimmedValue

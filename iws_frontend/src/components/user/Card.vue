@@ -35,7 +35,7 @@ const onClick = (imgUrl) => {
 <style lang="scss" scoped>
 .shoe-card {
   position: relative;
-  z-index: 10;
+  z-index: 1;
   width: 138px;
   aspect-ratio: 1;
   display: flex;
@@ -90,8 +90,8 @@ const onClick = (imgUrl) => {
   height: 36%;
   bottom: 18px;
   border-radius: 999px;
-  background: radial-gradient(circle, rgba(255, 100, 82, 0.18), transparent 68%);
-  filter: blur(10px);
+  background: radial-gradient(circle, rgba(255, 100, 82, 0.14), transparent 68%);
+  filter: blur(8px);
 }
 
 .shoe-card__image {
@@ -100,8 +100,8 @@ const onClick = (imgUrl) => {
   width: 92%;
   height: 92%;
   object-fit: contain;
-  mix-blend-mode: multiply;
-  filter: drop-shadow(0 14px 18px rgba(15, 23, 42, 0.18));
+  image-rendering: -webkit-optimize-contrast;
+  filter: contrast(1.06) saturate(1.04) drop-shadow(0 14px 18px rgba(15, 23, 42, 0.18));
   transform: scale(1.08) rotate(-7deg);
   transition: transform 0.25s ease;
 }

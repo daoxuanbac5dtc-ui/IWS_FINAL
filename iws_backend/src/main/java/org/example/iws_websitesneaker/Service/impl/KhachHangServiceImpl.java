@@ -6,6 +6,7 @@ import org.example.iws_websitesneaker.Service.DiaChiService;
 import org.example.iws_websitesneaker.entity.KhachHang;
 import org.example.iws_websitesneaker.entity.DiaChi;
 import org.example.iws_websitesneaker.repository.RepoKhachHang;
+import org.example.iws_websitesneaker.repository.RepoTaiKhoan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,9 @@ public class KhachHangServiceImpl implements KhachHangService {
 
     @Autowired
     private RepoKhachHang repoKhachHang;
+
+    @Autowired
+    private RepoTaiKhoan repoTaiKhoan;
 
     @Autowired
     private DiaChiService diaChiService;
@@ -109,7 +113,8 @@ public class KhachHangServiceImpl implements KhachHangService {
             }
 
             validateKhachHangData(khachHang);
-            repoKhachHang.save(khachHang);
+            KhachHang saved = repoKhachHang.save(khachHang);
+            syncLinkedAccountStatus(saved, saved.getTrangThai());
             System.out.println("Created customer: " + khachHang.getHoTen() + " (ID: " + khachHang.getId() + ")");
 
         } catch (Exception e) {
@@ -145,7 +150,8 @@ public class KhachHangServiceImpl implements KhachHangService {
             }
             khachHang.setNgayCapNhat(new Date());
 
-            repoKhachHang.save(khachHang);
+            KhachHang saved = repoKhachHang.save(khachHang);
+            syncLinkedAccountStatus(saved, saved.getTrangThai());
             System.out.println("Updated customer: " + khachHang.getHoTen() + " (ID: " + khachHang.getId() + ")");
 
         } catch (Exception e) {
@@ -174,7 +180,8 @@ public class KhachHangServiceImpl implements KhachHangService {
             // Soft delete
             kh.setTrangThai(0);
             kh.setNgayCapNhat(new Date());
-            repoKhachHang.save(kh);
+            KhachHang saved = repoKhachHang.save(kh);
+            syncLinkedAccountStatus(saved, 0);
 
             System.out.println("Soft deleted customer: " + kh.getHoTen() + " (ID: " + id + ")");
 
@@ -624,15 +631,18 @@ public class KhachHangServiceImpl implements KhachHangService {
 
             KhachHang customer = customerOpt.get();
 
-            if (customer.getTrangThai().equals(trangThai)) {
+            if (Objects.equals(customer.getTrangThai(), trangThai)) {
+                syncLinkedAccountStatus(customer, trangThai);
                 System.out.println("Customer " + id + " already has status " + trangThai);
                 return;
             }
 
-            customer.setTrangThai(trangThai);
-            customer.setNgayCapNhat(new Date());
+            int updatedRows = repoKhachHang.updateTrangThaiById(id, trangThai, new Date());
+            if (updatedRows == 0) {
+                throw new IllegalArgumentException("KhĂ´ng tĂ¬m tháº¥y khĂ¡ch hĂ ng vá»›i ID: " + id);
+            }
 
-            updateKhachHang(customer);
+            syncLinkedAccountStatus(customer, trangThai);
 
             String statusText = trangThai == 1 ? "activated" : "deactivated";
             System.out.println("Customer " + statusText + ": " + customer.getHoTen() + " (ID: " + id + ")");
@@ -843,9 +853,7 @@ public class KhachHangServiceImpl implements KhachHangService {
             if (optional.isPresent()) {
                 KhachHang kh = optional.get();
                 Integer newStatus = kh.getTrangThai() == 1 ? 0 : 1;
-                kh.setTrangThai(newStatus);
-                kh.setNgayCapNhat(new Date());
-                repoKhachHang.save(kh);
+                updateStatus(id, newStatus);
 
                 String statusText = newStatus == 1 ? "activated" : "deactivated";
                 System.out.println("Customer " + statusText + ": " + kh.getHoTen() + " (ID: " + id + ")");
@@ -856,6 +864,19 @@ public class KhachHangServiceImpl implements KhachHangService {
             System.err.println("Error toggling customer status: " + e.getMessage());
             throw new RuntimeException("Lỗi khi thay đổi trạng thái khách hàng: " + e.getMessage(), e);
         }
+    }
+
+    private void syncLinkedAccountStatus(KhachHang khachHang, Integer targetStatus) {
+        if (khachHang == null || khachHang.getTaiKhoan() == null || targetStatus == null) {
+            return;
+        }
+
+        Integer taiKhoanId = khachHang.getTaiKhoan().getId();
+        if (taiKhoanId == null) {
+            return;
+        }
+
+        repoTaiKhoan.updateTrangThaiById(taiKhoanId, targetStatus, new Date());
     }
 
     // ================== UTILITY METHODS ==================

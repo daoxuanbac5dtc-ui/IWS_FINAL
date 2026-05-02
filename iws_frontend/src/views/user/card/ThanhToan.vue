@@ -58,6 +58,12 @@
     },
 
     methods: {
+      scrollToCheckoutTop() {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      },
+
       handleOrderSuccess(orderData) {
         // Handle successful order
         console.log('Order placed successfully:', orderData);
@@ -67,6 +73,17 @@
       handleGoBack() {
         this.$router.push('/card');
       }
+    },
+
+    mounted() {
+      this.scrollToCheckoutTop();
+      this.$nextTick(() => {
+        this.scrollToCheckoutTop();
+
+        window.requestAnimationFrame(() => {
+          this.scrollToCheckoutTop();
+        });
+      });
     }
   }
   </script>

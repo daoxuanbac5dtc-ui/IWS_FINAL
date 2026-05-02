@@ -92,8 +92,9 @@
                         label="Thay đổi trạng thái"
                         icon="pi pi-refresh"
                         severity="warning"
+                        :loading="batchChangingStatus"
                         @click="confirmBatchStatusChange"
-                        :disabled="!selectedCustomers || !selectedCustomers.length"
+                        :disabled="batchChangingStatus || !selectedCustomers || !selectedCustomers.length"
                     />
                 </div>
             </div>
@@ -662,9 +663,6 @@
                 <Button label="Đóng" icon="pi pi-times" @click="addressListDialog = false" />
             </template>
         </Dialog>
-
-        <ConfirmDialog />
-        <Toast />
     </div>
 </template>
 
@@ -686,6 +684,7 @@ const customers = ref([])
 const selectedCustomers = ref([])
 const isLoading = ref(false)
 const saving = ref(false)
+const batchChangingStatus = ref(false)
 const exporting = ref(false)
 const submitted = ref(false)
 const totalRecords = ref(0)
@@ -1595,6 +1594,8 @@ const changeStatus = async (customerData) => {
     }
 }
 const confirmBatchStatusChange = () => {
+    if (batchChangingStatus.value) return
+
     if (!canEditCustomer.value) {
         toast.add({
             severity: 'warn',
@@ -1658,8 +1659,15 @@ const canViewOnly = computed(() => {
     return ['USER', 'NHANVIEN'].includes(currentUserRole.value)
 })
 const batchChangeStatus = async () => {
+    if (batchChangingStatus.value) return
+
+    const selectedSnapshot = [...selectedCustomers.value]
+    if (!selectedSnapshot.length) return
+
+    batchChangingStatus.value = true
+
     try {
-        const promises = selectedCustomers.value.map(customer => 
+    const promises = selectedSnapshot.map(customer =>
             axios.patch(`http://localhost:8080/api/khach-hang/${customer.id}/status`, { 
                 trangThai: customer.trangThai === 1 ? 0 : 1 
             }, {
@@ -1670,20 +1678,32 @@ const batchChangeStatus = async () => {
             })
         )
         
-        await Promise.all(promises)
-        
-        toast.add({
-            severity: 'success',
-            summary: 'Thành công',
-            detail: `Đã thay đổi trạng thái ${selectedCustomers.value.length} khách hàng`,
-            life: 3000
-        })
+        const results = await Promise.allSettled(promises)
+        const failedResults = results.filter(result => result.status === 'rejected')
+
+        if (failedResults.length > 0) {
+            const firstError = failedResults[0].reason
+            console.error('Batch status change failures:', failedResults)
+            handleApiError(
+                firstError,
+                `Đã đổi ${selectedSnapshot.length - failedResults.length}/${selectedSnapshot.length} khách hàng. Một số khách hàng đổi trạng thái thất bại.`
+            )
+        } else {
+            toast.add({
+                severity: 'success',
+                summary: 'Thành công',
+                detail: `Đã thay đổi trạng thái ${selectedSnapshot.length} khách hàng`,
+                life: 3000
+            })
+        }
         
         selectedCustomers.value = []
         await fetchData()
     } catch (error) {
         console.error('Error batch changing status:', error)
         handleApiError(error, 'Không thể thay đổi trạng thái hàng loạt')
+    } finally {
+        batchChangingStatus.value = false
     }
 }
 
@@ -1905,7 +1925,7 @@ const handleApiError = (error, defaultMessage) => {
                 errorMessage = data.message || 'Email đã tồn tại trong hệ thống'
                 break
             case 500:
-                errorMessage = 'Lỗi server nội bộ'
+                errorMessage = data.message || defaultMessage || 'Lỗi server nội bộ'
                 break
             default:
                 errorMessage = data.message || data.error || defaultMessage
