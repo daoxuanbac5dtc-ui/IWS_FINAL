@@ -315,7 +315,7 @@ import Textarea from 'primevue/textarea';
 const toast = useToast();
 
 // API Configuration
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
 // Form data
 const searchForm = ref({
@@ -620,3 +620,4 @@ onMounted(() => {
   border-color: #dc2626;
 }
 </style>
+

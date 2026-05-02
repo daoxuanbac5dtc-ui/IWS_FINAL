@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // Set base URL
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || `${import.meta.env.VITE_API_BASE_URL}`;
 
 // Request interceptor - tự động thêm token vào header
 axios.interceptors.request.use(
@@ -50,3 +50,4 @@ axios.interceptors.response.use(
 );
 
 export default axios;
+

@@ -55,6 +55,12 @@ const handleSocialClick = (social) => {
 
 // Current year for copyright
 const currentYear = new Date().getFullYear();
+
+// Shop configurations from environment variables
+const shopName = import.meta.env.VITE_SHOP_NAME || 'YourBrand';
+const shopAddress = import.meta.env.VITE_SHOP_ADDRESS || 'Address not set';
+const shopPhone = import.meta.env.VITE_SHOP_PHONE || '';
+const shopEmail = import.meta.env.VITE_SHOP_EMAIL || '';
 </script>
 
 <template>
@@ -82,7 +88,7 @@ const currentYear = new Date().getFullYear();
                         <!-- Logo -->
                         <router-link to="/" class="inline-block">
                             <!-- <img :src="footerLogo" width="180" alt="Logo" class="transition-opacity duration-300 hover:opacity-80" /> -->
-                            <span class="text-2xl font-bold">BEE SHOES</span>
+                            <span class="text-2xl font-bold">{{ shopName }}</span>
                         </router-link>
 
                         <!-- Brand Description -->
@@ -92,15 +98,15 @@ const currentYear = new Date().getFullYear();
                         <div class="space-y-2">
                             <div class="flex items-center gap-3 text-gray-300 transition-colors hover:text-white">
                                 <i class="pi pi-map-marker text-sm text-blue-400"></i>
-                                <span class="text-sm">126 Đường Nguyễn Trãi Quận Hà Đông, TP HÀ Nội</span>
+                                <span class="text-sm">{{ shopAddress }}</span>
                             </div>
                             <div class="flex items-center gap-3 text-gray-300 transition-colors hover:text-white">
                                 <i class="pi pi-phone text-sm text-green-400"></i>
-                                <a href="tel:+84123456789" class="text-sm hover:underline">+84 123 456 789</a>
+                                <a :href="`tel:${shopPhone}`" class="text-sm hover:underline">{{ shopPhone }}</a>
                             </div>
                             <div class="flex items-center gap-3 text-gray-300 transition-colors hover:text-white">
                                 <i class="pi pi-envelope text-sm text-red-400"></i>
-                                <a href="mailto:support@example.com" class="text-sm hover:underline">support@example.com</a>
+                                <a :href="`mailto:${shopEmail}`" class="text-sm hover:underline">{{ shopEmail }}</a>
                             </div>
                         </div>
 
@@ -249,7 +255,7 @@ const currentYear = new Date().getFullYear();
                 <div class="flex flex-col items-center justify-between gap-3 md:flex-row">
                     <div class="flex items-center gap-2 text-gray-400">
                         <img :src="copyrightSign" alt="copyright" class="h-4 w-4" />
-                        <p class="text-sm">Copyright {{ currentYear }} - Tất cả quyền được bảo lưu bởi <span class="font-semibold text-white">YourBrand</span></p>
+                        <p class="text-sm">Copyright {{ currentYear }} - Tất cả quyền được bảo lưu bởi <span class="font-semibold text-white">{{ shopName }}</span></p>
                     </div>
 
                     <div class="flex items-center gap-4 text-xs">
@@ -413,3 +419,4 @@ li {
     }
 }
 </style>
+

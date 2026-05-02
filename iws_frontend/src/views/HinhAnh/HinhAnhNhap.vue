@@ -257,7 +257,7 @@ import axios from 'axios';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
 const toast = useToast();
 const dt = ref();
@@ -1022,3 +1022,4 @@ function exportCSV() {
     font-size: 0.875rem;
 }
 </style>
+

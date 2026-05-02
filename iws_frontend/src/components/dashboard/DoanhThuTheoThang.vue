@@ -34,7 +34,7 @@ export default {
 
     const fetchDoanhThu = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/thong-ke/doanh-thu-thang");
+        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/thong-ke/doanh-thu-thang`);
         const data = res.data;
 
         chartData.value = {
@@ -115,3 +115,4 @@ export default {
   },
 };
 </script>
+

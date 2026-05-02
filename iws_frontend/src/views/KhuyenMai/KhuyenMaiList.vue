@@ -930,7 +930,7 @@ async function fetchData() {
         // Kiểm tra và reset giá cho các khuyến mãi không active trước
         await checkAndResetAllInactivePrices();
         
-        const res = await axios.get('http://localhost:8080/khuyen-mai');
+        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/khuyen-mai`);
         khuyenMais.value = res.data;
     } catch (error) {
         console.error('Error fetching data:', error.response?.data || error.message);
@@ -980,7 +980,7 @@ async function openApplyProductsDialog(promotion) {
 async function loadAvailableProducts() {
     isLoadingProducts.value = true;
     try {
-        const res = await axios.get('http://localhost:8080/khuyen-mai-chi-tiet/products/available');
+        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/khuyen-mai-chi-tiet/products/available`);
         const data = Array.isArray(res.data) ? res.data : [];
         availableProducts.value = data.filter((p) => p?.sanPham?.id != null);
         selectedProductsForApply.value = [];
@@ -1091,7 +1091,7 @@ async function applyPromotionToProducts() {
             chiTietSanPhamIds: selectedProductsForApply.value.map((p) => p.id)
         };
 
-        await axios.post('http://localhost:8080/khuyen-mai-chi-tiet/apply', request);
+        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/khuyen-mai-chi-tiet/apply`, request);
 
         toast.add({
             severity: 'success',
@@ -1127,7 +1127,7 @@ async function resetPricesForInactivePromotion(promotionId) {
 // Function để kiểm tra và reset giá cho tất cả khuyến mãi không active  
 async function checkAndResetAllInactivePrices() {
     try {
-        await axios.put('http://localhost:8080/khuyen-mai-chi-tiet/reset-all-inactive-prices');
+        await axios.put(`${import.meta.env.VITE_API_BASE_URL}/khuyen-mai-chi-tiet/reset-all-inactive-prices`);
     } catch (error) {
         console.error('Error resetting all inactive prices:', error);
     }
@@ -1393,7 +1393,7 @@ async function saveKhuyenMai() {
                 life: 3000
             });
         } else {
-            await axios.post('http://localhost:8080/khuyen-mai', requestData);
+            await axios.post(`${import.meta.env.VITE_API_BASE_URL}/khuyen-mai`, requestData);
             toast.add({
                 severity: 'success',
                 summary: 'Thành công',

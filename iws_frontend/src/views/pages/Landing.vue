@@ -21,3 +21,4 @@ import TopbarWidget from '@/components/landing/TopbarWidget.vue';
         </div>
     </div>
 </template>
+

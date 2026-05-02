@@ -10,7 +10,7 @@ export const debugLogin = {
         console.log('🌐 API Endpoint: http://localhost:8080/auth/login');
         
         try {
-            const response = await fetch('http://localhost:8080/auth/login', {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -48,7 +48,7 @@ export const debugLogin = {
      */
     async checkBackendHealth() {
         try {
-            const response = await fetch('http://localhost:8080/auth/login', {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
                 method: 'OPTIONS',
                 headers: {
                     'Access-Control-Request-Method': 'POST',
@@ -75,4 +75,5 @@ export const debugLogin = {
         console.log('🧹 Cleared all auth data');
     }
 };
+
 

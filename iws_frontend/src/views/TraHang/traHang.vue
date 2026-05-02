@@ -3,7 +3,7 @@ import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
 
 // ===== AUTHENTICATION & API SETUP =====
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 const API_ENDPOINTS = {
     chiTietTraHang: `${API_BASE_URL}/api/chi-tiet-tra-hang`,
     hoaDon: `${API_BASE_URL}/hoa-don`
@@ -2263,3 +2263,4 @@ onMounted(() => {
     background: #a8a8a8;
 }
 </style>
+

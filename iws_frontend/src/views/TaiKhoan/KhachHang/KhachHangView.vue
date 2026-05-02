@@ -939,7 +939,7 @@ const fetchProvinces = async () => {
     loadingProvinces.value = true
     try {
         console.log('🌍 Fetching provinces from Vietnam API...')
-        const response = await axios.get('http://localhost:8080/api/vietnam-address/provinces', {
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/vietnam-address/provinces`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
             }
@@ -1064,7 +1064,7 @@ const addAddressToCustomer = async (customerId, addressData) => {
             trangThai: 1
         }
         
-        const response = await axios.post('http://localhost:8080/api/dia-chi', payload, {
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/dia-chi`, payload, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
@@ -1387,7 +1387,7 @@ const fetchData = async () => {
             sortDir: pagination.value.sortOrder === 1 ? 'asc' : 'desc'
         }
 
-        let endpoint = 'http://localhost:8080/api/khach-hang'
+        let endpoint = `${import.meta.env.VITE_API_BASE_URL}/api/khach-hang`
 
         // Add search parameter if exists
         if (globalSearch.value && globalSearch.value.trim()) {
@@ -2021,3 +2021,4 @@ watch(() => pagination.value.size, () => {
     }
 }
 </style>
+

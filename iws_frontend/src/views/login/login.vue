@@ -254,7 +254,7 @@ const login = async () => {
         console.log('🔄 Attempting login...');
 
         // Gọi API backend để đăng nhập
-        const response = await fetch('http://localhost:8080/auth/login', {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

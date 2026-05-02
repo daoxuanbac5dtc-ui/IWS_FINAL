@@ -511,7 +511,7 @@ import axios from 'axios';
 import HeroSection from '../HeroSection.vue';
 
 // Helper functions - đặt ngoài export default
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 const productPlaceholderImage = createSvgPlaceholder({ width: 240, height: 160, label: 'Shoe Image' });
 
 const getAuthToken = () => {
@@ -784,7 +784,7 @@ export default {
 
       try {
         // Lấy danh sách hình ảnh từ API
-        const imagesResponse = await axios.get('http://localhost:8080/hinh-anh');
+        const imagesResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/hinh-anh`);
         const imageMap = new Map();
         imagesResponse.data.forEach(image => {
           const imageUrl = resolveProductImageUrl(image);
@@ -837,7 +837,7 @@ export default {
         console.log('Current detail:', currentDetail);
 
         // Lấy tất cả chi tiết sản phẩm liên quan
-        const allDetailsResponse = await axios.get('http://localhost:8080/api/san-pham-chi-tiet');
+        const allDetailsResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/san-pham-chi-tiet`);
         const relatedDetails = allDetailsResponse.data.filter(d =>
           d.sanPham?.id === currentDetail.sanPham?.id
         );
@@ -845,7 +845,7 @@ export default {
         console.log('Related details:', relatedDetails.length);
 
         // Lấy danh sách hình ảnh
-        const imagesResponse = await axios.get('http://localhost:8080/hinh-anh');
+        const imagesResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/hinh-anh`);
         const imageMap = new Map();
         imagesResponse.data.forEach(image => {
           const imageUrl = resolveProductImageUrl(image);
@@ -856,8 +856,8 @@ export default {
 
         // THÊM: Lấy dữ liệu màu sắc và kích cỡ
         const [colorsResponse, sizesResponse] = await Promise.all([
-          axios.get('http://localhost:8080/mau-sac'),
-          axios.get('http://localhost:8080/kich-co')
+          axios.get(`${import.meta.env.VITE_API_BASE_URL}/mau-sac`),
+          axios.get(`${import.meta.env.VITE_API_BASE_URL}/kich-co`)
         ]);
 
         // Tạo map cho màu sắc và kích cỡ
@@ -967,9 +967,9 @@ export default {
     async fetchSimilarProducts() {
       try {
         const [productsResponse, detailsResponse, imagesResponse] = await Promise.all([
-          axios.get('http://localhost:8080/api/san-pham'),
-          axios.get('http://localhost:8080/api/san-pham-chi-tiet'),
-          axios.get('http://localhost:8080/hinh-anh')
+          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/san-pham`),
+          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/san-pham-chi-tiet`),
+          axios.get(`${import.meta.env.VITE_API_BASE_URL}/hinh-anh`)
         ]);
 
         // Tạo map hình ảnh theo ID
@@ -3625,6 +3625,7 @@ min-height: 400px;
 }
 
 </style>
+
 
 
 

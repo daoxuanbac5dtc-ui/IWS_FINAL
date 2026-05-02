@@ -57,3 +57,4 @@ export function mergeUserInfo(...sources) {
 export function hasBasicCachedUser(user = {}) {
     return Boolean(getUserAccountId(user) && getUserDisplayName(user) && getUserEmail(user));
 }
+

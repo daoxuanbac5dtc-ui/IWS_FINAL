@@ -20,7 +20,7 @@ const imageCache = ref({});
 const loadingImages = ref(new Set());
 
 // API Configuration
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
 // Auth helpers
 const getAuthToken = () => localStorage.getItem('auth_token');
@@ -665,3 +665,4 @@ button:hover {
     font-size: 12px;
 }
 </style>
+

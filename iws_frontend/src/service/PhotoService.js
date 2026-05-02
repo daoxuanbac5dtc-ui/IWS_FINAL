@@ -98,3 +98,4 @@ export const PhotoService = {
         return Promise.resolve(this.getData());
     }
 };
+

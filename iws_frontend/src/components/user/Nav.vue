@@ -7,7 +7,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 // State
 const cartItemCount = ref(0);
 const secondNavOpen = ref(false);
@@ -554,7 +554,7 @@ const logout = async () => {
         const token = localStorage.getItem('auth_token');
         if (token) {
             try {
-                await fetch('http://localhost:8080/auth/logout', {
+                await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/logout`, {
                     method: 'POST',
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -1222,3 +1222,4 @@ onUnmounted(() => {
     border-color: #ff6452;
 }
 </style>
+

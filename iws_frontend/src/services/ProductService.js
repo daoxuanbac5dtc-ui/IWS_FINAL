@@ -7,7 +7,7 @@ import axios from 'axios';
  */
 class ProductService {
   constructor() {
-    this.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+    this.baseURL = import.meta.env.VITE_API_URL || `${import.meta.env.VITE_API_BASE_URL}`;
     this.products = [];
     this.productDetails = [];
     this.categories = [];

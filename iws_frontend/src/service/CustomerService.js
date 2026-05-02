@@ -9030,3 +9030,4 @@ export const CustomerService = {
         return fetch('https://www.primefaces.org/data/customers?' + queryParams).then((res) => res.json());
     }
 };
+

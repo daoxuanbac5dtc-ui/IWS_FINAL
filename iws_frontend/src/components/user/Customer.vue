@@ -16,3 +16,4 @@ let { customer } = defineProps(["customer"]);
 </template>
 
 <style lang="scss" scoped></style>
+

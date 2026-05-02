@@ -59,7 +59,7 @@ function getRowIndex(index) {
 
 async function fetchData() {
     try {
-        const res = await axios.get('http://localhost:8080/hinh-anh');
+        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/hinh-anh`);
         ListHinhAnh.value = res.data;
         imageUrlVersion.value = Date.now();
     } catch (error) {
@@ -168,7 +168,7 @@ async function uploadFile(file) {
         const formData = new FormData();
         formData.append('file', file);
 
-        const response = await axios.post('http://localhost:8080/hinh-anh/upload', formData, {
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/hinh-anh/upload`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
@@ -253,7 +253,7 @@ async function saveHinhAnh() {
             });
         } else {
             // THÊM MỚI
-            await axios.post('http://localhost:8080/hinh-anh', hinhAnh.value);
+            await axios.post(`${import.meta.env.VITE_API_BASE_URL}/hinh-anh`, hinhAnh.value);
             toast.add({
                 severity: 'success',
                 summary: 'Thành công',
@@ -655,3 +655,4 @@ function exportCSV() {
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 </style>
+

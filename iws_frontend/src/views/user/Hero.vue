@@ -110,9 +110,9 @@ onMounted(async () => {
 
         // Fetch all necessary data
         const [productsResponse, detailsResponse, imagesResponse] = await Promise.all([
-            axios.get('http://localhost:8080/api/san-pham'),
-            axios.get('http://localhost:8080/api/san-pham-chi-tiet'),
-            axios.get('http://localhost:8080/hinh-anh')
+            axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/san-pham`),
+            axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/san-pham-chi-tiet`),
+            axios.get(`${import.meta.env.VITE_API_BASE_URL}/hinh-anh`)
         ]);
 
         console.log('🦸 Hero - Products:', productsResponse.data.length);
@@ -386,3 +386,4 @@ onMounted(async () => {
     }
 }
 </style>
+

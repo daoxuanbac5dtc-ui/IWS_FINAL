@@ -21,7 +21,7 @@ const imageCache = ref({});
 const loadingImages = ref(new Set());
 
 // API Configuration
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
 // Detail mode based on route param
 const isDetailMode = computed(() => !!route.params.id);
@@ -746,3 +746,4 @@ button:hover {
     font-size: 12px;
 }
 </style>
+

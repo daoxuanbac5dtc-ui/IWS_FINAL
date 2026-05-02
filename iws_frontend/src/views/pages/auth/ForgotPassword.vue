@@ -243,7 +243,7 @@ const sendOTP = async () => {
     loadingMessage.value = 'Đang gửi OTP...';
 
     try {
-        const response = await fetch('http://localhost:8080/auth/forgot-password/send-code', {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/forgot-password/send-code`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: email.value })
@@ -286,7 +286,7 @@ const resetPassword = async () => {
     loadingMessage.value = 'Đang đặt lại mật khẩu...';
 
     try {
-        const response = await fetch('http://localhost:8080/auth/forgot-password/reset-password', {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/forgot-password/reset-password`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -590,3 +590,4 @@ const goToLogin = () => {
     font-weight: 600;
 }
 </style>
+

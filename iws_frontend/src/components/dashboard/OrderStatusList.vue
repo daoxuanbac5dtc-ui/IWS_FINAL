@@ -10,7 +10,7 @@ let chartInstance = null;
 // Hàm lấy dữ liệu từ API
 const fetchData = async () => {
   try {
-    const res = await axios.get("http://localhost:8080/thong-ke/trang-thai-don-hang");
+    const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/thong-ke/trang-thai-don-hang`);
     const apiData = res.data;
     
     // Bước 1: Chuẩn hóa và gộp dữ liệu
@@ -199,3 +199,4 @@ onMounted(fetchData);
     </div>
   </div>
 </template>
+

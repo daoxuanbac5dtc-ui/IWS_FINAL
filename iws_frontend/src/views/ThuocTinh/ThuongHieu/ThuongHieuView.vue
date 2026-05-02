@@ -179,7 +179,7 @@ function getRowIndex(index) {
 
 async function fetchData() {
     try {
-        const res = await axios.get('http://localhost:8080/thuong-hieu');
+        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/thuong-hieu`);
         ListThuongHieu.value = res.data;
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -241,7 +241,7 @@ async function saveThuongHieu() {
                 // ✅ Sửa: Đảm bảo có mã thương hiệu trước khi gửi
                 thuongHieu.value.maThuongHieu = thuongHieu.value.maThuongHieu || createId();
                 
-                await axios.post('http://localhost:8080/thuong-hieu', thuongHieu.value);
+                await axios.post(`${import.meta.env.VITE_API_BASE_URL}/thuong-hieu`, thuongHieu.value);
                 toast.add({
                     severity: 'success',
                     summary: 'Thành công',

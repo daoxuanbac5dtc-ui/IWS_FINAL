@@ -7,3 +7,4 @@ import Hero from '@/views/user/Hero.vue';
         <Hero />
     </section>
 </template>
+

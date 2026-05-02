@@ -9,3 +9,4 @@ import AppMenu from './AppMenu.vue';
 </template>
 
 <style lang="scss" scoped></style>
+

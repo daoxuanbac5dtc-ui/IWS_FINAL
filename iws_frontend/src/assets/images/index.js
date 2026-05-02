@@ -19,3 +19,4 @@ import thumbnailShoe3 from './thumbnail-shoe3.svg';
 
 export { bigShoe1, bigShoe2, bigShoe3, customer1, customer2, footerLogo, headerLogo, offer, shoe8, thumbnailBackground, thumbnailShoe1, thumbnailShoe2, thumbnailShoe3 };
 
+

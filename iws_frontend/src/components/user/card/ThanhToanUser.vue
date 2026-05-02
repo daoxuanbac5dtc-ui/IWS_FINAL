@@ -7,10 +7,10 @@ import { getStoredUserInfo, getUserDisplayName, getUserEmail, getUserPhone, hasB
 
 // Cấu hình EmailJS với keys của bạn
 const EMAILJS_CONFIG = {
-    PUBLIC_KEY: 'kTFlCJLQoDSFTVF23',
-    SERVICE_ID: 'service_638ne5n', 
+    PUBLIC_KEY: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
+    SERVICE_ID: import.meta.env.VITE_EMAILJS_SERVICE_ID,
     // Sử dụng template đảm bảo có trường To Email: {{to_email}}
-    TEMPLATE_ID: 'template_qq0g6zi'
+    TEMPLATE_ID: import.meta.env.VITE_EMAILJS_TEMPLATE_ID
 };
 
 // Trước khi gửi email
@@ -25,7 +25,7 @@ const router = useRouter();
 const emit = defineEmits(['order-success', 'go-back']);
 
 // API Configuration
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // User & Cart Data
 const userInfo = ref(null);
@@ -1250,9 +1250,7 @@ const sendOrderConfirmationEmail = async (orderData, isGuest = false) => {
             
             // Địa chỉ và thanh toán
             shipping_address: isGuest ? formatGuestFullAddress() : formatFullAddress(selectedShippingAddress.value),
-            payment_method: isGuest ? 
-                (guestForm.value.phuongThucThanhToan === 'COD' ? 'Thanh toán khi nhận hàng (COD)' : 'Thanh toán online (VNPay)') :
-                (paymentMethod.value === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Chuyển khoản ngân hàng'),
+            payment_method: paymentMethod.value === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Thanh toán online (VNPay)',
             
             // Ghi chú
             order_note: isGuest ? (guestForm.value.ghiChu || 'Không có') : (shippingInfo.value.note || 'Không có'),
@@ -1275,13 +1273,13 @@ const sendOrderConfirmationEmail = async (orderData, isGuest = false) => {
             ),
             
             // Thông tin shop
-            shop_name: 'SHOP GIÀY THỂ THAO',
-            shop_email: 'support@sportshoesshop.com',
-            shop_phone: '0123-456-789',
-            shop_address: '126 Đường Nguyễn Trãi Quận Hà Đông, TP HÀ Nội',
+            shop_name: import.meta.env.VITE_SHOP_NAME,
+            shop_email: import.meta.env.VITE_SHOP_EMAIL,
+            shop_phone: import.meta.env.VITE_SHOP_PHONE,
+            shop_address: import.meta.env.VITE_SHOP_ADDRESS,
             
             // Thông tin gửi email
-            from_name: 'SHOP GIÀY THỂ THAO'
+            from_name: import.meta.env.VITE_SHOP_NAME
         };
 
         // LOG để debug
@@ -1375,7 +1373,7 @@ const submitGuestOrderWithEmail = async () => {
             diaChi: formatGuestFullAddress(),
             maHoaDon: maHoaDon,
             ghiChu: guestForm.value.ghiChu || '',
-            phuongThucThanhToan: guestForm.value.phuongThucThanhToan === 'COD' ? 'COD' : 'VNPAY',
+            phuongThucThanhToan: paymentMethod.value === 'cod' ? 'COD' : 'VNPAY',
             loaiHoaDon: 'ONLINE',
             trangThaiHoaDon: 'CHO_XAC_NHAN',
             tongTien: subtotal.value,
@@ -1401,7 +1399,7 @@ const submitGuestOrderWithEmail = async () => {
         };
         console.log('Order data to submit (GUEST):', JSON.parse(JSON.stringify(orderData)));
 
-        if (guestForm.value.phuongThucThanhToan === 'VNPAY') {
+        if (paymentMethod.value === 'bank_transfer') {
             // VNPay - lưu data và chuyển hướng
             sessionStorage.setItem('pending_guest_order_data', JSON.stringify(orderData));
 
@@ -2147,37 +2145,7 @@ onMounted(() => {
             ></textarea>
         </div>
 
-        <!-- Phương thức thanh toán -->
-        <div>
-            <label class="mb-2 block text-sm font-medium text-gray-700">Phương thức thanh toán</label>
-            <div class="space-y-3">
-                <label class="flex cursor-pointer items-center rounded-lg border border-gray-300 p-4 transition hover:border-blue-400 hover:bg-blue-50">
-                    <input
-                        v-model="guestForm.phuongThucThanhToan"
-                        type="radio"
-                        value="COD"
-                        class="mr-3 text-blue-500 focus:ring-blue-500"
-                    />
-                    <div class="flex-1">
-                        <p class="font-medium">💰 Thanh toán khi nhận hàng (COD)</p>
-                        <p class="text-sm text-gray-600">Thanh toán bằng tiền mặt khi nhận hàng</p>
-                    </div>
-                </label>
 
-                <label class="flex cursor-pointer items-center rounded-lg border border-gray-300 p-4 transition hover:border-blue-400 hover:bg-blue-50">
-                    <input
-                        v-model="guestForm.phuongThucThanhToan"
-                        type="radio"
-                        value="VNPAY"
-                        class="mr-3 text-blue-500 focus:ring-blue-500"
-                    />
-                    <div class="flex-1">
-                        <p class="font-medium">🏦 Thanh toán online (VNPay)</p>
-                        <p class="text-sm text-gray-600">Thanh toán qua thẻ ATM, Visa, MasterCard</p>
-                    </div>
-                </label>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -2298,8 +2266,8 @@ onMounted(() => {
                         <label class="flex cursor-pointer items-center rounded-lg border border-orange-300 p-4 transition hover:border-orange-400 hover:bg-orange-50">
                             <input v-model="paymentMethod" type="radio" value="bank_transfer" class="mr-3 text-orange-500 focus:ring-orange-500" />
                             <div class="flex-1">
-                                <p class="font-medium">🏦 Chuyển khoản ngân hàng</p>
-                                <p class="text-sm text-gray-600">Chuyển khoản qua tài khoản ngân hàng</p>
+                                <p class="font-medium">🏦 Thanh toán online (VNPay)</p>
+                                <p class="text-sm text-gray-600">Thanh toán qua thẻ ATM, Visa, MasterCard</p>
                             </div>
                         </label>
                     </div>
@@ -2895,3 +2863,4 @@ textarea:focus {
     gap: 0.5rem;
 }
 </style>
+

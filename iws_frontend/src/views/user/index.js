@@ -11,3 +11,4 @@ import SuperQuality from './SuperQuality.vue'
 
 export { CustomerReviews, Footer, Hero, PopularProducts, Product, ProductList, Services, SpecialOffers, Subscribe, SuperQuality }
 
+

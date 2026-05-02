@@ -17,3 +17,4 @@ const { offer } = defineProps(["offer"]);
 </template>
 
 <style lang="scss" scoped></style>
+

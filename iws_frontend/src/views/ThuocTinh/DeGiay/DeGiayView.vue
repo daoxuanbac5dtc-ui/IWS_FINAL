@@ -177,7 +177,7 @@ function getRowIndex(index) {
 
 async function fetchData() {
     try {
-        const res = await axios.get('http://localhost:8080/de-giay');
+        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/de-giay`);
         ListDeGiay.value = res.data;
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -230,7 +230,7 @@ async function saveDeGiay() {
                 });
             } else {
                 deGiay.value.maDeGiay = deGiay.value.maDeGiay || createId();
-                await axios.post('http://localhost:8080/de-giay', deGiay.value);
+                await axios.post(`${import.meta.env.VITE_API_BASE_URL}/de-giay`, deGiay.value);
                 toast.add({
                     severity: 'success',
                     summary: 'Thành công',

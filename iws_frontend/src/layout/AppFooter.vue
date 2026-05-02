@@ -3,3 +3,4 @@
 <template>
     <div class="layout-footer">BeeShoes</div>
 </template>
+

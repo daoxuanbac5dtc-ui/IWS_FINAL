@@ -48,9 +48,9 @@ export default {
     name: 'BanHangTaiQuay',
     setup() {
         // =================== CONSTANTS ===================
-        const API_BASE_URL = 'http://localhost:8080/api/ban-hang';
+        const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api/ban-hang`;
         // Voucher detail APIs live under /api/chi-tiet-voucher (not under /api/ban-hang)
-        const API_VOUCHER_URL = 'http://localhost:8080/api/chi-tiet-voucher';
+        const API_VOUCHER_URL = `${import.meta.env.VITE_API_BASE_URL}/api/chi-tiet-voucher`;
 
         // =================== REFS ===================
         const nhanVienInfo = ref({
@@ -1605,7 +1605,7 @@ export default {
 
         // ✅ THÊM: Helper function để tạo URL ảnh voucher (theo pattern VoucherList.vue)
         const createVoucherImageUrl = (duongDanHinhAnh) => {
-            const imageBaseUrl = 'http://localhost:8080';
+            const imageBaseUrl = `${import.meta.env.VITE_API_BASE_URL}`;
             const rawPath = String(duongDanHinhAnh || '').trim();
             if (!rawPath) return null;
             if (/^(https?:|data:|blob:)/i.test(rawPath)) return rawPath;
@@ -5458,3 +5458,4 @@ small.text-muted {
     }
 }
 </style>
+

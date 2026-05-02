@@ -13,7 +13,7 @@ const voucherDetailsForInvoice = ref([]);
 const isLoadingVoucherDetails = ref(false);
 
 // ===== AUTHENTICATION & API SETUP =====
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 const API_ENDPOINTS = {
     hoaDon: `${API_BASE_URL}/hoa-don`,
     hoaDonPOS: `${API_BASE_URL}/hoa-don/pos`,
@@ -3647,3 +3647,4 @@ onMounted(() => {
     }
 }
 </style>
+

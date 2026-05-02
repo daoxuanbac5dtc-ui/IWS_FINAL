@@ -1059,9 +1059,9 @@ const fetchData = async () => {
     isLoading.value = true
     try {
         const [accountsResponse, customersResponse, employeesResponse] = await Promise.all([
-            axios.get('http://localhost:8080/api/tai-khoan?size=1000'),
-            axios.get('http://localhost:8080/api/khach-hang/all').catch(() => ({ data: [] })),
-            axios.get('http://localhost:8080/api/nhan-vien/all').catch(() => ({ data: [] }))
+            axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/tai-khoan?size=1000`),
+            axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/khach-hang/all`).catch(() => ({ data: [] })),
+            axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/nhan-vien/all`).catch(() => ({ data: [] }))
         ])
         
         if (Array.isArray(accountsResponse.data)) {
@@ -1610,7 +1610,7 @@ const fetchProvinces = async () => {
     
     try {
         loadingProvinces.value = true
-        const response = await axios.get('http://localhost:8080/api/vietnam-address/provinces')
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/vietnam-address/provinces`)
         
         if (response.data && response.data.success && response.data.data) {
             provinces.value = response.data.data.map(item => ({
@@ -2108,7 +2108,7 @@ const validateOtherFields = () => {
 // Kiểm tra backend health trước khi tạo tài khoản
 const checkBackendHealth = async () => {
     try {
-        const response = await axios.get('http://localhost:8080/api/tai-khoan', {
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/tai-khoan`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` },
             timeout: 5000
         })
@@ -2179,7 +2179,7 @@ const handleSaveAccount = async () => {
         console.log('🔐 Auth token present:', !!localStorage.getItem('auth_token'))
         console.log('🌐 API URL: http://localhost:8080/api/tai-khoan')
         
-        const response = await axios.post('http://localhost:8080/api/tai-khoan', accountData, {
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/tai-khoan`, accountData, {
             headers: { 
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
@@ -2657,3 +2657,4 @@ const checkAdminPermission = () => {
     border-top: 1px solid #e2e8f0;
 }
 </style>
+

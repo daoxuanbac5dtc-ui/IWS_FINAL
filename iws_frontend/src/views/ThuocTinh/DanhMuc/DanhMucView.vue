@@ -179,7 +179,7 @@ function getRowIndex(index) {
 
 async function fetchData() {
     try {
-        const res = await axios.get('http://localhost:8080/danh-muc');
+        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/danh-muc`);
         ListDanhMuc.value = res.data;
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -232,7 +232,7 @@ async function saveDanhMuc() {
                 });
             } else {
                 danhMuc.value.maDanhMuc = danhMuc.value.maDanhMuc || createId();
-                await axios.post('http://localhost:8080/danh-muc', danhMuc.value);
+                await axios.post(`${import.meta.env.VITE_API_BASE_URL}/danh-muc`, danhMuc.value);
                 toast.add({
                     severity: 'success',
                     summary: 'Thành công',

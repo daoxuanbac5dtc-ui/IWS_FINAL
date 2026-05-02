@@ -9,7 +9,7 @@ const route = useRoute();
 const isLoading = ref(true);
 const paymentResult = ref(null);
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
 const processPaymentResult = async () => {
     try {
@@ -239,3 +239,4 @@ onMounted(() => {
     transition: all 0.3s ease;
 }
 </style>
+

@@ -19,3 +19,4 @@ const { toggleDarkMode, isDarkTheme } = useLayout();
         </div>
     </div>
 </template>
+

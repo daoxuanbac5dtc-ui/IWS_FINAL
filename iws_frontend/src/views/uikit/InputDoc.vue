@@ -246,3 +246,4 @@ function searchCountry(event) {
         </div>
     </Fluid>
 </template>
+

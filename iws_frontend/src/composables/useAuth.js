@@ -3,7 +3,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_URL || `${import.meta.env.VITE_API_BASE_URL}`;
 
 export const useAuth = () => {
     const router = useRouter();
@@ -249,3 +249,4 @@ export const hasPermission = (userRole, permission) => {
     const rolePermissions = ROLE_PERMISSIONS[userRole] || [];
     return rolePermissions.includes(permission);
 };
+

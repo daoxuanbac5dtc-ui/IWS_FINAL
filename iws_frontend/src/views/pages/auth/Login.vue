@@ -205,7 +205,7 @@ const checked = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
 const isLoading = ref(false);
-const AUTH_API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const AUTH_API_BASE_URL = import.meta.env.VITE_API_URL || `${import.meta.env.VITE_API_BASE_URL}`;
 
 const router = useRouter();
 
@@ -1140,3 +1140,4 @@ onMounted(() => {
     }
 }
 </style>
+

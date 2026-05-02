@@ -2,7 +2,7 @@
 import { computed, reactive, watch } from 'vue'
 
 // ===== CONSTANTS =====
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+const API_BASE_URL = import.meta.env.VITE_API_URL || `${import.meta.env.VITE_API_BASE_URL}`
 
 const AUTH_STORAGE_KEYS = {
     TOKEN: 'auth_token',
@@ -395,3 +395,4 @@ initializeAuth()
 
 // Export for direct access if needed
 export { clearAuthData, DEFAULT_USER_ROLES, initializeAuth }
+

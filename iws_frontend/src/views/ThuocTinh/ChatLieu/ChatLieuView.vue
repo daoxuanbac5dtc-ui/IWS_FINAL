@@ -179,7 +179,7 @@ function getRowIndex(index) {
 
 async function fetchData() {
     try {
-        const res = await axios.get('http://localhost:8080/chat-lieu');
+        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/chat-lieu`);
         ListChatLieu.value = res.data;
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -240,7 +240,7 @@ async function saveChatLieu() {
                 });
             } else {
                 chatLieu.value.maChatLieu = chatLieu.value.maChatLieu || createId();
-                await axios.post('http://localhost:8080/chat-lieu', chatLieu.value);
+                await axios.post(`${import.meta.env.VITE_API_BASE_URL}/chat-lieu`, chatLieu.value);
                 toast.add({
                     severity: 'success',
                     summary: 'Thành công',

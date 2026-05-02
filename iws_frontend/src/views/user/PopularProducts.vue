@@ -156,9 +156,9 @@ const fetchPopularProducts = async () => {
     
     // Lấy danh sách từ API
     const [productsResponse, detailsResponse, imagesResponse] = await Promise.all([
-      axios.get('http://localhost:8080/api/san-pham'),
-      axios.get('http://localhost:8080/api/san-pham-chi-tiet'),
-      axios.get('http://localhost:8080/hinh-anh')
+      axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/san-pham`),
+      axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/san-pham-chi-tiet`),
+      axios.get(`${import.meta.env.VITE_API_BASE_URL}/hinh-anh`)
     ]);
     
     console.log('📦 Products API Response:', productsResponse.data.length, 'products');
@@ -567,5 +567,6 @@ onMounted(() => {
   }
 }
 </style>
+
 
 

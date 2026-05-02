@@ -203,7 +203,7 @@ export const paymentMethods = [
 
 // API Endpoints
 export const API_ENDPOINTS = {
-    BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
+    BASE_URL: import.meta.env.VITE_API_URL || `${import.meta.env.VITE_API_BASE_URL}/api`,
 
     // Auth
     LOGIN: '/auth/login',
@@ -276,3 +276,4 @@ export const formatDate = (date) => {
 export const formatDateTime = (date) => {
     return new Date(date).toLocaleString('vi-VN');
 };
+

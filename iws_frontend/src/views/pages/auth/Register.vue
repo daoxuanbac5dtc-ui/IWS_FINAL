@@ -390,3 +390,4 @@ const goToLogin = () => {
     box-shadow: 0 0 0 0.2rem rgba(239, 68, 68, 0.2) !important;
 }
 </style>
+

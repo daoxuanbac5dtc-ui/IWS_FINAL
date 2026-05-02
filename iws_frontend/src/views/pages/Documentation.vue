@@ -147,3 +147,4 @@ import AppLayout from './AppLayout.vue';
     }
 }
 </style>
+

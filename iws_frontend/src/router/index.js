@@ -2,7 +2,7 @@ import AppLayout from '@/layout/AppLayout.vue';
 
 import { createRouter, createWebHistory } from 'vue-router';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_URL || `${import.meta.env.VITE_API_BASE_URL}`;
 
 const router = createRouter({
     history: createWebHistory(),
@@ -560,3 +560,4 @@ export const useAuthUtils = () => {
 };
 
 export default router;
+

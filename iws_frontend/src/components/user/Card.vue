@@ -118,3 +118,4 @@ const onClick = (imgUrl) => {
   }
 }
 </style>
+

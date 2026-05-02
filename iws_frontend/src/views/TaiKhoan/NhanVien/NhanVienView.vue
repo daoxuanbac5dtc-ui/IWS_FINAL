@@ -1046,7 +1046,7 @@ if (advancedFilters.value.trangThai !== null &&
             params.endDate = advancedFilters.value.endDate.toISOString().split('T')[0]
         }
 
-        const response = await axios.get('http://localhost:8080/api/nhan-vien', { 
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/nhan-vien`, { 
             params,
             timeout: 10000,
             headers: {
@@ -1455,7 +1455,7 @@ const fetchProvinces = async () => {
     
     loadingProvinces.value = true
     try {
-        const response = await axios.get('http://localhost:8080/api/vietnam-address/provinces', {
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/vietnam-address/provinces`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
             }
@@ -1572,7 +1572,7 @@ const addAddressToEmployee = async (employeeId, addressData) => {
             trangThai: 1
         }
         
-        const response = await axios.post('http://localhost:8080/api/dia-chi', payload, {
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/dia-chi`, payload, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
@@ -2196,7 +2196,7 @@ const deleteSelectedEmployees = async () => {
 
     try {
         const ids = selectedEmployees.value.map(emp => emp.id)
-        await axios.delete('http://localhost:8080/api/nhan-vien/batch', { data: ids })
+        await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/nhan-vien/batch`, { data: ids })
         await fetchData()
         selectedEmployees.value = []
         
@@ -2433,3 +2433,4 @@ onMounted(() => {
     }
 }
 </style>
+

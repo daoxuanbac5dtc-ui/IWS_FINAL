@@ -202,7 +202,7 @@ export default {
         async fetchCategories() {
             try {
                 this.loadingCategories = true;
-                const response = await axios.get('http://localhost:8080/danh-muc');
+                const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/danh-muc`);
                 this.categories = response.data.filter((cat) => cat.trangThai === 1);
             } catch (error) {
                 console.error('Lỗi khi gọi API danh mục:', error);
@@ -217,9 +217,9 @@ export default {
                 this.loading = true;
 
                 const [productsResponse, detailsResponse, imagesResponse] = await Promise.all([
-                    axios.get('http://localhost:8080/api/san-pham'),
-                    axios.get('http://localhost:8080/api/san-pham-chi-tiet'),
-                    axios.get('http://localhost:8080/hinh-anh')
+                    axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/san-pham`),
+                    axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/san-pham-chi-tiet`),
+                    axios.get(`${import.meta.env.VITE_API_BASE_URL}/hinh-anh`)
                 ]);
 
                 if (!productsResponse.data || productsResponse.data.length === 0) {
@@ -349,37 +349,37 @@ export default {
                         </button>
                     </div>
 
-                    <div class="categories-list">
-                        <div v-if="loadingCategories" class="category-skeleton" v-for="n in 5" :key="n">
-                            <div class="skeleton-text"></div>
-                        </div>
-
-                        <div v-else>
-                            <div class="category-item" :class="{ active: selectedCategory === null }" @click="selectCategory(null)">
-                                <span class="category-name">Tất cả sản phẩm</span>
-                                <span class="category-count">{{ totalProducts }}</span>
+                        <div class="categories-scroll-wrapper">
+                            <div v-if="loadingCategories" class="category-skeleton" v-for="n in 5" :key="n">
+                                <div class="skeleton-text"></div>
                             </div>
 
-                            <div
-                                v-for="category in categories"
-                                :key="category.id"
-                                class="category-item"
-                                :class="{
-                                    active: selectedCategory === category.id,
-                                    empty: getCategoryProductCount(category.id) === 0
-                                }"
-                                @click="selectCategory(category.id)"
-                            >
-                                <span class="category-name">{{ category.tenDanhMuc }}</span>
-                                <span class="category-count">{{ getCategoryProductCount(category.id) }}</span>
-                                <span class="category-arrow">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
-                                    </svg>
-                                </span>
+                            <div v-else>
+                                <div class="category-item" :class="{ active: selectedCategory === null }" @click="selectCategory(null)">
+                                    <span class="category-name">Tất cả sản phẩm</span>
+                                    <span class="category-count">{{ totalProducts }}</span>
+                                </div>
+
+                                <div
+                                    v-for="category in categories"
+                                    :key="category.id"
+                                    class="category-item"
+                                    :class="{
+                                        active: selectedCategory === category.id,
+                                        empty: getCategoryProductCount(category.id) === 0
+                                    }"
+                                    @click="selectCategory(category.id)"
+                                >
+                                    <span class="category-name">{{ category.tenDanhMuc }}</span>
+                                    <span class="category-count">{{ getCategoryProductCount(category.id) }}</span>
+                                    <span class="category-arrow">
+                                        <svg viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+                                        </svg>
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
                     <div class="sidebar-footer">
                         <div class="filter-section">
@@ -517,12 +517,19 @@ export default {
                     </div>
 
                     <div v-if="!loading && filteredProducts.length === 0" class="empty-state">
-                        <svg viewBox="0 0 24 24" class="empty-icon">
-                            <path fill="currentColor" d="M19,2H5A3,3 0 0,0 2,5V19A3,3 0 0,0 5,22H19A3,3 0 0,0 22,19V5A3,3 0 0,0 19,2M19,19H5V5H19V19M13.96,12.29L11.21,15.83L9.25,13.47L6.5,17H17.5L13.96,12.29Z" />
-                        </svg>
+                        <div class="empty-illustration">
+                            <svg viewBox="0 0 24 24" class="empty-icon">
+                                <path fill="currentColor" d="M15.5,14L20.5,19L19,20.5L14,15.5V14.71L13.73,14.43C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.43,13.73L14.71,14H15.5M9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14Z" />
+                            </svg>
+                            <div class="empty-pulse"></div>
+                        </div>
+                        <h3 class="empty-title">Không tìm thấy sản phẩm</h3>
                         <p class="empty-text">
-                            {{ selectedCategory ? `Chưa có sản phẩm trong danh mục ${selectedCategoryName}` : 'Chưa có sản phẩm phù hợp với bộ lọc hiện tại' }}
+                            {{ selectedCategory ? `Hiện tại không có sản phẩm nào thuộc danh mục ${selectedCategoryName} phù hợp với bộ lọc.` : 'Rất tiếc, không có sản phẩm nào phù hợp với tiêu chí tìm kiếm của bạn.' }}
                         </p>
+                        <button class="reset-filter-btn" @click="resetAdvancedFilters">
+                            Thử lại với bộ lọc khác
+                        </button>
                     </div>
                 </div>
             </div>
@@ -615,6 +622,32 @@ export default {
 .mobile-close-btn svg {
     width: 22px;
     height: 22px;
+}
+
+.categories-scroll-wrapper {
+    max-height: 420px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    margin-right: -0.5rem;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #e2e8f0;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: #cbd5e1;
+    }
 }
 
 .category-item {
@@ -831,6 +864,9 @@ export default {
 
 .products-container {
     flex: 1;
+    min-height: 800px;
+    display: flex;
+    flex-direction: column;
 }
 
 .products-grid {
@@ -1110,4 +1146,88 @@ export default {
 .product-card-skeleton * {
     animation: shimmer 1.5s infinite;
 }
+
+/* Empty State Styles */
+.empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    background: white;
+    border-radius: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    margin-top: 2rem;
+}
+
+.empty-illustration {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff5f4;
+    border-radius: 50%;
+    margin-bottom: 2rem;
+}
+
+.empty-icon {
+    width: 60px;
+    height: 60px;
+    color: #ff6452;
+    z-index: 2;
+}
+
+.empty-pulse {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #ff6452;
+    opacity: 0.1;
+    animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+    0% { transform: scale(0.8); opacity: 0.2; }
+    50% { transform: scale(1.2); opacity: 0.1; }
+    100% { transform: scale(0.8); opacity: 0.2; }
+}
+
+.empty-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #1a202c;
+    margin-bottom: 1rem;
+}
+
+.empty-text {
+    font-size: 1.1rem;
+    color: #64748b;
+    max-width: 500px;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.reset-filter-btn {
+    padding: 0.875rem 2rem;
+    background: #1a202c;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background: #ff6452;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(255, 100, 82, 0.2);
+    }
+}
 </style>
+
+

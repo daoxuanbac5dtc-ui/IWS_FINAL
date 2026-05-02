@@ -389,3 +389,4 @@ function calculateCustomerTotal(name) {
     font-weight: bold;
 }
 </style>
+

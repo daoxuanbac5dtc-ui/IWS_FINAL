@@ -540,7 +540,7 @@ import axios from 'axios';
 import { computed, onMounted, ref } from 'vue';
 
 // Cấu hình API
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
 // Reactive data
 const products = ref([]);
@@ -1529,3 +1529,4 @@ code {
     background-color: rgba(255, 193, 7, 0.1) !important;
 }
 </style>
+

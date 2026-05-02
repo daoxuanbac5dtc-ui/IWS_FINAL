@@ -6,7 +6,7 @@ import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref, watch } from 'vue';
 
 // Cấu hình API base URL
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
 const toast = useToast();
 const dt = ref();
@@ -3517,4 +3517,5 @@ function collapseAll() {
     }
 }
 </style>
+
 

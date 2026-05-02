@@ -187,7 +187,7 @@ function handleUpdateMauSacConfirm() {
 
 async function fetchData() {
     try {
-        const res = await axios.get('http://localhost:8080/mau-sac');
+        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/mau-sac`);
         ListMauSac.value = res.data;
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -240,7 +240,7 @@ async function saveMauSac() {
                 });
             } else {
                 mauSac.value.maMauSac = mauSac.value.maMauSac || createId();
-                await axios.post('http://localhost:8080/mau-sac', mauSac.value);
+                await axios.post(`${import.meta.env.VITE_API_BASE_URL}/mau-sac`, mauSac.value);
                 toast.add({
                     severity: 'success',
                     summary: 'Thành công',

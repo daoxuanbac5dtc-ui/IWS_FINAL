@@ -45,3 +45,4 @@ const iconClass = computed(() => {
     return `text-${props.color}-600`;
 });
 </script>
+

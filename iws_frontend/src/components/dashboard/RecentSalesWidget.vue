@@ -36,3 +36,4 @@ onMounted(() => {
         </DataTable>
     </div>
 </template>
+

@@ -50,7 +50,7 @@ const logout = async () => {
       console.log('📤 Calling logout API with POST method...');
 
       try {
-        const response = await fetch('http://localhost:8080/auth/logout', {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/logout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -324,3 +324,4 @@ onUnmounted(() => {
   position: relative;
 }
 </style>
+

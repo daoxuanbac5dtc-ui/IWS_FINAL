@@ -8,7 +8,7 @@ const isLoadingCart = ref(false);
 const isGuestMode = ref(false);
 
 // API Configuration
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
 // Confirmation Modal State
 const confirmModal = ref({
@@ -960,3 +960,4 @@ onUnmounted(() => {
     grid-template-columns: repeat(13, 1fr);
 }
 </style>
+

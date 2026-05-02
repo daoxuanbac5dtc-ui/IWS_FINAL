@@ -5,7 +5,7 @@ import { InputText } from 'primevue';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref, watch } from 'vue';
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 const VOUCHER_IMAGE_PLACEHOLDER = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><rect width="160" height="160" rx="8" fill="#f8fafc"/><rect x="24" y="42" width="112" height="76" rx="10" fill="#ffffff" stroke="#cbd5e1"/><path d="M36 66h88M36 94h56" stroke="#94a3b8" stroke-width="8" stroke-linecap="round"/><circle cx="116" cy="94" r="11" fill="#f97316"/></svg>'
 )}`;
@@ -358,7 +358,7 @@ function getRowIndex(index) {
 async function fetchData() {
     try {
         loading.value = true;
-        const response = await axios.get('http://localhost:8080/voucher');
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/voucher`);
 
         console.log('📦 Fetched vouchers:', response.data);
 
@@ -537,7 +537,7 @@ async function uploadFile(file) {
 
         console.log('📤 Uploading voucher image:', file.name);
 
-        const response = await axios.post('http://localhost:8080/voucher/upload', formData, {
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/voucher/upload`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
@@ -613,7 +613,7 @@ async function saveVoucher() {
                 life: 3000
             });
         } else {
-            await axios.post('http://localhost:8080/voucher', voucherData);
+            await axios.post(`${import.meta.env.VITE_API_BASE_URL}/voucher`, voucherData);
             toast.add({
                 severity: 'success',
                 summary: 'Thành công',
@@ -1274,3 +1274,4 @@ function exportCSV() {
     gap: 0.375rem;
 }
 </style>
+

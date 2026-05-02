@@ -61,3 +61,4 @@ import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
         </div>
     </div>
 </template>
+

@@ -194,7 +194,7 @@ function getRowIndex(index) {
 
 async function fetchData() {
     try {
-        const res = await axios.get('http://localhost:8080/kich-co');
+        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/kich-co`);
         ListKichCo.value = res.data;
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -258,7 +258,7 @@ async function saveKichCo() {
                 });
             } else {
                 kichCo.value.maKichCo = kichCo.value.maKichCo || createId();
-                await axios.post('http://localhost:8080/kich-co', kichCo.value);
+                await axios.post(`${import.meta.env.VITE_API_BASE_URL}/kich-co`, kichCo.value);
                 toast.add({
                     severity: 'success',
                     summary: 'Thành công',

@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env?.VITE_API_URL || `${import.meta.env.VITE_API_BASE_URL}`;
 const FRONTEND_PUBLIC_PREFIXES = ['/placeholder', '/favicon', '/assets/'];
 const BACKEND_DIRECT_PREFIXES = ['/uploads/', '/product-images/', '/static/', '/voucher/images/', '/return-images/'];
 
@@ -170,3 +170,4 @@ export const createProductImageLookup = (images = []) => {
         findForProduct
     };
 };
+

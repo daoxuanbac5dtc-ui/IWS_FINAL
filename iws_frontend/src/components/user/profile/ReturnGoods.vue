@@ -67,7 +67,7 @@ const editingProduct = ref(null);
 const isFromDetailModal = ref(false);
 
 // ===== API CONFIGURATION =====
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
 const getAuthToken = () =>
     localStorage.getItem('auth_token') ||
@@ -5009,3 +5009,4 @@ onMounted(() => {
     }
 }
 </style>
+
